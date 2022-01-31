@@ -53,6 +53,22 @@ void ControllerFollowRoute::Activate(ControlDomains domainMask)
 {
 	LOG("FollowRoute activate");
 
+	// Grab and inspect road network
+	roadmanager::OpenDrive* odr = nullptr;
+	if (object_ != nullptr)
+	{
+		odr = object_->pos_.GetOpenDrive();
+	}
+
+	if (odr != nullptr)
+	{
+		for (int i = 0; i < odr->GetNumOfRoads(); i++)
+		{
+			roadmanager::Road* road = odr->GetRoadByIdx(i);
+			LOG("road[%d] id: %d length: %.2f", i, road->GetId(), road->GetLength());
+		}
+	}
+
 	Controller::Activate(domainMask);
 }
 
