@@ -15,6 +15,7 @@
 #include "ControllerFollowGhost.hpp"
 #include "ControllerExternal.hpp"
 #include "ControllerRel2Abs.hpp"
+#include "ControllerFollowRoute.hpp"
 
 #define WHEEL_RADIUS 0.35
 #define STAND_STILL_THRESHOLD 1e-3  // meter per second
@@ -792,6 +793,9 @@ void ScenarioEngine::parseScenario()
 			if (scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_REL2ABS)
 			{
 				((ControllerRel2Abs*)(scenarioReader->controller_[i]))->SetScenarioEngine(this);
+			}
+			else if(scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_ROUTE){
+				((ControllerFollowRoute*)(scenarioReader->controller_[i]))->SetScenarioEngine(this);
 			}
 		}
 
