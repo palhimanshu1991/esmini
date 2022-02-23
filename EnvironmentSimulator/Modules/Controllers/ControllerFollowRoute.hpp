@@ -53,7 +53,8 @@ namespace scenarioengine
 		std::vector<roadmanager::RoadPath::PathNode*> CalculatePath(roadmanager::Position* targetWaypoint, RouteStrategy routeStrategy);
 		void ChangeLane(int lane,  double time);
 		bool TargetLaneIsInDrivingDirection(roadmanager::RoadPath::PathNode* pNode, roadmanager::Road *nextRoad, int targetLaneId);
-		roadmanager::RoadPath::PathNode* GetNextNode(roadmanager::Road* nextRoad, roadmanager::RoadPath::PathNode* srcNode);
+		std::vector<roadmanager::RoadPath::PathNode*> GetNextNodes(roadmanager::Road* nextRoad, roadmanager::RoadPath::PathNode* srcNode);
+		std::vector<int> GetConnectingLanes(roadmanager::RoadPath::PathNode* srcNode, roadmanager::Road* nextRoad);
 		// Sign function: Return 1 if positive, 0 if zero, -1 if negative
 		template <typename T> int sgn(T val) { return (T(0) < val) - (val < T(0)); }
 		vehicle::Vehicle vehicle_;
