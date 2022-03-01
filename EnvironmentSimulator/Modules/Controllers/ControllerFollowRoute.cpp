@@ -58,9 +58,17 @@ void ControllerFollowRoute::Step(double timeStep)
 			// roadmanager::Position targetWaypoint(5,-1,15,0);
 			targetWaypoint_ = object_->pos_.GetRoute()->all_waypoints_.back();
 			targetWaypoint_.Print();
-			std::vector<roadmanager::RoadPath::PathNode *> pathToGoal = CalculatePath(RouteStrategy::SHORTEST);
-			LOG("Path to goal size: %d", pathToGoal.size());
-			for (roadmanager::RoadPath::PathNode *node : pathToGoal)
+
+			std::vector<roadmanager::RoadPath::PathNode *> pathToGoalS = CalculatePath(RouteStrategy::SHORTEST);
+			LOG("Path to goal (SHORTEST) size: %d", pathToGoalS.size());
+			for (roadmanager::RoadPath::PathNode *node : pathToGoalS)
+			{
+				LOG("%d", node->fromRoad->GetId());
+			}
+
+			std::vector<roadmanager::RoadPath::PathNode *> pathToGoalF = CalculatePath(RouteStrategy::FASTEST);
+			LOG("Path to goal (FASTEST) size: %d", pathToGoalF.size());
+			for (roadmanager::RoadPath::PathNode *node : pathToGoalF)
 			{
 				LOG("%d", node->fromRoad->GetId());
 			}
@@ -196,7 +204,7 @@ bool ControllerFollowRoute::TargetLaneIsInDrivingDirection(roadmanager::RoadPath
 }
 
 // Gets the next pathnode for the nextroad based on current srcnode
-std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::GetNextNodes(roadmanager::Road *nextRoad, roadmanager::RoadPath::PathNode *srcNode)
+std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::GetNextNodes(roadmanager::Road *nextRoad, roadmanager::RoadPath::PathNode *srcNode, RouteStrategy routeStrategy)
 {
 	// Register length of this road and find node in other end of the road (link)
 
@@ -270,11 +278,21 @@ std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::GetNextNod
 	{
 		// create next node
 		roadmanager::RoadPath::PathNode *pNode = new roadmanager::RoadPath::PathNode;
-		pNode->dist = srcNode->dist + nextRoad->GetLength();
 		pNode->link = nextLink;
 		pNode->fromRoad = nextRoad;
 		pNode->fromLaneId = nextLaneId;
 		pNode->previous = srcNode;
+
+		if (routeStrategy == RouteStrategy::SHORTEST)
+		{
+			pNode->dist = srcNode->dist + nextRoad->GetLength();
+		}
+		else if (routeStrategy == RouteStrategy::FASTEST)
+		{
+			double averageSpeed = CalcAverageSpeed(nextRoad);
+			pNode->dist = srcNode->dist + (nextRoad->GetLength() / averageSpeed);
+		}
+
 		nextNodes.push_back(pNode);
 	}
 
@@ -313,7 +331,7 @@ std::vector<int> ControllerFollowRoute::GetConnectingLanes(roadmanager::RoadPath
 	return (connectingLaneIds);
 }
 
-roadmanager::RoadPath::PathNode *ControllerFollowRoute::CreateTargetNode(roadmanager::RoadPath::PathNode *currentNode, roadmanager::Road *nextRoad)
+roadmanager::RoadPath::PathNode *ControllerFollowRoute::CreateTargetNode(roadmanager::RoadPath::PathNode *currentNode, roadmanager::Road *nextRoad, RouteStrategy routeStrategy)
 {
 	// Create last node (targetnode)
 	roadmanager::RoadPath::PathNode *targetNode = new roadmanager::RoadPath::PathNode;
@@ -321,14 +339,26 @@ roadmanager::RoadPath::PathNode *ControllerFollowRoute::CreateTargetNode(roadman
 	targetNode->fromRoad = nextRoad;
 	targetNode->fromLaneId = currentNode->fromRoad->GetConnectingLaneId(currentNode->link, currentNode->fromLaneId, nextRoad->GetId());
 
+	double roadLength = 0;
 	if (currentNode->link->GetContactPointType() == roadmanager::ContactPointType::CONTACT_POINT_START)
 	{
-		targetNode->dist = currentNode->dist + targetWaypoint_.GetS(); // distance_ to first road link is distance_ to start of road
+		roadLength = targetWaypoint_.GetS();
 	}
 	else if (currentNode->link->GetContactPointType() == roadmanager::ContactPointType::CONTACT_POINT_END)
 	{
-		targetNode->dist = currentNode->dist + nextRoad->GetLength() - targetWaypoint_.GetS(); // distance_ to end of road
+		roadLength = nextRoad->GetLength() - targetWaypoint_.GetS();
 	}
+
+	if (routeStrategy == RouteStrategy::SHORTEST)
+	{
+		targetNode->dist = currentNode->dist + roadLength;
+	}
+	else if (routeStrategy == RouteStrategy::FASTEST)
+	{
+		double averageSpeed = CalcAverageSpeed(nextRoad);
+		targetNode->dist = currentNode->dist + (roadLength / averageSpeed);
+	}
+
 	return targetNode;
 }
 
@@ -362,7 +392,24 @@ void ControllerFollowRoute::UpdateDistanceVector(std::vector<roadmanager::RoadPa
 	}
 }
 
-bool ControllerFollowRoute::FindGoal(roadmanager::OpenDrive *odr)
+double ControllerFollowRoute::CalcAverageSpeed(roadmanager::Road *road)
+{
+	int roadTypeCount = road->GetNumberOfRoadTypes();
+	double totalSpeed = 0;
+	for (size_t i = 0; i < roadTypeCount; i++)
+	{
+		totalSpeed += road->GetRoadType(i)->speed_;
+	}
+	if(totalSpeed == 0 || roadTypeCount == 0)
+	{
+		// Default arbitrary speed is 20 m/s (72 km/h)
+		return 20;
+	}
+
+	return totalSpeed / roadTypeCount;
+}
+
+bool ControllerFollowRoute::FindGoal(roadmanager::OpenDrive *odr, RouteStrategy routeStrategy)
 {
 	using namespace roadmanager;
 
@@ -406,10 +453,10 @@ bool ControllerFollowRoute::FindGoal(roadmanager::OpenDrive *odr)
 			}
 			if (nextRoad == targetRoad_ && TargetLaneIsInDrivingDirection(currentNode, nextRoad))
 			{
-				distance_.push_back(CreateTargetNode(currentNode, nextRoad));
+				distance_.push_back(CreateTargetNode(currentNode, nextRoad, routeStrategy));
 				return true;
 			}
-			std::vector<RoadPath::PathNode *> nextNodes = GetNextNodes(nextRoad, currentNode);
+			std::vector<RoadPath::PathNode *> nextNodes = GetNextNodes(nextRoad, currentNode, routeStrategy);
 			UpdateDistanceVector(nextNodes);
 		}
 	}
@@ -421,7 +468,9 @@ std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::CalculateP
 {
 	using namespace roadmanager;
 
-	std::vector<RoadPath::PathNode *> pathToGoal;
+	visited_.clear();
+	distance_.clear();
+	clearQueue(unvisited_);
 
 	OpenDrive *odr = nullptr;
 	if (object_ != nullptr)
@@ -471,18 +520,32 @@ std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::CalculateP
 	startNode->fromRoad = startRoad;
 	startNode->fromLaneId = startLaneId;
 	startNode->previous = 0;
-	if (contactPoint == ContactPointType::CONTACT_POINT_START)
+
+	double roadLength = 0;
+	if (contactPoint == roadmanager::ContactPointType::CONTACT_POINT_START)
 	{
-		startNode->dist = startPos.GetS(); // distance_ to first road link is distance_ to start of road
+		roadLength = startPos.GetS();
 	}
-	else if (contactPoint == ContactPointType::CONTACT_POINT_END)
+	else if (contactPoint == roadmanager::ContactPointType::CONTACT_POINT_END)
 	{
-		startNode->dist = startRoad->GetLength() - startPos.GetS(); // distance_ to end of road
+		roadLength = startRoad->GetLength() - startPos.GetS();
+	}
+
+	if (routeStrategy == RouteStrategy::SHORTEST)
+	{
+		startNode->dist = roadLength;
+	}
+	else if (routeStrategy == RouteStrategy::FASTEST)
+	{
+		double averageSpeed = CalcAverageSpeed(startRoad);
+
+		startNode->dist = roadLength / averageSpeed;
 	}
 
 	unvisited_.push(startNode);
 
-	bool found = FindGoal(odr);
+	bool found = FindGoal(odr, routeStrategy);
+	std::vector<RoadPath::PathNode *> pathToGoal;
 	if (found)
 	{
 		LOG("Goal found");

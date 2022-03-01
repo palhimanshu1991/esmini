@@ -35,13 +35,13 @@ namespace scenarioengine
 	} RouteStrategy;
 
 	struct compare
+	{
+	public:
+		bool operator()(roadmanager::RoadPath::PathNode *a, roadmanager::RoadPath::PathNode *b) // overloading both operators
 		{
-		public:
-			bool operator()(roadmanager::RoadPath::PathNode* a, roadmanager::RoadPath::PathNode*b) // overloading both operators
-			{
-				return a->dist > b->dist;
-			}
-		};
+			return a->dist > b->dist;
+		}
+	};
 
 	// base class for controllers
 	class ControllerFollowRoute : public Controller
@@ -63,19 +63,25 @@ namespace scenarioengine
 	private:
 		std::vector<roadmanager::RoadPath::PathNode *> CalculatePath(RouteStrategy routeStrategy);
 		void ChangeLane(int lane, double time);
-		roadmanager::RoadPath::PathNode *CreateTargetNode(roadmanager::RoadPath::PathNode *currentNode, roadmanager::Road *nextRoad);
+		roadmanager::RoadPath::PathNode *CreateTargetNode(roadmanager::RoadPath::PathNode *currentNode, roadmanager::Road *nextRoad, RouteStrategy routeStrategy);
 		void UpdateDistanceVector(std::vector<roadmanager::RoadPath::PathNode *> nextNodes);
 		bool TargetLaneIsInDrivingDirection(roadmanager::RoadPath::PathNode *pNode, roadmanager::Road *nextRoad);
-		std::vector<roadmanager::RoadPath::PathNode *> GetNextNodes(roadmanager::Road *nextRoad, roadmanager::RoadPath::PathNode *srcNode);
+		std::vector<roadmanager::RoadPath::PathNode *> GetNextNodes(roadmanager::Road *nextRoad, roadmanager::RoadPath::PathNode *srcNode, RouteStrategy routeStrategy);
 		std::vector<int> GetConnectingLanes(roadmanager::RoadPath::PathNode *srcNode, roadmanager::Road *nextRoad);
-		bool FindGoal(roadmanager::OpenDrive *odr);	
+		bool FindGoal(roadmanager::OpenDrive *odr, RouteStrategy routeStrategy);
+		double CalcAverageSpeed(roadmanager::Road *road);
+		template <class Q>
+		void clearQueue(Q &q)
+		{
+			q = Q();
+		}
 
 		vehicle::Vehicle vehicle_;
-		ScenarioEngine *scenarioEngine_;  
+		ScenarioEngine *scenarioEngine_;
 		std::vector<OSCPrivateAction *> actions_;
-		std::priority_queue<roadmanager::RoadPath::PathNode*, std::vector<roadmanager::RoadPath::PathNode*>,compare> unvisited_;
-		std::vector<roadmanager::RoadPath::PathNode*> visited_;
-		std::vector<roadmanager::RoadPath::PathNode*> distance_;
+		std::priority_queue<roadmanager::RoadPath::PathNode *, std::vector<roadmanager::RoadPath::PathNode *>, compare> unvisited_;
+		std::vector<roadmanager::RoadPath::PathNode *> visited_;
+		std::vector<roadmanager::RoadPath::PathNode *> distance_;
 		roadmanager::Road *targetRoad_;
 		roadmanager::Position targetWaypoint_;
 	};
