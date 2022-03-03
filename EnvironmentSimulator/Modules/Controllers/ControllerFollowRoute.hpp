@@ -79,6 +79,8 @@ namespace scenarioengine
 		std::vector<int> GetConnectingLanes(Node *srcNode, roadmanager::Road *nextRoad);
 		bool FindGoal(roadmanager::OpenDrive *odr, RouteStrategy routeStrategy);
 		double CalcAverageSpeed(roadmanager::Road *road);
+		double CalcWeight(RouteStrategy routeStrategy, double roadLength,roadmanager::Road *road);
+		double CalcWeightWithPos(roadmanager::ContactPointType contactPointType, roadmanager::Position pos, roadmanager::Road *road,RouteStrategy routeStrategy);
 		bool IsTargetValid(roadmanager::OpenDrive *odr);
 		template <class Q>
 		void clearQueue(Q &q) { q = Q(); }
