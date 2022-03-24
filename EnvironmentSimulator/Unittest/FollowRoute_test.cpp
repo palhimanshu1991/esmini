@@ -17,7 +17,7 @@ static void log_callback(const char *str);
 
 TEST(PathfinderTest, FindPathTest1)
 {
-    Position::GetOpenDrive()->LoadOpenDriveFile("~/esmini/resources/xodr/multi_intersections.xodr");
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
 
@@ -28,41 +28,24 @@ TEST(PathfinderTest, FindPathTest1)
     std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path.back()->road->GetId(), 209);
+    ASSERT_EQ(path[0]->road->GetId(), 209);
 }
 
-// TEST(PathfinderTest, FindPathTest2)
-// {
-//     Position::GetOpenDrive()->LoadOpenDriveFile("~/esmini/resources/xodr/multi_intersections.xodr");
-//     OpenDrive *odr = Position::GetOpenDrive();
+TEST(PathfinderTest, FindPathTest2)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
 
-//     ASSERT_NE(odr, nullptr);
+    Position start(217, -1, 50, 0);
+    Position target(275, -1, 50, 0);
 
-//     ScenarioEngine *se = new ScenarioEngine("../../controller_follow_route_test.xosc");
-//     ASSERT_NE(se, nullptr);
+    LaneIndependentRouter router(odr);
+    std::vector<Node *> path = router.CalculatePath(start, target);
 
-//     Position start(217, -1, 50, 0);
-//     Position target(275, -1, 50, 0);
-
-//     scenarioengine::Controller::InitArgs args;
-//     args.name = "ControllerFollowRoute";
-//     args.type = ControllerFollowRoute::GetTypeNameStatic();
-//     args.parameters = 0;
-//     args.properties = new OSCProperties();
-//     args.gateway = se->getScenarioGateway();
-//     ControllerFollowRoute *controllerFollowRoute = (ControllerFollowRoute *)InstantiateControllerFollowRoute(&args);
-//     delete se->entities_.object_[0]->controller_;
-//     delete args.properties;
-
-//     controllerFollowRoute->Assign(se->entities_.object_[0]);
-//     se->scenarioReader->controller_[0] = controllerFollowRoute;
-//     se->entities_.object_[0]->controller_ = controllerFollowRoute;
-
-//     std::vector<Node *> path = controllerFollowRoute->CalculatePath(start, target);
-
-//     ASSERT_FALSE(path.empty());
-//     ASSERT_EQ(path.back()->road->GetId(), 275);
-// }
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 275);
+}
 
 // Uncomment to print log output to console
 #define LOG_TO_CONSOLE
