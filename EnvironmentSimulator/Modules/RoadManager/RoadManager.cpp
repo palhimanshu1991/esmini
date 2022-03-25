@@ -3666,7 +3666,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 						}
 						else
 						{
-							//LOG("Signal Type %s doesn't exists for this country", type_to_find.c_str());
+							LOG("Signal Type %s doesn't exists for this country", type_to_find.c_str());
 						}
 					}
 

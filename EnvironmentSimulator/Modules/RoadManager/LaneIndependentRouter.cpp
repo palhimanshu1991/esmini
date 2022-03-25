@@ -314,6 +314,10 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 		LOG("Targetwaypoint is invalid");
 		return {};
 	}
+	if(routeStrategy == RouteStrategy::MIN_INTERSECTIONS){
+		LOG("MIN_INTERSECTION not yet implemented");
+		return {};
+	}
 
 	Road *startRoad = odr_->GetRoadById(start.GetTrackId());
 	int startLaneId = start.GetLaneId();

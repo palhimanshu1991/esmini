@@ -19,7 +19,6 @@ class FollowRouteTest : public ::testing::Test
 public:
     static void SetUpTestSuite()
     {
-        
         //Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/highway_example_with_merge_and_split.xodr");
         odrSmall = new OpenDrive("../../../../esmini/resources/xodr/highway_example_with_merge_and_split.xodr");
 
@@ -242,8 +241,7 @@ TEST_F(FollowRouteTest, FindPathMinIntersections)
     Position target(209, 1, 20, 0);
 
     LaneIndependentRouter router(odrMedium);
-    // std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
-    std::vector<Node *> path = {};
+    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
 
     ASSERT_FALSE(path.empty());
     ASSERT_EQ(path[0]->road->GetId(), 209);
@@ -263,7 +261,7 @@ TEST_F(FollowRouteTest, FindPathTimeMedium)
 
     LaneIndependentRouter router(odrMedium);
     auto startTime = std::chrono::high_resolution_clock::now();
-    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
+    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::SHORTEST);
     auto endTime = std::chrono::high_resolution_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 
@@ -288,7 +286,7 @@ TEST_F(FollowRouteTest, FindPathTimeLarge)
 
     LaneIndependentRouter router(odrLarge);
     auto startTime = std::chrono::high_resolution_clock::now();
-    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
+    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::SHORTEST);
     auto endTime = std::chrono::high_resolution_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 
