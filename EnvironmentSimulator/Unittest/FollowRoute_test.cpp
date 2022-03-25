@@ -11,83 +11,237 @@
 #define TRIG_ERR_MARGIN 0.001
 
 using namespace roadmanager;
+OpenDrive *odrSmall = nullptr;
+OpenDrive *odrMedium = nullptr;
+OpenDrive *odrLarge = nullptr;
+class FollowRouteTest : public ::testing::Test
+{
+public:
+    static void SetUpTestSuite()
+    {
+        
+        //Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/highway_example_with_merge_and_split.xodr");
+        odrSmall = new OpenDrive("../../../../esmini/resources/xodr/highway_example_with_merge_and_split.xodr");
+
+        //Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
+        odrMedium = new OpenDrive("../../../../esmini/resources/xodr/multi_intersections.xodr");
+
+        //Position::GetOpenDrive()->LoadOpenDriveFile("../../../../large.xodr");
+        odrLarge = new OpenDrive("../../../../large.xodr");
+    }
+    static OpenDrive *odrSmall;
+    static OpenDrive *odrMedium;
+    static OpenDrive *odrLarge;
+};
+
+OpenDrive* FollowRouteTest::odrSmall = nullptr;
+OpenDrive* FollowRouteTest::odrMedium = nullptr;
+OpenDrive* FollowRouteTest::odrLarge = nullptr;
 
 static void log_callback(const char *str);
 
-TEST(PathfinderTest, FindPathTest1)
+TEST_F(FollowRouteTest, FindPathSmall1)
 {
-    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
-    OpenDrive *odr = Position::GetOpenDrive();
-    ASSERT_NE(odr, nullptr);
+    Position::LoadOpenDrive(odrSmall);
+    ASSERT_NE(odrSmall, nullptr);
 
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
+    Position start(0, -1, 10, 0);
+    start.SetHeadingRelativeRoadDirection(0);
+
+    Position target(5, -2, 20, 0);
+
+    LaneIndependentRouter router(odrSmall);
+    std::vector<Node *> path = router.CalculatePath(start, target);
+
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 5);
+}
+
+TEST_F(FollowRouteTest, FindPathSmall2)
+{
+    Position::LoadOpenDrive(odrSmall);
+    ASSERT_NE(odrSmall, nullptr);
+
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
+    Position start(0, -1, 10, 0);
+    start.SetHeadingRelativeRoadDirection(0);
+
+    Position target(2, -1, 20, 0);
+
+    LaneIndependentRouter router(odrSmall);
+    std::vector<Node *> path = router.CalculatePath(start, target);
+
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 2);
+}
+TEST_F(FollowRouteTest, FindPathMedium1)
+{
+    Position::LoadOpenDrive(odrMedium);
+    ASSERT_NE(odrMedium, nullptr);
+
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
     Position start(202, 2, 100, 0);
+    start.SetHeadingRelativeRoadDirection(M_PI);
+
     Position target(209, 1, 20, 0);
 
-    LaneIndependentRouter router(odr);
+    LaneIndependentRouter router(odrMedium);
     std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
     ASSERT_EQ(path[0]->road->GetId(), 209);
 }
 
-TEST(PathfinderTest, FindPathTest2)
+TEST_F(FollowRouteTest, FindPathMedium2)
 {
-    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
-    OpenDrive *odr = Position::GetOpenDrive();
-    ASSERT_NE(odr, nullptr);
+    Position::LoadOpenDrive(odrMedium);
+    ASSERT_NE(odrMedium, nullptr);
 
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
     Position start(217, -1, 50, 0);
+    start.SetHeadingRelativeRoadDirection(0);
+
     Position target(275, -1, 50, 0);
 
-    LaneIndependentRouter router(odr);
+    LaneIndependentRouter router(odrMedium);
     std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
     ASSERT_EQ(path[0]->road->GetId(), 275);
 }
 
-TEST(PathfinderTest, FindPathShortest)
+TEST_F(FollowRouteTest, FindPathLarge1)
 {
-    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
-    OpenDrive *odr = Position::GetOpenDrive();
-    ASSERT_NE(odr, nullptr);
+    Position::LoadOpenDrive(odrLarge);
+    ASSERT_NE(odrLarge, nullptr);
 
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
+    Position start(5147, -1, 50, 0);
+    start.SetHeadingRelativeRoadDirection(0);
+
+    Position target(2206, 1, 100, 0);
+
+    LaneIndependentRouter router(odrLarge);
+    std::vector<Node *> path = router.CalculatePath(start, target);
+
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 2206);
+}
+
+TEST_F(FollowRouteTest, FindPathLarge2)
+{
+    Position::LoadOpenDrive(odrLarge);
+    ASSERT_NE(odrLarge, nullptr);
+
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
+    Position start(1006, 3, 1900, 0);
+    start.SetHeadingRelativeRoadDirection(M_PI);
+
+    Position target(2203, 1, 20, 0);
+
+    LaneIndependentRouter router(odrLarge);
+    std::vector<Node *> path = router.CalculatePath(start, target);
+
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 2203);
+}
+
+TEST_F(FollowRouteTest, FindPathLarge3)
+{
+    Position::LoadOpenDrive(odrLarge);
+    ASSERT_NE(odrLarge, nullptr);
+
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
+    Position start(8277, 1, 200, 0);
+    start.SetHeadingRelativeRoadDirection(M_PI);
+
+    Position target(2291, -2, 50, 0);
+
+    LaneIndependentRouter router(odrLarge);
+    std::vector<Node *> path = router.CalculatePath(start, target);
+
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 2291);
+}
+
+TEST_F(FollowRouteTest, FindPathLarge4)
+{
+    Position::LoadOpenDrive(odrLarge);
+    ASSERT_NE(odrLarge, nullptr);
+
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
+    Position start(2431, 1, 2200, 0);
+    start.SetHeadingRelativeRoadDirection(M_PI);
+
+    Position target(2503, -1, 3700, 0);
+
+    LaneIndependentRouter router(odrLarge);
+    std::vector<Node *> path = router.CalculatePath(start, target);
+
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 2503);
+}
+
+TEST_F(FollowRouteTest, FindPathShortest)
+{
+    Position::LoadOpenDrive(odrMedium);
+    ASSERT_NE(odrMedium, nullptr);
+
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
     Position start(202, 2, 100, 0);
+    start.SetHeadingRelativeRoadDirection(M_PI);
+
     Position target(209, 1, 20, 0);
 
-    LaneIndependentRouter router(odr);
+    LaneIndependentRouter router(odrMedium);
     std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::SHORTEST);
 
     ASSERT_FALSE(path.empty());
     ASSERT_EQ(path[0]->road->GetId(), 209);
 }
 
-TEST(PathfinderTest, FindPathFastest)
+TEST_F(FollowRouteTest, FindPathFastest)
 {
-    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
-    OpenDrive *odr = Position::GetOpenDrive();
-    ASSERT_NE(odr, nullptr);
+    Position::LoadOpenDrive(odrMedium);
+    ASSERT_NE(odrMedium, nullptr);
 
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
     Position start(202, 2, 100, 0);
+    start.SetHeadingRelativeRoadDirection(M_PI);
+
     Position target(209, 1, 20, 0);
 
-    LaneIndependentRouter router(odr);
+    LaneIndependentRouter router(odrMedium);
     std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::FASTEST);
 
     ASSERT_FALSE(path.empty());
     ASSERT_EQ(path[0]->road->GetId(), 209);
 }
 
-TEST(PathfinderTest, FindPathMinIntersections)
+TEST_F(FollowRouteTest, FindPathMinIntersections)
 {
-    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
-    OpenDrive *odr = Position::GetOpenDrive();
-    ASSERT_NE(odr, nullptr);
+    Position::LoadOpenDrive(odrMedium);
+    ASSERT_NE(odrMedium, nullptr);
 
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
     Position start(202, 2, 100, 0);
+    start.SetHeadingRelativeRoadDirection(M_PI);
+
     Position target(209, 1, 20, 0);
 
-    LaneIndependentRouter router(odr);
+    LaneIndependentRouter router(odrMedium);
     // std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
     std::vector<Node *> path = {};
 
@@ -95,16 +249,19 @@ TEST(PathfinderTest, FindPathMinIntersections)
     ASSERT_EQ(path[0]->road->GetId(), 209);
 }
 
-TEST(PathfinderTest, FindPathTimeSmall)
+TEST_F(FollowRouteTest, FindPathTimeMedium)
 {
-    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
-    OpenDrive *odr = Position::GetOpenDrive();
-    ASSERT_NE(odr, nullptr);
+    Position::LoadOpenDrive(odrMedium);
+    ASSERT_NE(odrMedium, nullptr);
 
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
     Position start(202, 2, 100, 0);
+    start.SetHeadingRelativeRoadDirection(M_PI);
+
     Position target(209, 1, 20, 0);
 
-    LaneIndependentRouter router(odr);
+    LaneIndependentRouter router(odrMedium);
     auto startTime = std::chrono::high_resolution_clock::now();
     std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
     auto endTime = std::chrono::high_resolution_clock::now();
@@ -117,16 +274,19 @@ TEST(PathfinderTest, FindPathTimeSmall)
     ASSERT_LT((int)elapsedTime, maxMicroseconds);
 }
 
-TEST(PathfinderTest, FindPathTimeLarge)
+TEST_F(FollowRouteTest, FindPathTimeLarge)
 {
-    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../large.xodr");
-    OpenDrive *odr = Position::GetOpenDrive();
-    ASSERT_NE(odr, nullptr);
+    Position::LoadOpenDrive(odrLarge);
+    ASSERT_NE(odrLarge, nullptr);
 
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
     Position start(2291, -1, 1100, 0);
+    start.SetHeadingRelativeRoadDirection(0);
+
     Position target(2502, 1, 50, 0);
 
-    LaneIndependentRouter router(odr);
+    LaneIndependentRouter router(odrLarge);
     auto startTime = std::chrono::high_resolution_clock::now();
     std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
     auto endTime = std::chrono::high_resolution_clock::now();
@@ -138,8 +298,6 @@ TEST(PathfinderTest, FindPathTimeLarge)
     int maxMicroseconds = 15000;
     ASSERT_LT((int)elapsedTime, maxMicroseconds);
 }
-
-
 
 // Uncomment to print log output to console
 #define LOG_TO_CONSOLE

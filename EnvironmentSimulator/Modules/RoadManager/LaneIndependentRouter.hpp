@@ -41,6 +41,7 @@ namespace roadmanager
         std::vector<Node *> CalculatePath(Position start, Position target, RouteStrategy routeStrategy = RouteStrategy::SHORTEST);
 
     private:
+        RoadLink* GetNextLink(Node *currentNode, Road *nextRoad);
         Node *CreateTargetNode(Node *currentNode, Road *nextRoad, RouteStrategy routeStrategy);
         void UpdateDistanceVector(std::vector<Node *> nextNodes);
         bool TargetLaneIsInDrivingDirection(Node *pNode, Road *nextRoad);
