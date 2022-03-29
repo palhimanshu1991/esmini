@@ -55,7 +55,7 @@ TEST_F(FollowRouteTest, FindPathSmall1)
     std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 5);
+    ASSERT_EQ(path.back()->road->GetId(), 5);
 }
 
 TEST_F(FollowRouteTest, FindPathSmall2)
@@ -74,7 +74,7 @@ TEST_F(FollowRouteTest, FindPathSmall2)
     std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 2);
+    ASSERT_EQ(path.back()->road->GetId(), 2);
 }
 TEST_F(FollowRouteTest, FindPathMedium1)
 {
@@ -92,7 +92,7 @@ TEST_F(FollowRouteTest, FindPathMedium1)
     std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 209);
+    ASSERT_EQ(path.back()->road->GetId(), 209);
 }
 
 TEST_F(FollowRouteTest, FindPathMedium2)
@@ -111,7 +111,7 @@ TEST_F(FollowRouteTest, FindPathMedium2)
     std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 275);
+    ASSERT_EQ(path.back()->road->GetId(), 275);
 }
 
 TEST_F(FollowRouteTest, FindPathLarge1)
@@ -130,7 +130,7 @@ TEST_F(FollowRouteTest, FindPathLarge1)
     std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 2206);
+    ASSERT_EQ(path.back()->road->GetId(), 2206);
 }
 
 TEST_F(FollowRouteTest, FindPathLarge2)
@@ -149,7 +149,7 @@ TEST_F(FollowRouteTest, FindPathLarge2)
     std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 2203);
+    ASSERT_EQ(path.back()->road->GetId(), 2203);
 }
 
 TEST_F(FollowRouteTest, FindPathLarge3)
@@ -168,7 +168,7 @@ TEST_F(FollowRouteTest, FindPathLarge3)
     std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 2291);
+    ASSERT_EQ(path.back()->road->GetId(), 2291);
 }
 
 TEST_F(FollowRouteTest, FindPathLarge4)
@@ -187,7 +187,7 @@ TEST_F(FollowRouteTest, FindPathLarge4)
     std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 2503);
+    ASSERT_EQ(path.back()->road->GetId(), 2503);
 }
 
 TEST_F(FollowRouteTest, FindPathShortest)
@@ -206,7 +206,7 @@ TEST_F(FollowRouteTest, FindPathShortest)
     std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::SHORTEST);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 209);
+    ASSERT_EQ(path.back()->road->GetId(), 209);
 }
 
 TEST_F(FollowRouteTest, FindPathFastest)
@@ -225,7 +225,7 @@ TEST_F(FollowRouteTest, FindPathFastest)
     std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::FASTEST);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 209);
+    ASSERT_EQ(path.back()->road->GetId(), 209);
 }
 
 TEST_F(FollowRouteTest, FindPathMinIntersections)
@@ -244,7 +244,7 @@ TEST_F(FollowRouteTest, FindPathMinIntersections)
     std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 209);
+    ASSERT_EQ(path.back()->road->GetId(), 209);
 }
 
 TEST_F(FollowRouteTest, FindPathTimeMedium)
@@ -266,7 +266,7 @@ TEST_F(FollowRouteTest, FindPathTimeMedium)
     auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 209);
+    ASSERT_EQ(path.back()->road->GetId(), 209);
 
     int maxMicroseconds = 5000;
     ASSERT_LT((int)elapsedTime, maxMicroseconds);
@@ -291,11 +291,36 @@ TEST_F(FollowRouteTest, FindPathTimeLarge)
     auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path[0]->road->GetId(), 2502);
+    ASSERT_EQ(path.back()->road->GetId(), 2502);
 
     int maxMicroseconds = 15000;
     ASSERT_LT((int)elapsedTime, maxMicroseconds);
 }
+
+TEST_F(FollowRouteTest, CreateWaypointSmall)
+{
+    Position::LoadOpenDrive(odrSmall);
+    ASSERT_NE(odrSmall, nullptr);
+    std::vector<Position> expectedWaypoints = {Position(0,-4,125,0),Position(4,-1,50,0),Position(2,-1,20,0)};
+    // Set start pos and the driving direction (heading) 
+    // PI = against road dir,   0 = road dir
+    Position start(0, -1, 10, 0);
+    start.SetHeadingRelativeRoadDirection(0);
+    Position target(5, -3, 20, 0);
+    LaneIndependentRouter router(odrSmall);
+    std::vector<Node *> path = router.CalculatePath(start, target);
+    ASSERT_FALSE(path.empty());
+    std::vector<Position> calcWaypoints = router.GetWaypoints(path,target);
+    ASSERT_FALSE(calcWaypoints.empty());
+    ASSERT_EQ(calcWaypoints.size(),expectedWaypoints.size());
+    for(int i = 0; i < expectedWaypoints.size();i++){
+        ASSERT_EQ(calcWaypoints[i].GetTrackId(),expectedWaypoints[i].GetTrackId());
+        ASSERT_EQ(calcWaypoints[i].GetLaneId(),expectedWaypoints[i].GetLaneId());
+        ASSERT_EQ(calcWaypoints[i].GetS(),expectedWaypoints[i].GetS());
+        ASSERT_EQ(calcWaypoints[i].GetOffset(),expectedWaypoints[i].GetOffset());
+    }
+}
+
 
 // Uncomment to print log output to console
 #define LOG_TO_CONSOLE

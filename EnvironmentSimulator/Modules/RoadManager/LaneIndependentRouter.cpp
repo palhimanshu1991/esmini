@@ -12,7 +12,7 @@ LaneIndependentRouter::LaneIndependentRouter(OpenDrive *odr) : odr_(odr)
 // Gets the next pathnode for the nextroad based on current srcnode
 std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *targetRoad, Node *currentNode, RouteStrategy routeStrategy)
 {
-	std::vector<int> connectingLaneIds = GetConnectingLanes(currentNode, nextRoad);
+	std::vector<std::pair<int, int>> connectingLaneIds = GetConnectingLanes(currentNode, nextRoad);
 	if (connectingLaneIds.empty())
 	{
 		// no existing lanes
@@ -21,27 +21,34 @@ std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *ta
 	}
 
 	std::vector<Node *> nextNodes;
-	for (int nextLaneId : connectingLaneIds)
+	LOG("Road: %d", currentNode->road->GetId());
+	LOG("Lane: %d", currentNode->laneId);
+	LOG("NextRoad: %d", nextRoad->GetId());
+	for (std::pair<int, int> lanePair : connectingLaneIds)
 	{
 		Node *pNode = new Node;
 		int targetLaneId = targetWaypoint_.GetLaneId();
-		bool TargetWaypointInDrivingDirection = SIGN(nextLaneId) == SIGN(targetLaneId);
-		if (nextRoad == targetRoad && TargetWaypointInDrivingDirection)
+		// bool TargetWaypointInDrivingDirection = SIGN(nextLaneId) == SIGN(targetLaneId);
+		if (nextRoad == targetRoad && lanePair.second == targetLaneId)
 		{
 			// Target road found and driving in same direction, create a target node.
-			pNode = CreateTargetNode(currentNode, nextRoad, routeStrategy);
+			pNode = CreateTargetNode(currentNode, nextRoad, lanePair, routeStrategy);
 		}
 		else
 		{
-			RoadLink* nextLink = GetNextLink(currentNode,nextRoad);	
-			if(!nextLink){
+			RoadLink *nextLink = GetNextLink(currentNode, nextRoad);
+			if (!nextLink)
+			{
 				// Dont add node if it does not have a link. (end of road)
 				continue;
-			}		
+			}
 			// create next non target node
+
+			LOG("clID = %d, lID = %d", lanePair.first, lanePair.second);
 			pNode->link = nextLink;
 			pNode->road = nextRoad;
-			pNode->laneId = nextLaneId;
+			pNode->laneId = lanePair.second;
+			pNode->connectingLaneId = lanePair.first;
 			pNode->previous = currentNode;
 			// FIX TARGETWAYPOINT_ ....
 			double nextWeight = CalcWeight(routeStrategy, nextRoad->GetLength(), nextRoad);
@@ -101,7 +108,7 @@ RoadLink *LaneIndependentRouter::GetNextLink(Node *currentNode, Road *nextRoad)
 	return nullptr;
 }
 
-std::vector<int> LaneIndependentRouter::GetConnectingLanes(Node *srcNode, Road *nextRoad)
+std::vector<std::pair<int, int>> LaneIndependentRouter::GetConnectingLanes(Node *srcNode, Road *nextRoad)
 {
 	LaneSection *lanesection = nullptr;
 	if (srcNode->link->GetType() == LinkType::SUCCESSOR)
@@ -114,7 +121,7 @@ std::vector<int> LaneIndependentRouter::GetConnectingLanes(Node *srcNode, Road *
 		lanesection = srcNode->road->GetLaneSectionByIdx(0);
 	}
 
-	std::vector<int> connectingLaneIds;
+	std::vector<std::pair<int, int>> connectingLaneIds;
 	int nrOfLanes = lanesection->GetNumberOfLanes();
 	for (size_t i = 0; i < nrOfLanes; i++)
 	{
@@ -122,29 +129,29 @@ std::vector<int> LaneIndependentRouter::GetConnectingLanes(Node *srcNode, Road *
 		int currentlaneId = lane->GetId();
 		if (lane->IsDriving() && SIGN(currentlaneId) == SIGN(srcNode->laneId) && lane->GetId() != 0)
 		{
+
+			// LOG("CurrrentLaneId: %d", currentlaneId);
 			int nextLaneId = srcNode->road->GetConnectingLaneId(srcNode->link, currentlaneId, nextRoad->GetId());
+			// LOG("NextLaneId: %d", nextLaneId);
 			if (nextLaneId != 0)
 			{
-				connectingLaneIds.push_back(nextLaneId);
+				connectingLaneIds.push_back({currentlaneId, nextLaneId});
 			}
 		}
 	}
+
 	return connectingLaneIds;
 }
 
-Node *LaneIndependentRouter::CreateTargetNode(Node *currentNode, Road *nextRoad, RouteStrategy routeStrategy)
+Node *LaneIndependentRouter::CreateTargetNode(Node *currentNode, Road *nextRoad, std::pair<int, int> laneIds, RouteStrategy routeStrategy)
 {
 	// Create last node (targetnode)
-	int nextLaneId = currentNode->road->GetConnectingLaneId(currentNode->link, currentNode->laneId, nextRoad->GetId());
-	if (nextLaneId == 0)
-	{
-		// nextLaneId = 0 -- error
-		return nullptr;
-	}
 	Node *targetNode = new Node;
 	targetNode->previous = currentNode;
 	targetNode->road = nextRoad;
-	targetNode->laneId = nextLaneId;
+	targetNode->laneId = laneIds.second;
+	targetNode->connectingLaneId = laneIds.first;
+	targetNode->link = nullptr;
 	double nextWeight = CalcWeightWithPos(currentNode->link->GetContactPointType(), targetWaypoint_, nextRoad, routeStrategy);
 	targetNode->weight = currentNode->weight + nextWeight;
 	return targetNode;
@@ -226,6 +233,11 @@ double LaneIndependentRouter::CalcWeight(RouteStrategy routeStrategy, double roa
 
 		return roadLength / averageSpeed;
 	}
+	else
+	{
+		LOG("RouteStrategy does not exist");
+		return 0;
+	}
 }
 
 bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
@@ -242,11 +254,15 @@ bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
 		visited_.push_back(currentNode);
 		Road *targetRoad = odr_->GetRoadById(targetWaypoint_.GetTrackId());
 		int targetLaneId = targetWaypoint_.GetLaneId();
-		bool TargetWaypointInDrivingDirection = SIGN(currentNode->laneId) == SIGN(targetLaneId);
-		// Checks if current road is target road and if waypoint is the diving direction of the vehicle
-		if (currentNode->road == targetRoad && TargetWaypointInDrivingDirection)
+		// bool TargetWaypointInDrivingDirection = SIGN(currentNode->laneId) == SIGN(targetLaneId);
+		//  Checks if current road is target road and if waypoint is the diving direction of the vehicle
+		if (currentNode->road == targetRoad && currentNode->laneId == targetLaneId)
 		{
 			return true;
+		}
+		if (!currentNode->link)
+		{
+			continue;
 		}
 		RoadLink *link = currentNode->link;
 		Road *pivotRoad = currentNode->road;
@@ -314,7 +330,8 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 		LOG("Targetwaypoint is invalid");
 		return {};
 	}
-	if(routeStrategy == RouteStrategy::MIN_INTERSECTIONS){
+	if (routeStrategy == RouteStrategy::MIN_INTERSECTIONS)
+	{
 		LOG("MIN_INTERSECTION not yet implemented");
 		return {};
 	}
@@ -362,6 +379,7 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 	startNode->link = nextElement;
 	startNode->road = startRoad;
 	startNode->laneId = startLaneId;
+	startNode->connectingLaneId = 0;
 	startNode->previous = 0;
 	double nextWeight = CalcWeightWithPos(contactPoint, start, startRoad, routeStrategy);
 	startNode->weight = nextWeight;
@@ -372,9 +390,9 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 	std::vector<Node *> pathToGoal;
 	if (found)
 	{
-		//LOG("Goal found");
+		// LOG("Goal found");
 		Node *nodeIterator = visited_.back();
-		//LOG("Total weight: %f", nodeIterator->weight);
+		// LOG("Total weight: %f", nodeIterator->weight);
 		while (nodeIterator != 0)
 		{
 			pathToGoal.push_back(nodeIterator);
@@ -385,5 +403,54 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 	{
 		LOG("Path to target not found");
 	}
+	std::reverse(pathToGoal.begin(), pathToGoal.end());
+	for (Node *n : pathToGoal)
+	{
+		LOG("r=%d,l=%d,cl=%d", n->road->GetId(), n->laneId, n->connectingLaneId);
+	}
 	return pathToGoal;
+}
+
+std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node *> path, Position target)
+{
+	std::vector<Position> waypoints;
+	for (int idx = 0; idx < path.size() - 1; idx++)
+	{
+		Node *current = path[idx];
+		Node *next = path[idx + 1];
+		double s = 0;
+		if (current->link->GetType() == LinkType::SUCCESSOR)
+		{
+			for (int i = current->road->GetNumberOfLaneSections() - 1; i >= 0; i--)
+			{
+				Lane *lane = current->road->GetLaneSectionByIdx(i)->GetLaneById(next->connectingLaneId);
+				if (!lane)
+				{
+					break;
+				}
+				s += current->road->GetLaneSectionByIdx(i)->GetLength();
+			}
+
+			waypoints.push_back(Position(current->road->GetId(), next->connectingLaneId, (current->road->GetLength() - (s / 2)), 0.0));
+		}
+		else if (current->link->GetType() == LinkType::PREDECESSOR)
+		{
+			for (int i = 0; i < current->road->GetNumberOfLaneSections(); i++)
+			{
+				Lane *lane = current->road->GetLaneSectionByIdx(i)->GetLaneById(current->connectingLaneId);
+				if (lane == nullptr)
+				{
+					break;
+				}
+				s += current->road->GetLaneSectionByIdx(i)->GetLength();
+			}
+			waypoints.push_back(Position(current->road->GetId(), next->connectingLaneId, (s / 2), 0.0));
+		}
+	}
+	waypoints.push_back(target);
+	for (Position p : waypoints)
+	{
+		LOG("r=%d,l=%d,s=%f,o=%f", p.GetTrackId(), p.GetLaneId(), p.GetS(), p.GetOffset());
+	}
+	return waypoints;
 }
