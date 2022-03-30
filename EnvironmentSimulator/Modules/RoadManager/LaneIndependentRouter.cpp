@@ -436,10 +436,10 @@ std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node *> pa
 		}
 	}
 	waypoints.push_back(target);
-	for (Position p : waypoints)
-	{
-		LOG("r=%d,l=%d,s=%f,o=%f", p.GetTrackId(), p.GetLaneId(), p.GetS(), p.GetOffset());
-	}
+	// for (Position p : waypoints)
+	// {
+	// 	LOG("r=%d,l=%d,s=%f,o=%f", p.GetTrackId(), p.GetLaneId(), p.GetS(), p.GetOffset());
+	// }
 	return waypoints;
 }
 
@@ -450,7 +450,7 @@ double RoadCalculations::CalcAverageSpeed(Road *road)
 	{
 		// Assume road is rural
 		LOG("Road %d has no road types", road->GetId());
-		return 0;
+		return roadTypeToSpeed[Road::RoadType::ROADTYPE_RURAL];
 	}
 
 	double totalSpeed = 0;
