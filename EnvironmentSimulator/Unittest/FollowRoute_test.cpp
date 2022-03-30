@@ -434,6 +434,7 @@ TEST_F(FollowRouteTest, CreateWaypointLarge)
     }
 }
 
+
 TEST_F(FollowRouteTest, CalcAverageSpeedForRoadsWithoutSpeed)
 {
     RoadCalculations roadCalc;
@@ -472,6 +473,75 @@ TEST_F(FollowRouteTest, CalcAverageSpeedForRoadsWithoutSpeed)
     expectedSpeed = 25;
     ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
 }
+
+TEST_F(FollowRouteTest, CalcAverageSpeedForRoadsWithDefinedSpeed)
+{
+    RoadCalculations roadCalc;
+
+    Road road1(1, "420");
+    Road road2(2, "420");
+    Road road3(3, "420");
+    Road road4(4, "420");
+    Road::RoadTypeEntry lowSpeed;
+    Road::RoadTypeEntry town;
+    Road::RoadTypeEntry rural;
+    Road::RoadTypeEntry motorway;
+    lowSpeed.road_type_ = Road::RoadType::ROADTYPE_LOWSPEED;
+    lowSpeed.speed_ = 10;
+    town.road_type_ = Road::RoadType::ROADTYPE_TOWN;
+    town.speed_ = 20;
+    rural.road_type_ = Road::RoadType::ROADTYPE_RURAL;
+    rural.speed_ = 30;
+    motorway.road_type_ = Road::RoadType::ROADTYPE_MOTORWAY;
+    motorway.speed_ = 40;
+
+    road1.AddRoadType(&lowSpeed);
+    road2.AddRoadType(&town);
+    road3.AddRoadType(&rural);
+    road4.AddRoadType(&motorway);
+
+    double averageSpeed = roadCalc.CalcAverageSpeed(&road1);
+    double expectedSpeed = 10;
+    ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
+
+    averageSpeed = roadCalc.CalcAverageSpeed(&road2);
+    expectedSpeed = 20;
+    ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
+
+    averageSpeed = roadCalc.CalcAverageSpeed(&road3);
+    expectedSpeed = 30;
+    ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
+
+    averageSpeed = roadCalc.CalcAverageSpeed(&road4);
+    expectedSpeed = 40;
+    ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
+}
+
+TEST_F(FollowRouteTest, CalcAverageSpeedForTwoRoadTypes)
+{
+    RoadCalculations roadCalc;
+
+    Road road(1, "420");
+    Road::RoadTypeEntry lowSpeed;
+    Road::RoadTypeEntry town;
+    lowSpeed.road_type_ = Road::RoadType::ROADTYPE_LOWSPEED;
+    town.road_type_ = Road::RoadType::ROADTYPE_TOWN;
+
+    road.AddRoadType(&lowSpeed);
+    road.AddRoadType(&town);
+
+    double averageSpeed = roadCalc.CalcAverageSpeed(&road);
+    double expectedSpeed = 11.11;
+    ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
+
+    lowSpeed.speed_ = 10;
+    town.speed_ = 20;
+
+    averageSpeed = roadCalc.CalcAverageSpeed(&road);
+    expectedSpeed = 15;
+    ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
+}
+
 
 // Uncomment to print log output to console
 #define LOG_TO_CONSOLE
