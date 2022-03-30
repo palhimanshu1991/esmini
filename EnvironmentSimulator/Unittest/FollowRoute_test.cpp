@@ -434,6 +434,45 @@ TEST_F(FollowRouteTest, CreateWaypointLarge)
     }
 }
 
+TEST_F(FollowRouteTest, CalcAverageSpeedForRoadsWithoutSpeed)
+{
+    RoadCalculations roadCalc;
+
+    Road road1(1, "420");
+    Road road2(2, "420");
+    Road road3(3, "420");
+    Road road4(4, "420");
+    Road::RoadTypeEntry lowSpeed;
+    Road::RoadTypeEntry town;
+    Road::RoadTypeEntry rural;
+    Road::RoadTypeEntry motorway;
+    lowSpeed.road_type_ = Road::RoadType::ROADTYPE_LOWSPEED;
+    town.road_type_ = Road::RoadType::ROADTYPE_TOWN;
+    rural.road_type_ = Road::RoadType::ROADTYPE_RURAL;
+    motorway.road_type_ = Road::RoadType::ROADTYPE_MOTORWAY;
+
+    road1.AddRoadType(&lowSpeed);
+    road2.AddRoadType(&town);
+    road3.AddRoadType(&rural);
+    road4.AddRoadType(&motorway);
+
+    double averageSpeed = roadCalc.CalcAverageSpeed(&road1);
+    double expectedSpeed = 8.333;
+    ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
+
+    averageSpeed = roadCalc.CalcAverageSpeed(&road2);
+    expectedSpeed = 13.888;
+    ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
+
+    averageSpeed = roadCalc.CalcAverageSpeed(&road3);
+    expectedSpeed = 19.444;
+    ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
+
+    averageSpeed = roadCalc.CalcAverageSpeed(&road4);
+    expectedSpeed = 25;
+    ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
+}
+
 // Uncomment to print log output to console
 #define LOG_TO_CONSOLE
 
