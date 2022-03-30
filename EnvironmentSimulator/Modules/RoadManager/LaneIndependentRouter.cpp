@@ -245,21 +245,21 @@ bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
 	return false;
 }
 
-bool LaneIndependentRouter::IsTargetValid(Position target)
+bool LaneIndependentRouter::IsPositionValid(Position pos)
 {
-	Road *targetRoad = odr_->GetRoadById(target.GetTrackId());
-	if (!targetRoad)
+	Road *road = odr_->GetRoadById(pos.GetTrackId());
+	if (!road)
 	{
 		// LOG("1");
 		return false;
 	}
-	if (target.GetS() > targetRoad->GetLength() || target.GetS() < 0)
+	if (pos.GetS() > road->GetLength() || pos.GetS() < 0)
 	{
 		// LOG("2");
 		return false;
 	}
-	LaneSection *laneSection = targetRoad->GetLaneSectionByS(target.GetS());
-	Lane *lane = laneSection->GetLaneById(target.GetLaneId());
+	LaneSection *laneSection = road->GetLaneSectionByS(pos.GetS());
+	Lane *lane = laneSection->GetLaneById(pos.GetLaneId());
 	if (!lane)
 	{
 		// LOG("3");
@@ -275,11 +275,17 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 	distance_.clear();
 	clearQueue(unvisited_);
 
-	if (!IsTargetValid(target))
+	if(!IsPositionValid(start))
 	{
-		LOG("Targetwaypoint is invalid");
+		LOG("Start position is invalid");
 		return {};
 	}
+	if (!IsPositionValid(target))
+	{
+		LOG("Target position is invalid");
+		return {};
+	}
+
 
 	Road *startRoad = odr_->GetRoadById(start.GetTrackId());
 	int startLaneId = start.GetLaneId();

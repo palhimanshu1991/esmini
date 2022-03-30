@@ -39,6 +39,32 @@ OpenDrive *FollowRouteTest::odrLarge = nullptr;
 
 static void log_callback(const char *str);
 
+
+TEST_F(FollowRouteTest, FindPathSmallInvalidPosition)
+{
+    Position::LoadOpenDrive(odrSmall);
+    ASSERT_NE(odrSmall, nullptr);
+
+    // Set start pos and the driving direction (heading)
+    // PI = against road dir,   0 = road dir
+    Position start(0, -1, 10, 0);
+    start.SetHeadingRelativeRoadDirection(0);
+    Position target(5, -4, 20, 0);
+
+    LaneIndependentRouter router(odrSmall);
+
+    std::vector<Node *> path = router.CalculatePath(start, target);
+    // Check invalid target
+    ASSERT_TRUE(path.empty());
+
+    start = Position(-1, -1, 10, 0);
+    target = Position(5, -2, 20, 0);
+
+    path = router.CalculatePath(start, target);
+    // Check invalid start
+    ASSERT_TRUE(path.empty());
+}
+
 TEST_F(FollowRouteTest, FindPathSmall1)
 {
     Position::LoadOpenDrive(odrSmall);

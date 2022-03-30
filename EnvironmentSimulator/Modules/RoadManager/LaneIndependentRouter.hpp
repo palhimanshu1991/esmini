@@ -87,7 +87,7 @@ namespace roadmanager
         std::vector<Node *> GetNextNodes(Road *nextRoad, Road *targetRoad, Node *srcNode, RouteStrategy routeStrategy);
         std::vector<std::pair<int, int>> GetConnectingLanes(Node *srcNode, Road *nextRoad);
         bool FindGoal(RouteStrategy routeStrategy);
-        bool IsTargetValid(Position target);
+        bool IsPositionValid(Position pos);
         template <class Q>
         void clearQueue(Q &q) { q = Q(); }
 
