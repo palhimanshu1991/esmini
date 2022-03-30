@@ -304,9 +304,9 @@ TEST_F(FollowRouteTest, CreateWaypointSmall)
     std::vector<Position> expectedWaypoints = {Position(0,-4,125,0),Position(4,-1,50,0),Position(2,-1,20,0)};
     // Set start pos and the driving direction (heading) 
     // PI = against road dir,   0 = road dir
-    Position start(0, -1, 10, 0);
+    Position start(0, -3, 10, 0);
     start.SetHeadingRelativeRoadDirection(0);
-    Position target(5, -3, 20, 0);
+    Position target(2, -1, 20, 0);
     LaneIndependentRouter router(odrSmall);
     std::vector<Node *> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());

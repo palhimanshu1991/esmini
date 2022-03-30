@@ -19,8 +19,9 @@ namespace roadmanager
     typedef struct Node
     {
         Road *road;
-        int laneId;
-        int connectingLaneId;
+        int currentLaneId;
+        int fromLaneId;
+        //std::pair<int,int> connectingLanes;
         double weight;
         RoadLink *link;
         Node *previous;
@@ -31,7 +32,15 @@ namespace roadmanager
     public:
         bool operator()(Node *a, Node *b) // overloading both operators
         {
-            return a->weight > b->weight;
+            if(a->weight == b->weight){
+                int aAbs = abs(a->currentLaneId - a->previous->currentLaneId);
+                int bAbs = abs(b->currentLaneId - b->previous->currentLaneId);
+                //int aAbs = abs(a->currentLaneId);
+                //int bAbs = abs(b->currentLaneId);
+                return aAbs > bAbs;
+            }else{
+                return a->weight > b->weight;
+            }
         }
     };
 
