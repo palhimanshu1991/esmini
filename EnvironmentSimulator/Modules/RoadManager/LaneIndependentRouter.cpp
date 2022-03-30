@@ -157,47 +157,14 @@ Node *LaneIndependentRouter::CreateTargetNode(Node *currentNode, Road *nextRoad,
 	return targetNode;
 }
 
-void LaneIndependentRouter::UpdateDistanceVector(std::vector<Node *> nextNodes)
-{
-
-	for (Node *nextNode : nextNodes)
-	{
-		// Check if next node is already in distance_ vector
-		size_t i;
-		for (i = 0; i < distance_.size(); i++)
-		{
-			bool sameRoadId = distance_[i]->road->GetId() == nextNode->road->GetId();
-			bool sameLaneId = distance_[i]->currentLaneId == nextNode->currentLaneId;
-			bool sameFromLaneId = distance_[i]->fromLaneId == nextNode->fromLaneId;
-			bool sameLink = distance_[i]->link == nextNode->link;
-			if (sameRoadId && sameLaneId && sameLink && sameFromLaneId)
-			{
-				// Consider it, i.e. calc distance_ and potentially store it (if less than old)
-				if (nextNode->weight < distance_[i]->weight)
-				{
-					// Replace current node with updated node
-					LOG("UpdateVector: r=%d,cl=%d,fl=%d", nextNode->road->GetId(), nextNode->currentLaneId, nextNode->fromLaneId);
-					distance_[i] = nextNode;
-				}
-				break;
-			}
-		}
-		if (i == distance_.size())
-		{
-			distance_.push_back(nextNode);
-			unvisited_.push(nextNode);
-		}
-	}
-}
-
 bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
 {
 	while (!unvisited_.empty())
 	{
 		Node *currentNode = unvisited_.top();
 		unvisited_.pop();
-		bool nodeIsVisited = std::find(visited_.begin(), visited_.end(), currentNode) != visited_.end();
-		if (nodeIsVisited)
+		bool nodeIsVisited = std::find_if(visited_.begin(), visited_.end(), [currentNode](Node* n) {return *n == *currentNode; }) != visited_.end();
+		if(nodeIsVisited)
 		{
 			continue;
 		}
@@ -239,7 +206,10 @@ bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
 				continue;
 			}
 			std::vector<Node *> nextNodes = GetNextNodes(nextRoad, targetRoad, currentNode, routeStrategy);
-			UpdateDistanceVector(nextNodes);
+			for(Node* n : nextNodes)
+			{	
+				unvisited_.push(n);
+			}
 		}
 	}
 	return false;
@@ -272,10 +242,9 @@ bool LaneIndependentRouter::IsPositionValid(Position pos)
 std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Position target, RouteStrategy routeStrategy)
 {
 	visited_.clear();
-	distance_.clear();
 	clearQueue(unvisited_);
 
-	if(!IsPositionValid(start))
+	if (!IsPositionValid(start))
 	{
 		LOG("Start position is invalid");
 		return {};
@@ -285,7 +254,6 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 		LOG("Target position is invalid");
 		return {};
 	}
-
 
 	Road *startRoad = odr_->GetRoadById(start.GetTrackId());
 	int startLaneId = start.GetLaneId();
@@ -381,21 +349,11 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 		LOG("Path to target not found");
 	}
 	std::reverse(pathToGoal.begin(), pathToGoal.end());
-	// LOG("Path to goal:");
-	// for (Node *n : pathToGoal)
-	// {
-	// 	LOG("r=%d,cl=%d,fl=%d", n->road->GetId(), n->currentLaneId, n->fromLaneId);
-	// }
-	// LOG("Distance:");
-	// for (Node *n : distance_)
-	// {
-	// 	LOG("r=%d,cl=%d,fl=%d", n->road->GetId(), n->currentLaneId, n->fromLaneId);
-	// }
-	// LOG("Visited:");
-	// for (Node *n : visited_)
-	// {
-	// 	LOG("r=%d,cl=%d,fl=%d", n->road->GetId(), n->currentLaneId, n->fromLaneId);
-	// }
+	LOG("Visited:");
+	for (Node *n : visited_)
+	{
+		n->Print();
+	}
 	return pathToGoal;
 }
 
@@ -502,7 +460,7 @@ double RoadCalculations::CalcWeight(Node *previousNode, RouteStrategy routeStrat
 	else if (routeStrategy == RouteStrategy::FASTEST)
 	{
 		double averageSpeed = CalcAverageSpeed(road);
-		if(averageSpeed == 0)
+		if (averageSpeed == 0)
 		{
 			// If average speed is 0, road can't be traveled on
 			return LARGE_NUMBER;

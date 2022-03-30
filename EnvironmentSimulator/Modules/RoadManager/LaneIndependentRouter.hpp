@@ -29,6 +29,13 @@ namespace roadmanager
         {
             LOG("road=%d, cl=%d, fl=%d, w=%f", road->GetId(), currentLaneId, fromLaneId, weight);
         }
+        bool operator==(const Node& rhs){
+            bool sameRoadId = rhs.road->GetId() == road->GetId();
+			bool sameLaneId = rhs.currentLaneId == currentLaneId;
+			bool sameFromLaneId = rhs.fromLaneId == fromLaneId;
+			bool sameLink = rhs.link == link;
+            return sameRoadId && sameLaneId && sameFromLaneId && sameLink;
+        }
     } Node;
 
     struct WeightCompare
@@ -82,7 +89,6 @@ namespace roadmanager
     private:
         RoadLink *GetNextLink(Node *currentNode, Road *nextRoad);
         Node *CreateTargetNode(Node *currentNode, Road *nextRoad, std::pair<int, int> laneIds, RouteStrategy routeStrategy);
-        void UpdateDistanceVector(std::vector<Node *> nextNodes);
         bool TargetLaneIsInDrivingDirection(Node *pNode, Road *nextRoad);
         std::vector<Node *> GetNextNodes(Road *nextRoad, Road *targetRoad, Node *srcNode, RouteStrategy routeStrategy);
         std::vector<std::pair<int, int>> GetConnectingLanes(Node *srcNode, Road *nextRoad);
@@ -93,7 +99,6 @@ namespace roadmanager
 
         std::priority_queue<Node *, std::vector<Node *>, WeightCompare> unvisited_;
         std::vector<Node *> visited_;
-        std::vector<Node *> distance_;
         Position targetWaypoint_;
         OpenDrive *odr_;
         RoadCalculations roadCalculations_;
