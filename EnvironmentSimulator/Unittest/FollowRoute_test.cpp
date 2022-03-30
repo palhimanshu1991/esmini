@@ -242,7 +242,6 @@ TEST_F(FollowRouteTest, FindPathMinIntersections)
 
     LaneIndependentRouter router(odrMedium);
     std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
-
     ASSERT_FALSE(path.empty());
     ASSERT_EQ(path.back()->road->GetId(), 209);
 }

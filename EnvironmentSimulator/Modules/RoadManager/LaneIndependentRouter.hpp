@@ -25,6 +25,9 @@ namespace roadmanager
         double weight;
         RoadLink *link;
         Node *previous;
+        void Print(){
+            LOG("road=%d, cl=%d, fl=%d, w=%f", road->GetId(), currentLaneId, fromLaneId, weight);
+        }
     } Node;
 
     struct WeightCompare
@@ -59,8 +62,8 @@ namespace roadmanager
         std::vector<std::pair<int,int>> GetConnectingLanes(Node *srcNode, Road *nextRoad);
         bool FindGoal(RouteStrategy routeStrategy);
         double CalcAverageSpeed(Road *road);
-        double CalcWeight(RouteStrategy routeStrategy, double roadLength, Road *road);
-        double CalcWeightWithPos(ContactPointType contactPointType, Position pos, Road *road, RouteStrategy routeStrategy);
+        double CalcWeight(Node* previousNode, RouteStrategy routeStrategy, double roadLength, Road *road);
+        double CalcWeightWithPos(Node* previousNode, Position pos, Road *road, RouteStrategy routeStrategy);
         bool IsTargetValid(Position target);
         template <class Q>
         void clearQueue(Q &q) { q = Q(); }

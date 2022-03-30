@@ -51,8 +51,8 @@ std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *ta
 			pNode->currentLaneId = lanePair.second;
 			pNode->fromLaneId = lanePair.first;
 			pNode->previous = currentNode;
-			// FIX TARGETWAYPOINT_ ....
-			double nextWeight = CalcWeight(routeStrategy, nextRoad->GetLength(), nextRoad);
+
+			double nextWeight = CalcWeight(currentNode, routeStrategy, nextRoad->GetLength(), nextRoad);
 			pNode->weight = currentNode->weight + nextWeight;
 		}
 		if (pNode)
@@ -152,7 +152,7 @@ Node *LaneIndependentRouter::CreateTargetNode(Node *currentNode, Road *nextRoad,
 	targetNode->currentLaneId = laneIds.second;
 	targetNode->fromLaneId = laneIds.first;
 	targetNode->link = nullptr;
-	double nextWeight = CalcWeightWithPos(currentNode->link->GetContactPointType(), targetWaypoint_, nextRoad, routeStrategy);
+	double nextWeight = CalcWeightWithPos(currentNode, targetWaypoint_, nextRoad, routeStrategy);
 	targetNode->weight = currentNode->weight + nextWeight;
 	return targetNode;
 }
@@ -207,23 +207,23 @@ double LaneIndependentRouter::CalcAverageSpeed(Road *road)
 	return totalSpeed / roadTypeCount;
 }
 
-double LaneIndependentRouter::CalcWeightWithPos(ContactPointType contactPointType, Position pos, Road *road, RouteStrategy routeStrategy)
+double LaneIndependentRouter::CalcWeightWithPos(Node *previousNode, Position pos, Road *road, RouteStrategy routeStrategy)
 {
 	double roadLength = 0;
 
-	if (contactPointType == ContactPointType::CONTACT_POINT_START)
+	if (previousNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)
 	{
 		roadLength = pos.GetS();
 	}
-	else if (contactPointType == ContactPointType::CONTACT_POINT_END)
+	else if (previousNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END)
 	{
 		roadLength = road->GetLength() - pos.GetS();
 	}
 
-	return CalcWeight(routeStrategy, roadLength, road);
+	return CalcWeight(previousNode, routeStrategy, roadLength, road);
 }
 
-double LaneIndependentRouter::CalcWeight(RouteStrategy routeStrategy, double roadLength, Road *road)
+double LaneIndependentRouter::CalcWeight(Node *previousNode, RouteStrategy routeStrategy, double roadLength, Road *road)
 {
 	if (routeStrategy == RouteStrategy::SHORTEST)
 	{
@@ -234,6 +234,14 @@ double LaneIndependentRouter::CalcWeight(RouteStrategy routeStrategy, double roa
 		double averageSpeed = CalcAverageSpeed(road);
 
 		return roadLength / averageSpeed;
+	}
+	else if (routeStrategy == RouteStrategy::MIN_INTERSECTIONS)
+	{
+		if (previousNode->link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
+		{
+			return 1;
+		}
+		return 0;
 	}
 	else
 	{
@@ -332,11 +340,6 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 		LOG("Targetwaypoint is invalid");
 		return {};
 	}
-	if (routeStrategy == RouteStrategy::MIN_INTERSECTIONS)
-	{
-		LOG("MIN_INTERSECTION not yet implemented");
-		return {};
-	}
 
 	Road *startRoad = odr_->GetRoadById(start.GetTrackId());
 	int startLaneId = start.GetLaneId();
@@ -383,7 +386,33 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 	startNode->currentLaneId = startLaneId;
 	startNode->fromLaneId = 0;
 	startNode->previous = 0;
-	double nextWeight = CalcWeightWithPos(contactPoint, start, startRoad, routeStrategy);
+
+	double roadLength = 0;
+
+	if (contactPoint == ContactPointType::CONTACT_POINT_START)
+	{
+		roadLength = start.GetS();
+	}
+	else if (contactPoint == ContactPointType::CONTACT_POINT_END)
+	{
+		roadLength = startRoad->GetLength() - start.GetS();
+	}
+
+	double nextWeight = 0;
+	if (routeStrategy == RouteStrategy::SHORTEST)
+	{
+		nextWeight = roadLength;
+	}
+	else if (routeStrategy == RouteStrategy::FASTEST)
+	{
+		double averageSpeed = CalcAverageSpeed(startRoad);
+		nextWeight = roadLength / averageSpeed;
+	}
+	else if (routeStrategy == RouteStrategy::MIN_INTERSECTIONS)
+	{
+		nextWeight = 0;
+	}
+	
 	startNode->weight = nextWeight;
 
 	unvisited_.push(startNode);
@@ -461,9 +490,9 @@ std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node *> pa
 		}
 	}
 	waypoints.push_back(target);
-	for (Position p : waypoints)
-	{
-		LOG("r=%d,l=%d,s=%f,o=%f", p.GetTrackId(), p.GetLaneId(), p.GetS(), p.GetOffset());
-	}
+	// for (Position p : waypoints)
+	// {
+	// 	LOG("r=%d,l=%d,s=%f,o=%f", p.GetTrackId(), p.GetLaneId(), p.GetS(), p.GetOffset());
+	// }
 	return waypoints;
 }
