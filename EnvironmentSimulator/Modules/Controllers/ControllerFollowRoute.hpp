@@ -47,6 +47,8 @@ namespace scenarioengine
 	private:
 		void ChangeLane(int lane, double time);
 		void CalculateWaypoints();
+		bool CanChangeLane(int lane);
+		double DistanceBetween(roadmanager::Position p1, roadmanager::Position p2);
 		ScenarioEngine *scenarioEngine_;
 		vehicle::Vehicle vehicle_;
 		std::vector<OSCPrivateAction *> actions_;
@@ -55,6 +57,8 @@ namespace scenarioengine
 		int currentWaypointIndex_;
 		bool changingLane_;
 		bool pathCalculated_;
+		const double MIN_DIST_TO_WAYPOINT_LANE_CHANGE = 25;
+		const double MIN_DIST_FOR_COLLISION = 10;
 	};
 
 	Controller *InstantiateControllerFollowRoute(void *args);
