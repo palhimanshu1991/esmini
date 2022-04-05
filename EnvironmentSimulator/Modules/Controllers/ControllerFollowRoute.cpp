@@ -46,80 +46,100 @@ void ControllerFollowRoute::Init()
 }
 
 double testtime = 0;
-bool pathCalculated = false;
 void ControllerFollowRoute::Step(double timeStep)
 {
 	// LOG("FollowRoute step");
-	// object_->MoveAlongS(timeStep * object_->GetSpeed());
-	roadmanager::Route *test = nullptr;
+	//LOG("current pos: r=%d, l=%d, s=%f, cwi=%d, cwis=%d", object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), currentWaypointIndex_, waypoints_.size());
 	if (object_->pos_.GetRoute() != nullptr)
 	{
-		if (!pathCalculated)
+		if (!pathCalculated_)
 		{
-			roadmanager::Position startPos = object_->pos_;
-			roadmanager::Position targetPos = object_->pos_.GetRoute()->all_waypoints_.back();
-
-			roadmanager::LaneIndependentRouter router(odr_);
-
-			std::vector<roadmanager::Node *> pathToGoalS = router.CalculatePath(startPos, targetPos, roadmanager::RouteStrategy::SHORTEST);
-			LOG("Path to goal (SHORTEST) size: %d", pathToGoalS.size());
-			for (roadmanager::Node *node : pathToGoalS)
-			{
-				LOG("%d", node->road->GetId());
-			}
-
-			// std::vector<Node *> pathToGoalF = CalculatePath(RouteStrategy::FASTEST);
-			// LOG("Path to goal (FASTEST) size: %d", pathToGoalF.size());
-			// for (Node *node : pathToGoalF)
-			// {
-			// 	LOG("%d", node->road->GetId());
-			// }
-			pathCalculated = true;
+			CalculateWaypoints();
 		}
+	}
 
-		// test = object_->pos_.GetRoute();
-		// if (test->GetWaypoint(-1)->GetLaneId() != object_->pos_.GetLaneId() &&
-		// test->GetWaypoint(-1)->GetTrackId() == object_->pos_.GetTrackId())
-		// {
-		// 	int laneid = test->GetWaypoint(-1)->GetLaneId();
-		// 	LOG("ADD ACTION");
-		// 	ChangeLane(laneid, 3);
-		// }
-	}
-	testtime += timeStep;
-	if (testtime > 1)
+	if (pathCalculated_ && currentWaypointIndex_ >= waypoints_.size())
 	{
-		LOG("Nr of actions: %d", actions_.size());
-		testtime = 0;
+		LOG("No waypoints left");
+		object_->SetSpeed(0);
+		Controller::Step(timeStep);
+		return;
 	}
+
+	if (pathCalculated_ && !changingLane_)
+	{
+		roadmanager::Position nextWaypoint = waypoints_[currentWaypointIndex_];
+		roadmanager::Position vehiclePos = object_->pos_;
+
+		bool drivingWithRoadDirection = abs(vehiclePos.GetHRelativeDrivingDirection()) < M_PI_2;
+		bool sameRoad = nextWaypoint.GetTrackId() == vehiclePos.GetTrackId();
+		bool sameLane = nextWaypoint.GetLaneId() == vehiclePos.GetLaneId();
+		if (sameRoad)
+		{
+			bool nearSPos = abs(vehiclePos.GetS() - nextWaypoint.GetS()) < 25;
+			if (!sameLane && nearSPos)
+			{
+				ChangeLane(nextWaypoint.GetLaneId(), 1);
+				changingLane_ = true;
+			}
+			if ((drivingWithRoadDirection && vehiclePos.GetS() > nextWaypoint.GetS()) ||
+				(!drivingWithRoadDirection && vehiclePos.GetS() < nextWaypoint.GetS()))
+			{
+				currentWaypointIndex_++;
+			}
+		}
+	}
+
 	for (size_t i = 0; i < actions_.size(); i++)
 	{
 		OSCPrivateAction *action = actions_[i];
+		if (action->name_ != "LaneChange")
+		{
+			continue;
+		}
+
 		if (!action->IsActive())
 		{
 			LOG("ACTION START");
 			action->Start(scenarioEngine_->getSimulationTime(), timeStep);
 		}
-		if (action->IsActive())
+		else if (action->IsActive())
 		{
-			// LOG("ACTION STEP");
 			action->Step(scenarioEngine_->getSimulationTime(), timeStep);
 			if (action->state_ != OSCAction::State::COMPLETE)
 			{
 				action->UpdateState();
 			}
 		}
+
 		if (action->state_ == OSCAction::State::COMPLETE)
 		{
 			LOG("ACTION COMPLETED");
-			LOG("actions before end: %d", actions_.size());
-			// action->End();
 			actions_.erase(actions_.begin() + i);
-			LOG("actions after erase: %d", actions_.size());
+			changingLane_ = false;
 		}
 	}
 
 	Controller::Step(timeStep);
+}
+
+void ControllerFollowRoute::CalculateWaypoints()
+{
+	roadmanager::Position startPos = object_->pos_;
+	roadmanager::Position targetPos = object_->pos_.GetRoute()->all_waypoints_.back();
+
+	roadmanager::LaneIndependentRouter router(odr_);
+
+	std::vector<roadmanager::Node *> pathToGoal = router.CalculatePath(startPos, targetPos, roadmanager::RouteStrategy::SHORTEST);
+	if (pathToGoal.empty())
+	{
+		LOG("Path not found");
+	}
+	else
+	{
+		waypoints_ = router.GetWaypoints(pathToGoal, targetPos);
+		pathCalculated_ = true;
+	}
 }
 
 void ControllerFollowRoute::Activate(ControlDomains domainMask)
@@ -127,36 +147,21 @@ void ControllerFollowRoute::Activate(ControlDomains domainMask)
 	LOG("FollowRoute activate");
 
 	this->mode_ = Controller::Mode::MODE_ADDITIVE;
-	// Trigger* trigger = new Trigger(0);
-	// ConditionGroup* conGroup = new ConditionGroup();
-	// TrigBySimulationTime* condition = new TrigBySimulationTime();
-	// condition->value_ = 2;
-
-	// conGroup->condition_.push_back(condition);
-	// trigger->conditionGroup_.push_back(conGroup);
-	// event_lanechange->start_trigger_ = trigger;
-
-	// Grab and inspect road network
 	if (object_ != nullptr)
 	{
 		odr_ = object_->pos_.GetOpenDrive();
 	}
-
-	// if (odr != nullptr)
-	// {
-	// 	for (int i = 0; i < odr->GetNumOfRoads(); i++)
-	// 	{
-	// 		roadmanager::Road *road = odr->GetRoadByIdx(i);
-	// 		LOG("road[%d] id: %d length: %.2f", i, road->GetId(), road->GetLength());
-	// 	}
-	// }
-
+	currentWaypointIndex_ = 0;
+	pathCalculated_ = false;
+	changingLane_ = false;
+	waypoints_ = {};
 	Controller::Activate(domainMask);
 }
 
 void ControllerFollowRoute::ChangeLane(int lane, double time)
 {
 	LatLaneChangeAction *action_lanechange = new LatLaneChangeAction();
+	action_lanechange->name_ = "LaneChange";
 	action_lanechange->object_ = object_;
 	action_lanechange->transition_.shape_ = OSCPrivateAction::DynamicsShape::SINUSOIDAL;
 	action_lanechange->transition_.dimension_ = OSCPrivateAction::DynamicsDimension::TIME;
@@ -167,13 +172,6 @@ void ControllerFollowRoute::ChangeLane(int lane, double time)
 	test->value_ = lane;
 	action_lanechange->target_ = test;
 	actions_.push_back(action_lanechange);
-
-	// Event* event_lanechange = new Event();
-	// event_lanechange->action_.push_back(action_lanechange);
-	// event_lanechange->priority_ = Event::Priority::OVERWRITE;
-	// event_lanechange->name_="HelperLaneChange";
-	// event_lanechange->max_num_executions_ = 1;
-	// object_->addEvent(event_lanechange);
 }
 
 void ControllerFollowRoute::ReportKeyEvent(int key, bool down)

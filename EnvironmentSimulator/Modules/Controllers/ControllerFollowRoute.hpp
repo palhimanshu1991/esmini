@@ -43,13 +43,18 @@ namespace scenarioengine
 		void Activate(ControlDomains domainMask);
 		void ReportKeyEvent(int key, bool down);
 		void SetScenarioEngine(ScenarioEngine *scenarioEngine) { scenarioEngine_ = scenarioEngine; };
-		void ChangeLane(int lane, double time);
 
 	private:
+		void ChangeLane(int lane, double time);
+		void CalculateWaypoints();
 		ScenarioEngine *scenarioEngine_;
 		vehicle::Vehicle vehicle_;
 		std::vector<OSCPrivateAction *> actions_;
-		roadmanager::OpenDrive* odr_;
+		roadmanager::OpenDrive *odr_;
+		std::vector<roadmanager::Position> waypoints_;
+		int currentWaypointIndex_;
+		bool changingLane_;
+		bool pathCalculated_;
 	};
 
 	Controller *InstantiateControllerFollowRoute(void *args);
