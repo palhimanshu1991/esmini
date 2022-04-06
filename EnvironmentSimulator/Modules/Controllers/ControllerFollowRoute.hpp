@@ -27,6 +27,13 @@ namespace scenarioengine
 	class ScenarioPlayer;
 	class ScenarioEngine;
 
+	typedef enum
+	{
+		MISSED_WAYPOINT,
+		PASSED_WAYPOINT,
+		WAYPOINT_NOT_REACHED
+	} WaypointStatus;
+
 	// base class for controllers
 	class ControllerFollowRoute : public Controller
 	{
@@ -49,6 +56,7 @@ namespace scenarioengine
 		void CalculateWaypoints();
 		bool CanChangeLane(int lane);
 		double DistanceBetween(roadmanager::Position p1, roadmanager::Position p2);
+		WaypointStatus GetWaypointStatus(roadmanager::Position vehiclePos, roadmanager::Position waypoint);
 		ScenarioEngine *scenarioEngine_;
 		vehicle::Vehicle vehicle_;
 		std::vector<OSCPrivateAction *> actions_;

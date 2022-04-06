@@ -75,6 +75,33 @@ TEST_F(FollowRouteControllerTest, FollowRouteWithLaneChanges)
 }
 
 
+TEST_F(FollowRouteControllerTest, FollowRouteWithCollisionRisk)
+{
+    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/lane_change_with_collision_risk.xosc");
+    ASSERT_NE(se, nullptr);
+
+    Position start(0, -1, 10, 0);
+    Position target(5, -3, 20, 0);
+
+    double dt = 0.1;
+
+    // Fast forward
+    while (se->getSimulationTime() < (15.0 - SMALL_NUMBER))
+    {
+        Position p = se->entities_.object_[0]->pos_;
+        // LOG("s=%f, r=%d, l=%d", p.GetS(), p.GetTrackId(), p.GetLaneId());
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    Position finalPos = se->entities_.object_[0]->pos_;
+    ASSERT_EQ(target.GetTrackId(), finalPos.GetTrackId());
+    ASSERT_EQ(target.GetLaneId(), finalPos.GetLaneId());
+    ASSERT_NEAR(target.GetS(), finalPos.GetS(), 10);
+}
+
+
+
 // Uncomment to print log output to console
 #define LOG_TO_CONSOLE
 

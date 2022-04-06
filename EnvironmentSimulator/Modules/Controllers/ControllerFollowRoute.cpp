@@ -71,7 +71,7 @@ void ControllerFollowRoute::Step(double timeStep)
 		roadmanager::Position nextWaypoint = waypoints_[currentWaypointIndex_];
 		roadmanager::Position vehiclePos = object_->pos_;
 
-		bool drivingWithRoadDirection = abs(vehiclePos.GetHRelativeDrivingDirection()) < M_PI_2;
+		bool drivingWithRoadDirection = vehiclePos.GetDrivingDirectionRelativeRoad() == 1;
 		bool sameRoad = nextWaypoint.GetTrackId() == vehiclePos.GetTrackId();
 		bool sameLane = nextWaypoint.GetLaneId() == vehiclePos.GetLaneId();
 		if (sameRoad)
@@ -82,22 +82,22 @@ void ControllerFollowRoute::Step(double timeStep)
 				ChangeLane(nextWaypoint.GetLaneId(), 1);
 				changingLane_ = true;
 			}
-			if ((drivingWithRoadDirection && vehiclePos.GetS() > nextWaypoint.GetS()) ||
-				(!drivingWithRoadDirection && vehiclePos.GetS() < nextWaypoint.GetS()))
-			{
-				if (!sameLane)
-				{
-					LOG("Missed waypoint, calculating new path");
-					pathCalculated_ = false;
-					changingLane_ = false;
-					CalculateWaypoints();
-					currentWaypointIndex_ = waypoints_[0].GetS() < vehiclePos.GetS() ? 1 : 0;
-				}
-				else
-				{
-					currentWaypointIndex_++;
-				}
-			}
+		}
+
+		WaypointStatus waypointStatus = GetWaypointStatus(vehiclePos, nextWaypoint);
+		switch (waypointStatus)
+		{
+		case PASSED_WAYPOINT:
+			currentWaypointIndex_++;
+			break;
+		case MISSED_WAYPOINT:
+			LOG("Missed waypoint, calculating new path");
+			pathCalculated_ = false;
+			changingLane_ = false;
+			CalculateWaypoints();
+			currentWaypointIndex_ = 0;
+		case WAYPOINT_NOT_REACHED:
+			break;
 		}
 	}
 
@@ -167,7 +167,7 @@ void ControllerFollowRoute::CalculateWaypoints()
 	}
 	else
 	{
-		waypoints_ = router.GetWaypoints(pathToGoal, targetPos);
+		waypoints_ = router.GetWaypoints(pathToGoal, startPos, targetPos);
 		pathCalculated_ = true;
 	}
 }
@@ -242,4 +242,65 @@ double ControllerFollowRoute::DistanceBetween(roadmanager::Position p1, roadmana
 	double y2 = p2.GetY();
 
 	return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+}
+
+WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position vehiclePos, roadmanager::Position waypoint)
+{
+	using namespace roadmanager;
+	bool drivingWithRoadDirection = vehiclePos.GetDrivingDirectionRelativeRoad() == 1;
+	bool sameRoad = waypoint.GetTrackId() == vehiclePos.GetTrackId();
+	bool sameLane = waypoint.GetLaneId() == vehiclePos.GetLaneId();
+
+	if (sameRoad && ((drivingWithRoadDirection && vehiclePos.GetS() > waypoint.GetS()) ||
+					 (!drivingWithRoadDirection && vehiclePos.GetS() < waypoint.GetS())))
+	{
+		return sameLane ? PASSED_WAYPOINT : MISSED_WAYPOINT;
+	}
+
+	if (sameRoad)
+	{
+		return WAYPOINT_NOT_REACHED;
+	}
+
+	Road *currentRoad = odr_->GetRoadById(vehiclePos.GetTrackId());
+	std::vector<Road *> possiblePreviousRoads;
+	RoadLink *link;
+	if (drivingWithRoadDirection)
+	{
+		link = currentRoad->GetLink(LinkType::PREDECESSOR);
+	}
+	else
+	{
+		link = currentRoad->GetLink(LinkType::SUCCESSOR);
+	}
+
+	if(link == nullptr)
+	{
+		return WAYPOINT_NOT_REACHED;
+	}
+
+	if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
+	{
+		possiblePreviousRoads.push_back(odr_->GetRoadById(link->GetElementId()));
+	}
+	else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
+	{
+		Junction *junction = odr_->GetJunctionById(link->GetElementId());
+		for (size_t j = 0; j < junction->GetNoConnectionsFromRoadId(currentRoad->GetId()); j++)
+		{
+			int roadId = junction->GetConnectingRoadIdFromIncomingRoadId(currentRoad->GetId(), (int)j);
+			possiblePreviousRoads.push_back(odr_->GetRoadById(roadId));
+		}
+	}
+
+	for (Road *previousRoad : possiblePreviousRoads)
+	{
+		if (previousRoad->GetId() == waypoint.GetTrackId())
+		{
+			int previousLaneId = currentRoad->GetConnectingLaneId(link, vehiclePos.GetLaneId(), previousRoad->GetId());
+			return previousLaneId == waypoint.GetLaneId() ? PASSED_WAYPOINT : MISSED_WAYPOINT;
+		}
+	}
+
+	return MISSED_WAYPOINT;
 }
