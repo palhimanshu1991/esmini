@@ -71,6 +71,9 @@ void ControllerFollowRoute::Step(double timeStep)
 		roadmanager::Position nextWaypoint = waypoints_[currentWaypointIndex_];
 		roadmanager::Position vehiclePos = object_->pos_;
 
+		// LOG("nextWaypoint: r=%d, l=%d, s=%f", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
+		// LOG("vehiclePos: r=%d, l=%d, s=%f", vehiclePos.GetTrackId(), vehiclePos.GetLaneId(), vehiclePos.GetS());
+
 		bool drivingWithRoadDirection = vehiclePos.GetDrivingDirectionRelativeRoad() == 1;
 		bool sameRoad = nextWaypoint.GetTrackId() == vehiclePos.GetTrackId();
 		bool sameLane = nextWaypoint.GetLaneId() == vehiclePos.GetLaneId();
@@ -160,6 +163,7 @@ void ControllerFollowRoute::CalculateWaypoints()
 	roadmanager::LaneIndependentRouter router(odr_);
 
 	std::vector<roadmanager::Node *> pathToGoal = router.CalculatePath(startPos, targetPos, roadmanager::RouteStrategy::SHORTEST);
+	LOG("Path calculated");
 	if (pathToGoal.empty())
 	{
 		LOG("Path not found");
@@ -167,6 +171,7 @@ void ControllerFollowRoute::CalculateWaypoints()
 	}
 	else
 	{
+		LOG("Path found");
 		waypoints_ = router.GetWaypoints(pathToGoal, startPos, targetPos);
 		pathCalculated_ = true;
 	}
@@ -274,7 +279,7 @@ WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position ve
 		link = currentRoad->GetLink(LinkType::SUCCESSOR);
 	}
 
-	if(link == nullptr)
+	if (link == nullptr)
 	{
 		return WAYPOINT_NOT_REACHED;
 	}
@@ -302,5 +307,5 @@ WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position ve
 		}
 	}
 
-	return MISSED_WAYPOINT;
+	return WAYPOINT_NOT_REACHED;
 }

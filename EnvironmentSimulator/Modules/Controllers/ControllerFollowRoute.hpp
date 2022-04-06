@@ -66,7 +66,7 @@ namespace scenarioengine
 		bool changingLane_;
 		bool pathCalculated_;
 		const double MIN_DIST_TO_WAYPOINT_LANE_CHANGE = 25;
-		const double MIN_DIST_FOR_COLLISION = 10;
+		const double MIN_DIST_FOR_COLLISION = 20;
 	};
 
 	Controller *InstantiateControllerFollowRoute(void *args);
