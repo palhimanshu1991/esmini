@@ -101,6 +101,7 @@ void ControllerFollowRoute::Activate(ControlDomains domainMask)
 		odr_ = object_->pos_.GetOpenDrive();
 	}
 	currentWaypointIndex_ = 0;
+	scenarioWaypointIndex_ = 0;
 	pathCalculated_ = false;
 	changingLane_ = false;
 	waypoints_ = {};
@@ -119,10 +120,18 @@ void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, ro
 	{
 	case PASSED_WAYPOINT:
 	{
-		LOG("Passed waypoint:");
+		LOG("Passed waypoint: r=%d, l=%d, s=%f", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
 		currentWaypointIndex_++;
 		if (nextWaypoint.GetTrackId() == waypoints_.back().GetTrackId())
 		{
+			bool scenarioWaypointsLeft = scenarioWaypointIndex_ < object_->pos_.GetRoute()->scenario_waypoints_.size() - 1;
+			if (scenarioWaypointsLeft)
+			{
+				scenarioWaypointIndex_++;
+				pathCalculated_ = false;
+				CalculateWaypoints();
+				currentWaypointIndex_ = 0;
+			}
 			return;
 		}
 
@@ -133,7 +142,7 @@ void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, ro
 		return;
 	}
 	case MISSED_WAYPOINT:
-		LOG("Missed waypoint");
+		LOG("Missed waypoint: r=%d, l=%d, s=%f", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
 		if (object_->pos_.GetRoute() != nullptr)
 		{
 			pathCalculated_ = false;
@@ -148,21 +157,38 @@ void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, ro
 
 void ControllerFollowRoute::CalculateWaypoints()
 {
-	roadmanager::Position startPos = object_->pos_;
-	roadmanager::Position targetPos = object_->pos_.GetRoute()->all_waypoints_.back();
 	roadmanager::LaneIndependentRouter router(odr_);
+
+	roadmanager::Position startPos = object_->pos_;
+	roadmanager::Position targetPos = object_->pos_.GetRoute()->scenario_waypoints_[scenarioWaypointIndex_];
+
+	// If start and target is on same road, set next waypoint as target
+	if (startPos.GetTrackId() == targetPos.GetTrackId())
+	{
+		scenarioWaypointIndex_++;
+		if (scenarioWaypointIndex_ >= object_->pos_.GetRoute()->scenario_waypoints_.size())
+		{
+			LOG("Error: start and target on same road, scenarioWaypointIndex out of bounds, deactivating controller");
+			object_->SetSpeed(0);
+			Controller::Deactivate();
+			return;
+		}
+		targetPos = object_->pos_.GetRoute()->scenario_waypoints_[scenarioWaypointIndex_];
+	}
 
 	std::vector<roadmanager::Node *> pathToGoal = router.CalculatePath(startPos, targetPos, roadmanager::RouteStrategy::SHORTEST);
 	LOG("Path calculated");
 	if (pathToGoal.empty())
 	{
-		LOG("Path not found");
+		LOG("Error: Path not found, deactivating controller");
+		object_->SetSpeed(0);
 		Controller::Deactivate();
 	}
 	else
 	{
 		LOG("Path found");
 		waypoints_ = router.GetWaypoints(pathToGoal, startPos, targetPos);
+
 		object_->pos_.GetRoute()->minimal_waypoints_.clear();
 		object_->pos_.GetRoute()->minimal_waypoints_ = {waypoints_[0], waypoints_[1]};
 		object_->pos_.CalcRoutePosition(); // Reset route object according to new route waypoints and current position
@@ -225,7 +251,7 @@ bool ControllerFollowRoute::CanChangeLane(int lane)
 {
 	roadmanager::Position vehiclePos = object_->pos_;
 	std::vector<Object *> allVehicles = scenarioEngine_->entities_.object_;
-	if(changingLane_)
+	if (changingLane_)
 	{
 		return false;
 	}

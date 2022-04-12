@@ -65,6 +65,7 @@ namespace scenarioengine
 		roadmanager::OpenDrive *odr_;
 		std::vector<roadmanager::Position> waypoints_;
 		int currentWaypointIndex_;
+		int scenarioWaypointIndex_;
 		bool changingLane_;
 		bool pathCalculated_;
 		std::vector<roadmanager::Position> allWaypoints_;
