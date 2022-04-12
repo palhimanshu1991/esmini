@@ -58,6 +58,7 @@ namespace scenarioengine
 		void ChangeLane(double timeStep);
 		void UpdateWaypoints(roadmanager::Position vehiclePos, roadmanager::Position nextWaypoint);
 		double DistanceBetween(roadmanager::Position p1, roadmanager::Position p2);
+
 		WaypointStatus GetWaypointStatus(roadmanager::Position vehiclePos, roadmanager::Position waypoint);
 		ScenarioEngine *scenarioEngine_;
 		vehicle::Vehicle vehicle_;
