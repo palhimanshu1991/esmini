@@ -63,11 +63,6 @@ void ControllerFollowRoute::Step(double timeStep)
 	if (object_->pos_.GetRoute() != nullptr && !temp)
 	{
 		allWaypoints_ = object_->pos_.GetRoute()->all_waypoints_;
-		LOG("MINIMAL WAYPOINT LIST:");
-		for (roadmanager::Position p : object_->pos_.GetRoute()->minimal_waypoints_)
-		{
-			LOG("r=%d, l=%d, s=%f", p.GetTrackId(), p.GetLaneId(), p.GetS());
-		}
 		temp = true;
 	}
 
@@ -76,16 +71,12 @@ void ControllerFollowRoute::Step(double timeStep)
 		CalculateWaypoints();
 	}
 
-	// LOG("current pos: r=%d, l=%d, s=%f, cwi=%d, cwis=%d", object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), currentWaypointIndex_, waypoints_.size());
 	if (pathCalculated_ && !changingLane_)
 	{
 		roadmanager::Position vehiclePos = object_->pos_;
 		bool drivingWithRoadDirection = vehiclePos.GetDrivingDirectionRelativeRoad() == 1;
 		roadmanager::Position nextWaypoint = waypoints_[currentWaypointIndex_];
 		roadmanager::Road *nextRoad = odr_->GetRoadById(nextWaypoint.GetTrackId());
-
-		// LOG("nextWaypoint: r=%d, l=%d, s=%f", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
-		//  LOG("vehiclePos: r=%d, l=%d, s=%f", vehiclePos.GetTrackId(), vehiclePos.GetLaneId(), vehiclePos.GetS());
 
 		bool sameRoad = nextWaypoint.GetTrackId() == vehiclePos.GetTrackId();
 		bool sameLane = nextWaypoint.GetLaneId() == vehiclePos.GetLaneId();
@@ -106,30 +97,21 @@ void ControllerFollowRoute::Step(double timeStep)
 		{
 			LOG("Passed waypoint:");
 			currentWaypointIndex_++;
-			LOG("currentWaypointIndex_: %d", currentWaypointIndex_);
 			if (nextWaypoint.GetTrackId() == waypoints_.back().GetTrackId())
 			{
 				break;
 			}
-			LOG("Previous waypoint, r: %d l: %d s: %f", waypoints_[currentWaypointIndex_ - 1].GetTrackId(), waypoints_[currentWaypointIndex_ - 1].GetLaneId(), waypoints_[currentWaypointIndex_ - 1].GetS());
-			LOG("Next waypoint, r: %d l: %d s: %f", waypoints_[currentWaypointIndex_].GetTrackId(), waypoints_[currentWaypointIndex_].GetLaneId(), waypoints_[currentWaypointIndex_].GetS());
+
 			object_->pos_.GetRoute()->minimal_waypoints_.clear();
 			object_->pos_.GetRoute()->minimal_waypoints_ = {vehiclePos, waypoints_[currentWaypointIndex_]};
 			object_->pos_.CalcRoutePosition();   // Reset route object according to new route waypoints and current position
-			LOG("waypoint_idx: %d", object_->pos_.GetRoute()->waypoint_idx_);
-			LOG("Updated minimal waypoints");
-			LOG("MINIMAL WAYPOINT LIST:");
-			for (roadmanager::Position p : object_->pos_.GetRoute()->minimal_waypoints_)
-			{
-				LOG("r=%d, l=%d, s=%f", p.GetTrackId(), p.GetLaneId(), p.GetS());
-			}
+
 			break;
 		}
 		case MISSED_WAYPOINT:
 			LOG("Missed waypoint");
 			if (object_->pos_.GetRoute() != nullptr)
 			{
-				LOG("Calculating new path...");
 				pathCalculated_ = false;
 				CalculateWaypoints();
 				currentWaypointIndex_ = 0;
@@ -174,9 +156,6 @@ void ControllerFollowRoute::Step(double timeStep)
 		}
 	}
 
-	// double steplen = object_->GetSpeed()*timeStep;
-	// object_->MoveAlongS(steplen);
-
 	Controller::Step(timeStep);
 }
 
@@ -219,24 +198,13 @@ void ControllerFollowRoute::CalculateWaypoints()
 		waypoints_ = router.GetWaypoints(pathToGoal, startPos, targetPos);
 		object_->pos_.GetRoute()->minimal_waypoints_.clear();
 		object_->pos_.GetRoute()->minimal_waypoints_ = {waypoints_[0], waypoints_[1]};
-
-		LOG("Waypoints created");
-		for (roadmanager::Position p : waypoints_)
-		{
-			LOG("r=%d, l=%d, s=%f", p.GetTrackId(), p.GetLaneId(), p.GetS());
-		}
-		LOG("MINIMAL WAYPOINT LIST:");
-		for (roadmanager::Position p : object_->pos_.GetRoute()->minimal_waypoints_)
-		{
-			LOG("r=%d, l=%d, s=%f", p.GetTrackId(), p.GetLaneId(), p.GetS());
-		}
+		object_->pos_.CalcRoutePosition();   // Reset route object according to new route waypoints and current position
 		pathCalculated_ = true;
 	}
 }
 
 void ControllerFollowRoute::ChangeLane(int lane, double time)
 {
-	LOG("Add changing lane event to lane %d", lane);
 	LatLaneChangeAction *action_lanechange = new LatLaneChangeAction();
 	action_lanechange->name_ = "LaneChange";
 	action_lanechange->object_ = object_;
