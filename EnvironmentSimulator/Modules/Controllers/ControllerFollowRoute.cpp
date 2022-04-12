@@ -54,107 +54,39 @@ void ControllerFollowRoute::Step(double timeStep)
 		Controller::Step(timeStep);
 		return;
 	}
-	if (pathCalculated_ && currentWaypointIndex_ >= waypoints_.size())
+
+	if (!pathCalculated_)
+	{
+		CalculateWaypoints();
+	}
+
+	// Check if all waypoints have been passed
+	if (currentWaypointIndex_ >= waypoints_.size())
 	{
 		object_->SetSpeed(0);
 		Controller::Step(timeStep);
 		return;
 	}
-	if (object_->pos_.GetRoute() != nullptr && !temp)
+
+	roadmanager::Position vehiclePos = object_->pos_;
+	roadmanager::Position nextWaypoint = waypoints_[currentWaypointIndex_];
+	roadmanager::Road *nextRoad = odr_->GetRoadById(nextWaypoint.GetTrackId());
+
+	bool drivingWithRoadDirection = vehiclePos.GetDrivingDirectionRelativeRoad() == 1;
+	bool sameRoad = nextWaypoint.GetTrackId() == vehiclePos.GetTrackId();
+	bool sameLane = nextWaypoint.GetLaneId() == vehiclePos.GetLaneId();
+	if (sameRoad)
 	{
-		allWaypoints_ = object_->pos_.GetRoute()->all_waypoints_;
-		temp = true;
-	}
-
-	if (!pathCalculated_ && temp)
-	{
-		CalculateWaypoints();
-	}
-
-	if (pathCalculated_ && !changingLane_)
-	{
-		roadmanager::Position vehiclePos = object_->pos_;
-		bool drivingWithRoadDirection = vehiclePos.GetDrivingDirectionRelativeRoad() == 1;
-		roadmanager::Position nextWaypoint = waypoints_[currentWaypointIndex_];
-		roadmanager::Road *nextRoad = odr_->GetRoadById(nextWaypoint.GetTrackId());
-
-		bool sameRoad = nextWaypoint.GetTrackId() == vehiclePos.GetTrackId();
-		bool sameLane = nextWaypoint.GetLaneId() == vehiclePos.GetLaneId();
-		if (sameRoad)
+		bool nearSPos = abs(vehiclePos.GetS() - nextWaypoint.GetS()) < MIN_DIST_TO_WAYPOINT_LANE_CHANGE;
+		if (!sameLane && nearSPos && CanChangeLane(nextWaypoint.GetLaneId()))
 		{
-			bool nearSPos = abs(vehiclePos.GetS() - nextWaypoint.GetS()) < MIN_DIST_TO_WAYPOINT_LANE_CHANGE;
-			if (!sameLane && nearSPos && CanChangeLane(nextWaypoint.GetLaneId()) && !changingLane_)
-			{
-				ChangeLane(nextWaypoint.GetLaneId(), 1);
-				changingLane_ = true;
-			}
-		}
-
-		WaypointStatus waypointStatus = GetWaypointStatus(vehiclePos, nextWaypoint);
-		switch (waypointStatus)
-		{
-		case PASSED_WAYPOINT:
-		{
-			LOG("Passed waypoint:");
-			currentWaypointIndex_++;
-			if (nextWaypoint.GetTrackId() == waypoints_.back().GetTrackId())
-			{
-				break;
-			}
-
-			object_->pos_.GetRoute()->minimal_waypoints_.clear();
-			object_->pos_.GetRoute()->minimal_waypoints_ = {vehiclePos, waypoints_[currentWaypointIndex_]};
-			object_->pos_.CalcRoutePosition();   // Reset route object according to new route waypoints and current position
-
-			break;
-		}
-		case MISSED_WAYPOINT:
-			LOG("Missed waypoint");
-			if (object_->pos_.GetRoute() != nullptr)
-			{
-				pathCalculated_ = false;
-				CalculateWaypoints();
-				currentWaypointIndex_ = 0;
-			}
-			break;
-		case WAYPOINT_NOT_REACHED:
-			break;
+			CreateLaneChange(nextWaypoint.GetLaneId(), 1);
+			changingLane_ = true;
 		}
 	}
 
-	for (size_t i = 0; i < actions_.size(); i++)
-	{
-		OSCPrivateAction *action = actions_[i];
-		if (action->name_ != "LaneChange")
-		{
-			continue;
-		}
-
-		if (!action->IsActive())
-		{
-			action->Start(scenarioEngine_->getSimulationTime(), timeStep);
-		}
-		else if (action->IsActive())
-		{
-			action->Step(scenarioEngine_->getSimulationTime(), timeStep);
-			if (action->state_ != OSCAction::State::COMPLETE)
-			{
-				action->UpdateState();
-			}
-			// Fetch updated position
-			vehicle_.posX_ = object_->pos_.GetX();
-			vehicle_.posY_ = object_->pos_.GetY();
-			vehicle_.heading_ = object_->pos_.GetH();
-
-			gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
-		}
-
-		if (action->state_ == OSCAction::State::COMPLETE)
-		{
-			actions_.erase(actions_.begin() + i);
-			changingLane_ = false;
-		}
-	}
+	UpdateWaypoints(vehiclePos, nextWaypoint);
+	ChangeLane(timeStep);
 
 	Controller::Step(timeStep);
 }
@@ -172,6 +104,7 @@ void ControllerFollowRoute::Activate(ControlDomains domainMask)
 	pathCalculated_ = false;
 	changingLane_ = false;
 	waypoints_ = {};
+	laneChangeAction_ = nullptr;
 	Controller::Activate(domainMask);
 }
 
@@ -179,10 +112,44 @@ void ControllerFollowRoute::ReportKeyEvent(int key, bool down)
 {
 }
 
+void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, roadmanager::Position nextWaypoint)
+{
+	WaypointStatus waypointStatus = GetWaypointStatus(vehiclePos, nextWaypoint);
+	switch (waypointStatus)
+	{
+	case PASSED_WAYPOINT:
+	{
+		LOG("Passed waypoint:");
+		currentWaypointIndex_++;
+		if (nextWaypoint.GetTrackId() == waypoints_.back().GetTrackId())
+		{
+			return;
+		}
+
+		object_->pos_.GetRoute()->minimal_waypoints_.clear();
+		object_->pos_.GetRoute()->minimal_waypoints_ = {vehiclePos, waypoints_[currentWaypointIndex_]};
+		object_->pos_.CalcRoutePosition(); // Reset route object according to new route waypoints and current position
+
+		return;
+	}
+	case MISSED_WAYPOINT:
+		LOG("Missed waypoint");
+		if (object_->pos_.GetRoute() != nullptr)
+		{
+			pathCalculated_ = false;
+			CalculateWaypoints();
+			currentWaypointIndex_ = 0;
+		}
+		return;
+	case WAYPOINT_NOT_REACHED:
+		return;
+	}
+}
+
 void ControllerFollowRoute::CalculateWaypoints()
 {
 	roadmanager::Position startPos = object_->pos_;
-	roadmanager::Position targetPos = allWaypoints_.back();
+	roadmanager::Position targetPos = object_->pos_.GetRoute()->all_waypoints_.back();
 	roadmanager::LaneIndependentRouter router(odr_);
 
 	std::vector<roadmanager::Node *> pathToGoal = router.CalculatePath(startPos, targetPos, roadmanager::RouteStrategy::SHORTEST);
@@ -198,14 +165,14 @@ void ControllerFollowRoute::CalculateWaypoints()
 		waypoints_ = router.GetWaypoints(pathToGoal, startPos, targetPos);
 		object_->pos_.GetRoute()->minimal_waypoints_.clear();
 		object_->pos_.GetRoute()->minimal_waypoints_ = {waypoints_[0], waypoints_[1]};
-		object_->pos_.CalcRoutePosition();   // Reset route object according to new route waypoints and current position
+		object_->pos_.CalcRoutePosition(); // Reset route object according to new route waypoints and current position
 		pathCalculated_ = true;
 	}
 }
 
-void ControllerFollowRoute::ChangeLane(int lane, double time)
+void ControllerFollowRoute::CreateLaneChange(int lane, double time)
 {
-	LatLaneChangeAction *action_lanechange = new LatLaneChangeAction();
+	LatLaneChangeAction *action_lanechange = new LatLaneChangeAction;
 	action_lanechange->name_ = "LaneChange";
 	action_lanechange->object_ = object_;
 	action_lanechange->transition_.shape_ = OSCPrivateAction::DynamicsShape::SINUSOIDAL;
@@ -213,16 +180,56 @@ void ControllerFollowRoute::ChangeLane(int lane, double time)
 	action_lanechange->transition_.SetParamTargetVal(time);
 	action_lanechange->max_num_executions_ = 1;
 
-	LatLaneChangeAction::TargetAbsolute *test = new LatLaneChangeAction::TargetAbsolute;
-	test->value_ = lane;
-	action_lanechange->target_ = test;
-	actions_.push_back(action_lanechange);
+	LatLaneChangeAction::TargetAbsolute *target = new LatLaneChangeAction::TargetAbsolute;
+	target->value_ = lane;
+	action_lanechange->target_ = target;
+
+	// Set lane change to be performed by ChangeLane function
+	laneChangeAction_ = action_lanechange;
+}
+
+void ControllerFollowRoute::ChangeLane(double timeStep)
+{
+	if (laneChangeAction_ == nullptr)
+	{
+		return;
+	}
+
+	if (laneChangeAction_->state_ == OSCAction::State::COMPLETE)
+	{
+		changingLane_ = false;
+		return;
+	}
+
+	if (!laneChangeAction_->IsActive())
+	{
+		laneChangeAction_->Start(scenarioEngine_->getSimulationTime(), timeStep);
+	}
+	else
+	{
+		laneChangeAction_->Step(scenarioEngine_->getSimulationTime(), timeStep);
+		if (laneChangeAction_->state_ != OSCAction::State::COMPLETE)
+		{
+			laneChangeAction_->UpdateState();
+		}
+		// Fetch updated position after lane change step
+		vehicle_.posX_ = object_->pos_.GetX();
+		vehicle_.posY_ = object_->pos_.GetY();
+		vehicle_.heading_ = object_->pos_.GetH();
+
+		gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
+	}
 }
 
 bool ControllerFollowRoute::CanChangeLane(int lane)
 {
 	roadmanager::Position vehiclePos = object_->pos_;
 	std::vector<Object *> allVehicles = scenarioEngine_->entities_.object_;
+	if(changingLane_)
+	{
+		return false;
+	}
+
 	for (Object *otherVehicle : allVehicles)
 	{
 		bool sameRoad = otherVehicle->pos_.GetTrackId() == vehiclePos.GetTrackId();
