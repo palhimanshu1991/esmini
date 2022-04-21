@@ -15,6 +15,7 @@ OpenDrive *odrSmall = nullptr;
 OpenDrive *odrMedium = nullptr;
 OpenDrive *odrMediumChangedSpeeds = nullptr;
 OpenDrive *odrLarge = nullptr;
+OpenDrive *odrMinIntersections = nullptr;
 class FollowRouteTest : public ::testing::Test
 {
 public:
@@ -30,17 +31,21 @@ public:
 
         // Position::GetOpenDrive()->LoadOpenDriveFile("../../../../large.xodr");
         odrLarge = new OpenDrive("../../../../large.xodr");
+
+        odrMinIntersections = new OpenDrive("../../../EnvironmentSimulator/Unittest/xodr/junction_min_intersections.xodr");
     }
     static OpenDrive *odrSmall;
     static OpenDrive *odrMedium;
     static OpenDrive *odrMediumChangedSpeeds;
     static OpenDrive *odrLarge;
+    static OpenDrive *odrMinIntersections;
 };
 
 OpenDrive *FollowRouteTest::odrSmall = nullptr;
 OpenDrive *FollowRouteTest::odrMedium = nullptr;
 OpenDrive *FollowRouteTest::odrLarge = nullptr;
 OpenDrive *FollowRouteTest::odrMediumChangedSpeeds = nullptr;
+OpenDrive *FollowRouteTest::odrMinIntersections = nullptr;
 
 static void log_callback(const char *str);
 
@@ -646,6 +651,39 @@ TEST_F(FollowRouteTest, LogWaypointMedium)
         }
     }
     ofs.close();
+}
+
+TEST_F(FollowRouteTest, MinIntersectionsTest)
+{
+    Position::LoadOpenDrive(odrMinIntersections);
+    ASSERT_NE(odrMinIntersections, nullptr);
+
+    // Set start pos and the driving direction (heading)
+    // PI = against road dir,   0 = road dir
+    Position start(5, 1, 15, 0);
+    start.SetHeadingRelativeRoadDirection(M_PI);
+    Position target(4, -1, 490, 0);
+
+    std::vector<Position> expectedWaypoints = {
+        Position(5, 1, 7.5, 0),
+        Position(202, 1, 20, 0),
+        target};
+
+    LaneIndependentRouter router(odrMinIntersections);
+    std::vector<Node *> path = router.CalculatePath(start, target);
+    ASSERT_FALSE(path.empty());
+
+    std::vector<Position> calcWaypoints = router.GetWaypoints(path, start, target);
+
+    ASSERT_FALSE(calcWaypoints.empty());
+    ASSERT_EQ(calcWaypoints.size(), expectedWaypoints.size());
+    for (int i = 0; i < expectedWaypoints.size(); i++)
+    {
+        ASSERT_EQ(calcWaypoints[i].GetTrackId(), expectedWaypoints[i].GetTrackId());
+        ASSERT_EQ(calcWaypoints[i].GetLaneId(), expectedWaypoints[i].GetLaneId());
+        ASSERT_NEAR(calcWaypoints[i].GetS(), expectedWaypoints[i].GetS(), 0.5);
+        ASSERT_NEAR(calcWaypoints[i].GetOffset(), expectedWaypoints[i].GetOffset(), 0.5);
+    }
 }
 
 // Uncomment to print log output to console
