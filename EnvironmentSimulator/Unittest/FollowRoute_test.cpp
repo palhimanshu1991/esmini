@@ -15,7 +15,7 @@ OpenDrive *odrSmall = nullptr;
 OpenDrive *odrMedium = nullptr;
 OpenDrive *odrMediumChangedSpeeds = nullptr;
 OpenDrive *odrLarge = nullptr;
-OpenDrive *odrMinIntersections = nullptr;
+OpenDrive *odrRouteTest = nullptr;
 class FollowRouteTest : public ::testing::Test
 {
 public:
@@ -32,20 +32,20 @@ public:
         // Position::GetOpenDrive()->LoadOpenDriveFile("../../../../large.xodr");
         odrLarge = new OpenDrive("../../../../large.xodr");
 
-        odrMinIntersections = new OpenDrive("../../../EnvironmentSimulator/Unittest/xodr/junction_min_intersections.xodr");
+        odrRouteTest = new OpenDrive("../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr");
     }
     static OpenDrive *odrSmall;
     static OpenDrive *odrMedium;
     static OpenDrive *odrMediumChangedSpeeds;
     static OpenDrive *odrLarge;
-    static OpenDrive *odrMinIntersections;
+    static OpenDrive *odrRouteTest;
 };
 
 OpenDrive *FollowRouteTest::odrSmall = nullptr;
 OpenDrive *FollowRouteTest::odrMedium = nullptr;
 OpenDrive *FollowRouteTest::odrLarge = nullptr;
 OpenDrive *FollowRouteTest::odrMediumChangedSpeeds = nullptr;
-OpenDrive *FollowRouteTest::odrMinIntersections = nullptr;
+OpenDrive *FollowRouteTest::odrRouteTest = nullptr;
 
 static void log_callback(const char *str);
 
@@ -227,61 +227,77 @@ TEST_F(FollowRouteTest, FindPathLarge4)
 
 TEST_F(FollowRouteTest, FindPathShortest)
 {
-    Position::LoadOpenDrive(odrMedium);
-    ASSERT_NE(odrMedium, nullptr);
+    Position::LoadOpenDrive(odrRouteTest);
+    ASSERT_NE(odrRouteTest, nullptr);
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
-    Position start(202, 2, 100, 0);
-    start.SetHeadingRelativeRoadDirection(M_PI);
-
-    Position target(209, 1, 20, 0);
+    Position start(1, -1, 220, 0);
+    start.SetHeadingRelativeRoadDirection(0);
+    Position target(7, -2, 10, 0);
     target.SetRouteStrategy(Position::RouteStrategy::SHORTEST);
 
-    LaneIndependentRouter router(odrMedium);
-    std::vector<Node *> path = router.CalculatePath(start, target);
+    std::vector<int> expectedRoadIds = {
+        1, 100, 2, 200, 3, 301, 6, 400, 7};
 
+    LaneIndependentRouter router(odrRouteTest);
+    std::vector<Node *> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path.back()->road->GetId(), 209);
+
+    for (int i = 0; i < expectedRoadIds.size(); i++)
+    {
+        ASSERT_EQ(path[i]->road->GetId(), expectedRoadIds[i]);
+    }
 }
 
 TEST_F(FollowRouteTest, FindPathFastest)
 {
-    Position::LoadOpenDrive(odrMedium);
-    ASSERT_NE(odrMedium, nullptr);
+    Position::LoadOpenDrive(odrRouteTest);
+    ASSERT_NE(odrRouteTest, nullptr);
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
-    Position start(202, 2, 100, 0);
-    start.SetHeadingRelativeRoadDirection(M_PI);
-
-    Position target(209, 1, 20, 0);
+    Position start(1, -1, 220, 0);
+    start.SetHeadingRelativeRoadDirection(0);
+    Position target(7, -2, 10, 0);
     target.SetRouteStrategy(Position::RouteStrategy::FASTEST);
 
-    LaneIndependentRouter router(odrMedium);
-    std::vector<Node *> path = router.CalculatePath(start, target);
+    std::vector<int> expectedRoadIds = {
+        1, 100, 2, 201, 4, 302, 6, 400, 7};
 
+    LaneIndependentRouter router(odrRouteTest);
+    std::vector<Node *> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path.back()->road->GetId(), 209);
+
+    for (int i = 0; i < expectedRoadIds.size(); i++)
+    {
+        ASSERT_EQ(path[i]->road->GetId(), expectedRoadIds[i]);
+    }
 }
 
 TEST_F(FollowRouteTest, FindPathMinIntersections)
 {
-    Position::LoadOpenDrive(odrMedium);
-    ASSERT_NE(odrMedium, nullptr);
+    Position::LoadOpenDrive(odrRouteTest);
+    ASSERT_NE(odrRouteTest, nullptr);
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
-    Position start(202, 2, 100, 0);
-    start.SetHeadingRelativeRoadDirection(M_PI);
-
-    Position target(209, 1, 20, 0);
+    Position start(1, -1, 220, 0);
+    start.SetHeadingRelativeRoadDirection(0);
+    Position target(7, -2, 10, 0);
     target.SetRouteStrategy(Position::RouteStrategy::MIN_INTERSECTIONS);
 
-    LaneIndependentRouter router(odrMedium);
+    std::vector<int> expectedRoadIds = {
+        1, 101, 5, 401, 7};
+
+    LaneIndependentRouter router(odrRouteTest);
     std::vector<Node *> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path.back()->road->GetId(), 209);
+
+    for (int i = 0; i < expectedRoadIds.size(); i++)
+    {
+        ASSERT_EQ(path[i]->road->GetId(), expectedRoadIds[i]);
+    }
 }
 
 TEST_F(FollowRouteTest, FindPathTimeMedium)
@@ -651,39 +667,6 @@ TEST_F(FollowRouteTest, LogWaypointMedium)
         }
     }
     ofs.close();
-}
-
-TEST_F(FollowRouteTest, MinIntersectionsTest)
-{
-    Position::LoadOpenDrive(odrMinIntersections);
-    ASSERT_NE(odrMinIntersections, nullptr);
-
-    // Set start pos and the driving direction (heading)
-    // PI = against road dir,   0 = road dir
-    Position start(5, 1, 15, 0);
-    start.SetHeadingRelativeRoadDirection(M_PI);
-    Position target(4, -1, 490, 0);
-
-    std::vector<Position> expectedWaypoints = {
-        Position(5, 1, 7.5, 0),
-        Position(202, 1, 20, 0),
-        target};
-
-    LaneIndependentRouter router(odrMinIntersections);
-    std::vector<Node *> path = router.CalculatePath(start, target);
-    ASSERT_FALSE(path.empty());
-
-    std::vector<Position> calcWaypoints = router.GetWaypoints(path, start, target);
-
-    ASSERT_FALSE(calcWaypoints.empty());
-    ASSERT_EQ(calcWaypoints.size(), expectedWaypoints.size());
-    for (int i = 0; i < expectedWaypoints.size(); i++)
-    {
-        ASSERT_EQ(calcWaypoints[i].GetTrackId(), expectedWaypoints[i].GetTrackId());
-        ASSERT_EQ(calcWaypoints[i].GetLaneId(), expectedWaypoints[i].GetLaneId());
-        ASSERT_NEAR(calcWaypoints[i].GetS(), expectedWaypoints[i].GetS(), 0.5);
-        ASSERT_NEAR(calcWaypoints[i].GetOffset(), expectedWaypoints[i].GetOffset(), 0.5);
-    }
 }
 
 // Uncomment to print log output to console
