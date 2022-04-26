@@ -488,6 +488,48 @@ TEST_F(FollowRouteTest, CreateWaypointLarge)
         ASSERT_NEAR(calcWaypoints[i].GetOffset(), expectedWaypoints[i].GetOffset(), 0.5);
     }
 }
+TEST_F(FollowRouteTest, CalcWeightShortest)
+{
+    RoadCalculations roadCalc;
+    Road road1(1,"test");
+    road1.SetLength(200);
+    double weigth = roadCalc.CalcWeight(nullptr,Position::RouteStrategy::SHORTEST,road1.GetLength(),&road1);
+    ASSERT_NEAR(200,weigth,0.01);
+}
+
+TEST_F(FollowRouteTest, CalcWeightFastest)
+{
+    RoadCalculations roadCalc;
+    Road road1(1,"test");
+    road1.SetLength(200);
+    Road::RoadTypeEntry motorway;
+    motorway.road_type_ = Road::RoadType::ROADTYPE_MOTORWAY;
+    motorway.speed_ = 25;
+    road1.AddRoadType(&motorway);
+    double weigth = roadCalc.CalcWeight(nullptr,Position::RouteStrategy::FASTEST,road1.GetLength(),&road1);
+    // 200 / 25 = 8
+    ASSERT_NEAR(8,weigth,0.01);
+}
+
+TEST_F(FollowRouteTest, CalcWeightMinIntersections)
+{
+    RoadCalculations roadCalc;
+    Road road1(1,"test");
+    road1.SetLength(200);
+    RoadLink plink(LinkType::SUCCESSOR,RoadLink::ELEMENT_TYPE_JUNCTION,1,ContactPointType::CONTACT_POINT_UNDEFINED);
+    Node pNode;
+    pNode.link = &plink;
+    double weigth = roadCalc.CalcWeight(&pNode,Position::RouteStrategy::MIN_INTERSECTIONS,road1.GetLength(),&road1);
+    ASSERT_NEAR(1,weigth,0.01);
+
+    Road road2(2,"test");
+    road1.SetLength(200);
+    RoadLink plink2(LinkType::SUCCESSOR,RoadLink::ELEMENT_TYPE_ROAD,1,ContactPointType::CONTACT_POINT_UNDEFINED);
+    Node pNode2;
+    pNode2.link = &plink2;
+    double weigth2 = roadCalc.CalcWeight(&pNode2,Position::RouteStrategy::MIN_INTERSECTIONS,road1.GetLength(),&road1);
+    ASSERT_NEAR(0,weigth2,0.01);
+}
 
 TEST_F(FollowRouteTest, CalcAverageSpeedForRoadsWithoutSpeed)
 {
