@@ -16,6 +16,7 @@ OpenDrive *odrMedium = nullptr;
 OpenDrive *odrMediumChangedSpeeds = nullptr;
 OpenDrive *odrLarge = nullptr;
 OpenDrive *odrRouteTest = nullptr;
+OpenDrive *odrRouteTestLHT = nullptr;
 class FollowRouteTest : public ::testing::Test
 {
 public:
@@ -33,12 +34,14 @@ public:
         odrLarge = new OpenDrive("../../../../large.xodr");
 
         odrRouteTest = new OpenDrive("../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr");
+        odrRouteTestLHT = new OpenDrive("../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road_LHT.xodr");
     }
     static OpenDrive *odrSmall;
     static OpenDrive *odrMedium;
     static OpenDrive *odrMediumChangedSpeeds;
     static OpenDrive *odrLarge;
     static OpenDrive *odrRouteTest;
+    static OpenDrive *odrRouteTestLHT;
 };
 
 OpenDrive *FollowRouteTest::odrSmall = nullptr;
@@ -46,6 +49,7 @@ OpenDrive *FollowRouteTest::odrMedium = nullptr;
 OpenDrive *FollowRouteTest::odrLarge = nullptr;
 OpenDrive *FollowRouteTest::odrMediumChangedSpeeds = nullptr;
 OpenDrive *FollowRouteTest::odrRouteTest = nullptr;
+OpenDrive *FollowRouteTest::odrRouteTestLHT = nullptr;
 
 static void log_callback(const char *str);
 
@@ -232,7 +236,7 @@ TEST_F(FollowRouteTest, FindPathShortest)
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
-    Position start(1, -1, 220, 0);
+    Position start(1, -1, 100, 0);
     start.SetHeadingRelativeRoadDirection(0);
     Position target(7, -2, 10, 0);
     target.SetRouteStrategy(Position::RouteStrategy::SHORTEST);
@@ -250,6 +254,31 @@ TEST_F(FollowRouteTest, FindPathShortest)
     }
 }
 
+TEST_F(FollowRouteTest, FindPathShortestLHT)
+{
+    Position::LoadOpenDrive(odrRouteTestLHT);
+    ASSERT_NE(odrRouteTestLHT, nullptr);
+
+    // Set start pos and the driving direction (heading)
+    // PI = against road dir,   0 = road dir
+    Position start(1, 1, 100, 0);
+    start.SetHeadingRelativeRoadDirection(0);
+    Position target(7, 2, 10, 0);
+    target.SetRouteStrategy(Position::RouteStrategy::SHORTEST);
+
+    std::vector<int> expectedRoadIds = {
+        1, 100, 2, 200, 3, 301, 6, 400, 7};
+
+    LaneIndependentRouter router(odrRouteTestLHT);
+    std::vector<Node *> path = router.CalculatePath(start, target);
+    ASSERT_FALSE(path.empty());
+
+    for (int i = 0; i < expectedRoadIds.size(); i++)
+    {
+        ASSERT_EQ(path[i]->road->GetId(), expectedRoadIds[i]);
+    }
+}
+
 TEST_F(FollowRouteTest, FindPathFastest)
 {
     Position::LoadOpenDrive(odrRouteTest);
@@ -257,7 +286,7 @@ TEST_F(FollowRouteTest, FindPathFastest)
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
-    Position start(1, -1, 220, 0);
+    Position start(1, -1, 100, 0);
     start.SetHeadingRelativeRoadDirection(0);
     Position target(7, -2, 10, 0);
     target.SetRouteStrategy(Position::RouteStrategy::FASTEST);
@@ -282,7 +311,7 @@ TEST_F(FollowRouteTest, FindPathMinIntersections)
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
-    Position start(1, -1, 220, 0);
+    Position start(1, -1, 100, 0);
     start.SetHeadingRelativeRoadDirection(0);
     Position target(7, -2, 10, 0);
     target.SetRouteStrategy(Position::RouteStrategy::MIN_INTERSECTIONS);
