@@ -80,9 +80,8 @@ namespace scenarioengine
 		bool changingLane_;
 		bool pathCalculated_;
 		std::vector<roadmanager::Position> allWaypoints_;
-		const double LANE_CHANGE_TIME = 6;
-		const double MIN_DIST_FOR_COLLISION = 10;
-		
+		double laneChangeTime_ = 5;
+		double minDistForCollision_ = 10;
 	};
 
 	Controller *InstantiateControllerFollowRoute(void *args);
