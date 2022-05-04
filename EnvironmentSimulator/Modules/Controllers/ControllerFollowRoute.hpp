@@ -54,6 +54,8 @@ namespace scenarioengine
 		void Activate(ControlDomains domainMask);
 		void ReportKeyEvent(int key, bool down);
 		void SetScenarioEngine(ScenarioEngine *scenarioEngine) { scenarioEngine_ = scenarioEngine; };
+		double GetLaneChangeTime(){ return laneChangeTime_; };
+		double GetMinDistForCollision(){ return minDistForCollision_; };
 
 	private:
 		void CreateLaneChange(int lane, double time);
