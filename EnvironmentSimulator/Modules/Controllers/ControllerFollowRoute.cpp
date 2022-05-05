@@ -11,12 +11,9 @@
  */
 
 /*
- * This controller simulates a bad or dizzy driver by manipulating
- * the speed and lateral offset in a random way.
- * The purpose is purely to demonstrate how to implement a controller.
+ * This controller enables a lane independent pathfinder and the lanechanges necessary for following the path
  */
 
-//#include "playerbase.hpp"
 #include <algorithm>
 #include "ControllerFollowRoute.hpp"
 #include "CommonMini.hpp"
