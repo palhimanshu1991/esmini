@@ -181,7 +181,7 @@ void ControllerFollowRoute::CalculateWaypoints()
 		targetPos = object_->pos_.GetRoute()->scenario_waypoints_[scenarioWaypointIndex_];
 	}
 
-	std::vector<roadmanager::Node *> pathToGoal = router.CalculatePath(startPos, targetPos);
+	std::vector<roadmanager::Node> pathToGoal = router.CalculatePath(startPos, targetPos);
 	if (pathToGoal.empty())
 	{
 		LOG("Error: Path not found, deactivating controller");
@@ -226,6 +226,8 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
 	if (laneChangeAction_->state_ == OSCAction::State::COMPLETE)
 	{
 		changingLane_ = false;
+		delete laneChangeAction_;
+		laneChangeAction_ = nullptr;
 		return;
 	}
 
