@@ -76,9 +76,13 @@ void ControllerFollowRoute::Step(double timeStep)
 	roadmanager::Position nextWaypoint = waypoints_[currentWaypointIndex_];
 	roadmanager::Road *nextRoad = odr_->GetRoadById(nextWaypoint.GetTrackId());
 
-	bool drivingWithRoadDirection = vehiclePos.GetDrivingDirectionRelativeRoad() == 1;
 	bool sameRoad = nextWaypoint.GetTrackId() == vehiclePos.GetTrackId();
-	bool sameLane = nextWaypoint.GetLaneId() == vehiclePos.GetLaneId();
+	
+	// Check if lane with different ids are connected between lane sections
+	int connectedLaneID = odr_->GetRoadById(vehiclePos.GetTrackId())->GetConnectedLaneIdAtS(vehiclePos.GetLaneId(),vehiclePos.GetS(),nextWaypoint.GetS());
+	bool lsecConnectedLane = connectedLaneID == nextWaypoint.GetLaneId();
+
+	bool sameLane = (nextWaypoint.GetLaneId() == vehiclePos.GetLaneId()) || lsecConnectedLane;
 	if (sameRoad)
 	{
 		double distToLaneChange = MAX(laneChangeTime_ * object_->GetSpeed(), 25);
