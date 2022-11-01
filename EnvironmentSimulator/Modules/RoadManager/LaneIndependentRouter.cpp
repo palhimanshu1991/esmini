@@ -10,8 +10,8 @@ LaneIndependentRouter::LaneIndependentRouter(OpenDrive *odr) : odr_(odr), roadCa
 }
 
 LaneIndependentRouter::~LaneIndependentRouter(){
-	clearVector(visited_);
 	clearQueue(unvisited_);
+	clearVector(visited_);
 }
 
 // Gets the next pathnode for the nextroad based on current srcnode
@@ -28,7 +28,7 @@ std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *ta
 	;
 	for (std::pair<int, int> lanePair : connectingLaneIds)
 	{
-		Node *pNode = new Node;
+		Node *pNode = nullptr;
 		if (nextRoad == targetRoad && lanePair.second == targetLaneId)
 		{
 			// Target road found and driving in same direction, create a target node.
@@ -43,6 +43,7 @@ std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *ta
 				continue;
 			}
 			// create next non target node
+			pNode = new Node;
 			pNode->link = nextLink;
 			pNode->road = nextRoad;
 			pNode->currentLaneId = lanePair.second;
@@ -177,6 +178,26 @@ Node *LaneIndependentRouter::CreateTargetNode(Node *currentNode, Road *nextRoad,
 	return targetNode;
 }
 
+#include <signal.h>
+
+void LaneIndependentRouter::CheckForDuplicates()
+{
+	auto it = std::find_if(std::begin(unvisited_.GetUnderlyingContainer()), std::end(unvisited_.GetUnderlyingContainer()), [&](Node* node) {
+		auto itt = std::find_if(std::begin(visited_), std::end(visited_), [&](Node* innerNode) {
+			return innerNode == node;
+		});
+
+		if (itt != std::end(visited_))
+		{
+			raise(SIGTRAP);
+			return true;
+		}
+
+		return false;		
+	});
+
+}
+
 bool LaneIndependentRouter::FindGoal()
 {
 	while (!unvisited_.empty())
@@ -187,6 +208,7 @@ bool LaneIndependentRouter::FindGoal()
 										  { return *n == *currentNode; }) != visited_.end();
 		if (nodeIsVisited)
 		{
+			delete currentNode;
 			continue;
 		}
 		visited_.push_back(currentNode);
@@ -273,8 +295,8 @@ Node *LaneIndependentRouter::CreateStartNode(RoadLink *link, Road *road, int lan
 
 std::vector<Node> LaneIndependentRouter::CalculatePath(Position start, Position target)
 {
-	clearVector(visited_);
 	clearQueue(unvisited_);
+	clearVector(visited_);
 
 	if (!IsPositionValid(start))
 	{

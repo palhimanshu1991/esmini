@@ -187,10 +187,6 @@ ScenarioGateway::ScenarioGateway()
 
 ScenarioGateway::~ScenarioGateway()
 {
-	for (size_t i = 0; i < objectState_.size(); i++)
-	{
-		delete objectState_[i];
-	}
 	objectState_.clear();
 
 	data_file_.flush();
@@ -203,7 +199,7 @@ ObjectState* ScenarioGateway::getObjectStatePtrById(int id)
 	{
 		if (objectState_[i]->state_.info.id == id)
 		{
-			return objectState_[i];
+			return objectState_[i].get();
 		}
 	}
 
@@ -263,7 +259,7 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 		obj_state->state_.pos.SetSnapLaneTypes(roadmanager::Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 
 		// Add object to collection
-		objectState_.push_back(obj_state);
+		objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
 	}
 	else
 	{
@@ -293,7 +289,7 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 			scaleMode, visibilityMask, timestamp, speed, wheel_angle, wheel_rot, x, y, z, h, p, r);
 
 		// Add object to collection
-		objectState_.push_back(obj_state);
+		objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
 	}
 	else
 	{
@@ -323,7 +319,7 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 			scaleMode, visibilityMask, timestamp, speed, wheel_angle, wheel_rot, x, y, 0, h, 0, 0);
 
 		// Add object to collection
-		objectState_.push_back(obj_state);
+		objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
 	}
 	else
 	{
@@ -353,7 +349,7 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 			scaleMode, visibilityMask, timestamp, speed, wheel_angle, wheel_rot, roadId, laneId, laneOffset, s);
 
 		// Add object to collection
-		objectState_.push_back(obj_state);
+		objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
 	}
 	else
 	{
@@ -383,7 +379,7 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 			visibilityMask, timestamp, speed, wheel_angle, wheel_rot, roadId, lateralOffset, s);
 
 		// Add object to collection
-		objectState_.push_back(obj_state);
+		objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
 	}
 	else
 	{
@@ -654,22 +650,26 @@ void ScenarioGateway::clearDirtyBits()
 
 void ScenarioGateway::removeObject(int id)
 {
-	for (size_t i = 0; i < objectState_.size(); i++)
+	for (auto objectIt = std::begin(objectState_); objectIt != std::end(objectState_);)
 	{
-		if (objectState_[i]->state_.info.id == id)
+		if ((*objectIt)->state_.info.id == id)
 		{
-			objectState_.erase(objectState_.begin() + i);
+			objectIt = objectState_.erase(objectIt);
+		} else {
+			++objectIt;
 		}
 	}
 }
 
 void ScenarioGateway::removeObject(std::string name)
 {
-	for (size_t i = 0; i < objectState_.size(); i++)
+	for (auto objectIt = std::begin(objectState_); objectIt != std::end(objectState_);)
 	{
-		if (objectState_[i]->state_.info.name == name)
+		if ((*objectIt)->state_.info.name == name)
 		{
-			objectState_.erase(objectState_.begin() + i);
+			objectIt = objectState_.erase(objectIt);
+		} else {
+			++objectIt;
 		}
 	}
 }
