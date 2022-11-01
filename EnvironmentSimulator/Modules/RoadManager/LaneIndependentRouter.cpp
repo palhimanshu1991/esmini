@@ -178,26 +178,6 @@ Node *LaneIndependentRouter::CreateTargetNode(Node *currentNode, Road *nextRoad,
 	return targetNode;
 }
 
-#include <signal.h>
-
-void LaneIndependentRouter::CheckForDuplicates()
-{
-	auto it = std::find_if(std::begin(unvisited_.GetUnderlyingContainer()), std::end(unvisited_.GetUnderlyingContainer()), [&](Node* node) {
-		auto itt = std::find_if(std::begin(visited_), std::end(visited_), [&](Node* innerNode) {
-			return innerNode == node;
-		});
-
-		if (itt != std::end(visited_))
-		{
-			raise(SIGTRAP);
-			return true;
-		}
-
-		return false;		
-	});
-
-}
-
 bool LaneIndependentRouter::FindGoal()
 {
 	while (!unvisited_.empty())

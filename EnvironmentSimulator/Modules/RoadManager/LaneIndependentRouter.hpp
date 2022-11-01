@@ -233,8 +233,6 @@ namespace roadmanager
             }
             v.clear();
         }
-
-        void CheckForDuplicates();
         
         struct InspectionPriorityQueue : public std::priority_queue<Node *, std::vector<Node *>, WeightCompare> {
             using BaseClass = std::priority_queue<Node *, std::vector<Node *>, WeightCompare>;
