@@ -12,6 +12,7 @@
 
 #include "OSCCondition.hpp"
 #include "Storyboard.hpp"
+#include "logger.hpp"
 
 using namespace scenarioengine;
 using namespace roadmanager;
@@ -46,7 +47,7 @@ std::string Rule2Str(Rule rule)
     }
     else
     {
-        LOG("Undefined Rule: %d", rule);
+        ERROR("Undefined Rule: {}", rule);
     }
     return "unknown";
 }
@@ -79,7 +80,7 @@ bool EvaluateRule(double a, double b, Rule rule)
     }
     else
     {
-        LOG("Undefined Rule: %d", rule);
+        ERROR("Undefined Rule: {}", rule);
     }
     return false;
 }
@@ -112,7 +113,7 @@ bool EvaluateRule(int a, int b, Rule rule)
     }
     else
     {
-        LOG("Undefined Rule: %d", rule);
+        ERROR("Undefined Rule: {}", rule);
     }
     return false;
 }
@@ -145,7 +146,7 @@ bool EvaluateRule(std::string a, std::string b, Rule rule)
     }
     else
     {
-        LOG("Undefined Rule: %d", rule);
+        ERROR("Undefined Rule: {}", rule);
     }
     return false;
 }
@@ -178,14 +179,14 @@ bool EvaluateRule(bool a, bool b, Rule rule)
     }
     else
     {
-        LOG("Undefined Rule: %d", rule);
+        ERROR("Undefined Rule: {}", rule);
     }
     return false;
 }
 
 void OSCCondition::Log()
 {
-    LOG("%s result: %d", name_.c_str(), last_result_);
+    INFO("{} result: {}", name_, last_result_);
 }
 
 bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge)
@@ -216,7 +217,7 @@ bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::Condi
         }
         else
         {
-            LOG("Invalid edge: %d", edge);
+            ERROR("Invalid edge: {}", edge);
         }
     }
 
@@ -272,7 +273,7 @@ bool OSCCondition::Evaluate(double sim_time)
     {
         if (timer_.Expired(sim_time))
         {
-            LOG("%s timer expired at %.2f seconds", name_.c_str(), timer_.Elapsed(sim_time));
+            INFO("{} timer expired at {:.2f} seconds", name_, timer_.Elapsed(sim_time));
             timer_.Reset();
             state_ = ConditionState::TRIGGERED;
 
@@ -303,7 +304,7 @@ bool OSCCondition::Evaluate(double sim_time)
     {
         timer_.Start(sim_time, delay_);
         state_ = ConditionState::TIMER;
-        LOG("%s timer %.2fs started", name_.c_str(), delay_);
+        INFO("{} timer {:.2f}s started", name_, delay_);
         return false;
     }
 
@@ -363,7 +364,7 @@ bool Trigger::Evaluate(double sim_time)
     if (result)
     {
         // Log
-        LOG("Trigger /------------------------------------------------");
+        INFO("Trigger /------------------------------------------------");
         for (size_t i = 0; i < conditionGroup_.size(); i++)
         {
             for (size_t j = 0; j < conditionGroup_[i]->condition_.size(); j++)
@@ -379,12 +380,12 @@ bool Trigger::Evaluate(double sim_time)
                     TrigByEntity* trigger = static_cast<TrigByEntity*>(conditionGroup_[i]->condition_[j]);
                     for (size_t k = 0; k < trigger->triggered_by_entities_.size(); k++)
                     {
-                        LOG("Triggering entity %d: %s", k, trigger->triggered_by_entities_[k]->name_.c_str());
+                        INFO("Triggering entity {}: {}", k, trigger->triggered_by_entities_[k]->name_);
                     }
                 }
             }
         }
-        LOG("Trigger  ------------------------------------------------/");
+        INFO("Trigger  ------------------------------------------------/");
     }
 
     return result;
@@ -474,7 +475,7 @@ bool TrigByState::CheckState(StateChange state_change)
     }
     else
     {
-        LOG("Invalid state: %d", target_element_state_);
+        ERROR("Invalid state: {}", target_element_state_);
     }
 
     return false;
@@ -482,12 +483,12 @@ bool TrigByState::CheckState(StateChange state_change)
 
 void TrigByState::Log()
 {
-    LOG("%s == %s, element: %s state: %s, edge: %s",
-        name_.c_str(),
+    INFO("{} == {}, element: {} state: {}, edge: {}",
+        name_,
         last_result_ ? "true" : "false",
-        element_->GetName().c_str(),
-        CondElementState2Str(target_element_state_).c_str(),
-        Edge2Str().c_str());
+        element_->GetName(),
+        CondElementState2Str(target_element_state_),
+        Edge2Str());
 }
 
 void TrigByState::RegisterStateChange(StoryBoardElement* element, StoryBoardElement::State state, StoryBoardElement::Transition transition)
@@ -535,7 +536,7 @@ std::string TrigByState::CondElementState2Str(CondElementState state)
     }
     else
     {
-        LOG("Unknown state: %d", state);
+        ERROR("Unknown state: {}", state);
     }
 
     return "Unknown state";
@@ -557,13 +558,13 @@ bool TrigBySimulationTime::CheckCondition(double sim_time)
 
 void TrigBySimulationTime::Log()
 {
-    LOG("%s == %s, %.4f %s %.4f edge: %s",
-        name_.c_str(),
+    INFO("{} == {}, {:.4f} {} {:.4f} edge: {}",
+        name_,
         last_result_ ? "true" : "false",
         sim_time_,
-        Rule2Str(rule_).c_str(),
+        Rule2Str(rule_),
         value_,
-        Edge2Str().c_str());
+        Edge2Str());
 }
 
 bool TrigByParameter::CheckCondition(double sim_time)
@@ -577,7 +578,7 @@ bool TrigByParameter::CheckCondition(double sim_time)
     {
         if (state_ < ConditionState::EVALUATED)  // print only once
         {
-            LOG("Parameter %s not found", name_.c_str());
+            ERROR("Parameter {} not found", name_);
         }
         return result;
     }
@@ -601,7 +602,7 @@ bool TrigByParameter::CheckCondition(double sim_time)
     }
     else
     {
-        LOG("Unexpected parameter type: %d", pe->type);
+        ERROR("Unexpected parameter type: {}", pe->type);
     }
 
     return result;
@@ -609,7 +610,7 @@ bool TrigByParameter::CheckCondition(double sim_time)
 
 void TrigByParameter::Log()
 {
-    LOG("parameter %s %s %s %s edge: %s", name_.c_str(), current_value_str_.c_str(), Rule2Str(rule_).c_str(), value_.c_str(), Edge2Str().c_str());
+    INFO("parameter {} {} {} {} edge: {}", name_, current_value_str_, Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByVariable::CheckCondition(double sim_time)
@@ -623,7 +624,7 @@ bool TrigByVariable::CheckCondition(double sim_time)
     {
         if (state_ < ConditionState::EVALUATED)  // print only once
         {
-            LOG("Variable %s not found", name_.c_str());
+            WARN("Variable {} not found", name_);
         }
         return result;
     }
@@ -647,7 +648,7 @@ bool TrigByVariable::CheckCondition(double sim_time)
     }
     else
     {
-        LOG("Unexpected variable type: %d", pe->type);
+        ERROR("Unexpected variable type: {}", pe->type);
     }
 
     return result;
@@ -655,7 +656,7 @@ bool TrigByVariable::CheckCondition(double sim_time)
 
 void TrigByVariable::Log()
 {
-    LOG("variable %s %s %s %s edge: %s", name_.c_str(), current_value_str_.c_str(), Rule2Str(rule_).c_str(), value_.c_str(), Edge2Str().c_str());
+    INFO("variable {} {} {} {} edge: {}", name_, current_value_str_, Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByTimeHeadway::CheckCondition(double sim_time)
@@ -712,13 +713,13 @@ bool TrigByTimeHeadway::CheckCondition(double sim_time)
 
 void TrigByTimeHeadway::Log()
 {
-    LOG("%s == %s, HWT: %.2f %s %.2f, edge %s",
-        name_.c_str(),
+    INFO("{} == {}, HWT: {:.2f} {} {:.2f}, edge {}",
+        name_,
         last_result_ ? "true" : "false",
         hwt_,
-        Rule2Str(rule_).c_str(),
+        Rule2Str(rule_),
         value_,
-        Edge2Str().c_str());
+        Edge2Str());
 }
 
 bool TrigByTimeToCollision::CheckCondition(double sim_time)
@@ -838,23 +839,23 @@ void TrigByTimeToCollision::Log()
 {
     if (ttc_ < 0)
     {
-        LOG("%s == %s, TTC: %s %s %.2f, edge %s",
-            name_.c_str(),
+        INFO("{} == {}, TTC: {} {} {:.2f}, edge {}",
+            name_,
             last_result_ ? "true" : "false",
             "Inf",
-            Rule2Str(rule_).c_str(),
+            Rule2Str(rule_),
             value_,
-            Edge2Str().c_str());
+            Edge2Str());
     }
     else
     {
-        LOG("%s == %s, TTC: %.2f %s %.2f, edge %s",
-            name_.c_str(),
+        INFO("{} == {}, TTC: {:.2f} {} {:.2f}, edge {}",
+            name_,
             last_result_ ? "true" : "false",
             ttc_,
-            Rule2Str(rule_).c_str(),
+            Rule2Str(rule_),
             value_,
-            Edge2Str().c_str());
+            Edge2Str());
     }
 }
 
@@ -878,7 +879,7 @@ bool TrigByReachPosition::CheckCondition(double sim_time)
         Position* pos = position_->GetRMPos();
         if (pos == nullptr)
         {
-            LOG_AND_QUIT("missing road manager position");
+            ERROR_AND_QUIT("missing road manager position");
         }
         pos->EvaluateRelation();
 
@@ -922,8 +923,8 @@ void TrigByReachPosition::Log()
 {
     if (checkOrientation_)
     {
-        LOG("%s == %s, distance %.2f < tolerance (%.2f), orientation [%.2f, %.2f, %.2f] (tolerance %.2f), edge: % s",
-            name_.c_str(),
+        INFO("{} == {}, distance {:.2f} < tolerance ({:.2f}), orientation [{:.2f}, {:.2f}, {:.2f}] (tolerance {:.2f}), edge: {}",
+            name_,
             last_result_ ? "true" : "false",
             dist_,
             tolerance_,
@@ -931,16 +932,16 @@ void TrigByReachPosition::Log()
             triggered_by_entities_[0]->pos_.GetP(),
             triggered_by_entities_[0]->pos_.GetR(),
             angularTolerance_,
-            Edge2Str().c_str());
+            Edge2Str());
     }
     else
     {
-        LOG("%s == %s, distance %.2f < tolerance (%.2f), edge: %s",
-            name_.c_str(),
+        INFO("{} == {}, distance {:.2f} < tolerance ({:.2f}), edge: {}",
+            name_,
             last_result_ ? "true" : "false",
             dist_,
             tolerance_,
-            Edge2Str().c_str());
+            Edge2Str());
     }
 }
 
@@ -991,13 +992,13 @@ bool TrigByDistance::CheckCondition(double sim_time)
 
 void TrigByDistance::Log()
 {
-    LOG("%s == %s, dist: %.2f %s %.2f, edge: %s",
-        name_.c_str(),
+    INFO("{} == {}, dist: {:.2f} {} {:.2f}, edge: {}",
+        name_,
         last_result_ ? "true" : "false",
         dist_,
-        Rule2Str(rule_).c_str(),
+        Rule2Str(rule_),
         value_,
-        Edge2Str().c_str());
+        Edge2Str());
 }
 
 bool TrigByRelativeDistance::CheckCondition(double sim_time)
@@ -1046,13 +1047,13 @@ bool TrigByRelativeDistance::CheckCondition(double sim_time)
 
 void TrigByRelativeDistance::Log()
 {
-    LOG("%s == %s, rel_dist: %.2f %s %.2f, edge: %s",
-        name_.c_str(),
+    INFO("{} == {}, rel_dist: {:.2f} {} {:.2f}, edge: {}",
+        name_,
         last_result_ ? "true" : "false",
         rel_dist_,
-        Rule2Str(rule_).c_str(),
+        Rule2Str(rule_),
         value_,
-        Edge2Str().c_str());
+        Edge2Str());
 }
 
 bool TrigByCollision::CheckCondition(double sim_time)
@@ -1136,9 +1137,9 @@ void TrigByCollision::Log()
 {
     for (size_t i = 0; i < collision_pair_.size(); i++)
     {
-        LOG("collision %d between %s and %s", i, collision_pair_[i].object0->name_.c_str(), collision_pair_[i].object1->name_.c_str());
+        INFO("collision {} between {} and {}", i, collision_pair_[i].object0->name_, collision_pair_[i].object1->name_);
     }
-    LOG("%s == %s edge: %s", name_.c_str(), last_result_ ? "true" : "false", Edge2Str().c_str());
+    INFO("{} == {} edge: {}", name_, last_result_ ? "true" : "false", Edge2Str());
 }
 
 bool TrigByTraveledDistance::CheckCondition(double sim_time)
@@ -1176,7 +1177,7 @@ bool TrigByTraveledDistance::CheckCondition(double sim_time)
 
 void TrigByTraveledDistance::Log()
 {
-    LOG("%s == %s, traveled_dist: %.2f >= %.2f, edge: %s", name_.c_str(), last_result_ ? "true" : "false", odom_, value_, Edge2Str().c_str());
+    INFO("{} == {}, traveled_dist: {:.2f} >= {:.2f}, edge: {}", name_, last_result_ ? "true" : "false", odom_, value_, Edge2Str());
 }
 
 bool TrigByEndOfRoad::CheckCondition(double sim_time)
@@ -1217,12 +1218,12 @@ bool TrigByEndOfRoad::CheckCondition(double sim_time)
 
 void TrigByEndOfRoad::Log()
 {
-    LOG("%s == %s, end_of_road duration: %.2f >= %.2f, edge: %s",
-        name_.c_str(),
+    INFO("{} == {}, end_of_road duration: {:.2f} >= {:.2f}, edge: {}",
+        name_,
         last_result_ ? "true" : "false",
         current_duration_,
         duration_,
-        Edge2Str().c_str());
+        Edge2Str());
 }
 
 bool TrigByStandStill::CheckCondition(double sim_time)
@@ -1263,12 +1264,12 @@ bool TrigByStandStill::CheckCondition(double sim_time)
 
 void TrigByStandStill::Log()
 {
-    LOG("%s == %s, stand_still duration: %.2f >= %.2f, edge: %s",
-        name_.c_str(),
+    INFO("{} == {}, stand_still duration: {:.2f} >= {:.2f}, edge: {}",
+        name_,
         last_result_ ? "true" : "false",
         current_duration_,
         duration_,
-        Edge2Str().c_str());
+        Edge2Str());
 }
 
 bool TrigByOffRoad::CheckCondition(double sim_time)
@@ -1309,12 +1310,12 @@ bool TrigByOffRoad::CheckCondition(double sim_time)
 
 void TrigByOffRoad::Log()
 {
-    LOG("%s == %s, off road duration: %.2f >= %.2f, edge: %s",
-        name_.c_str(),
+    INFO("{} == {}, off road duration: {:.2f} >= {:.2f}, edge: {}",
+        name_,
         last_result_ ? "true" : "false",
         current_duration_,
         duration_,
-        Edge2Str().c_str());
+        Edge2Str());
 }
 
 bool TrigByAcceleration::CheckCondition(double sim_time)
@@ -1367,13 +1368,13 @@ bool TrigByAcceleration::CheckCondition(double sim_time)
 
 void TrigByAcceleration::Log()
 {
-    LOG("%s == %s, acceleration: %.2f %s %.2f, edge: %s",
-        name_.c_str(),
+    INFO("{} == {}, acceleration: {:.2f} {} {:.2f}, edge: {}",
+        name_,
         last_result_ ? "true" : "false",
         current_acceleration_,
-        Rule2Str(rule_).c_str(),
+        Rule2Str(rule_),
         value_,
-        Edge2Str().c_str());
+        Edge2Str());
 }
 
 bool TrigBySpeed::CheckCondition(double sim_time)
@@ -1426,13 +1427,13 @@ bool TrigBySpeed::CheckCondition(double sim_time)
 
 void TrigBySpeed::Log()
 {
-    LOG("%s == %s, speed: %.2f %s %.2f, edge: %s",
-        name_.c_str(),
+    INFO("{} == {}, speed: {:.2f} {} {:.2f}, edge: {}",
+        name_,
         last_result_ ? "true" : "false",
         current_speed_,
-        Rule2Str(rule_).c_str(),
+        Rule2Str(rule_),
         value_,
-        Edge2Str().c_str());
+        Edge2Str());
 }
 
 bool TrigByRelativeSpeed::CheckCondition(double sim_time)
@@ -1441,12 +1442,12 @@ bool TrigByRelativeSpeed::CheckCondition(double sim_time)
 
     if (object_ == nullptr)
     {
-        LOG("TrigByRelativeSpeed: Couldn't resolve refEntity object");
+        ERROR("TrigByRelativeSpeed: Couldn't resolve refEntity object");
         return false;
     }
     else if (!object_->IsActive())
     {
-        LOG("TrigByRelativeSpeed: refEntity not active");
+        ERROR("TrigByRelativeSpeed: refEntity not active");
         return false;
     }
 
@@ -1504,13 +1505,13 @@ bool TrigByRelativeSpeed::CheckCondition(double sim_time)
 
 void TrigByRelativeSpeed::Log()
 {
-    LOG("%s == %s, relative_speed: %.2f %s %.2f, edge: %s",
-        name_.c_str(),
+    INFO("{} == {}, relative_speed: {:.2f} {} {:.2f}, edge: {}",
+        name_,
         last_result_ ? "true" : "false",
         current_rel_speed_,
-        Rule2Str(rule_).c_str(),
+        Rule2Str(rule_),
         value_,
-        Edge2Str().c_str());
+        Edge2Str());
 }
 
 bool TrigByRelativeClearance::CheckCondition(double sim_time)
@@ -1550,7 +1551,7 @@ bool TrigByRelativeClearance::CheckCondition(double sim_time)
 
             if (from_ > to_)
             {  // quit execution if to value is less than from value
-                LOG_AND_QUIT("QUITTING, Wrong from and to value in RelativeLaneRange element");
+                ERROR_AND_QUIT("QUITTING, Wrong from and to value in RelativeLaneRange element");
             }
 
             PositionDiff diff;
@@ -1627,5 +1628,5 @@ bool TrigByRelativeClearance::CheckCondition(double sim_time)
 
 void TrigByRelativeClearance::Log()
 {
-    LOG("%s == %s, edge: %s", name_.c_str(), last_result_ ? "true" : "false", Edge2Str().c_str());
+    INFO("{} == {}, edge: {}", name_, last_result_ ? "true" : "false", Edge2Str());
 }

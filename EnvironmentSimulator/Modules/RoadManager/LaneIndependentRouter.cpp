@@ -278,12 +278,12 @@ std::vector<Node> LaneIndependentRouter::CalculatePath(Position start, Position 
 
     if (!IsPositionValid(start))
     {
-        LOG("(LaneIndependentRouter::CalculatePath) Error: Start position is invalid");
+        ERROR("(LaneIndependentRouter::CalculatePath) Error: Start position is invalid");
         return {};
     }
     if (!IsPositionValid(target))
     {
-        LOG("(LaneIndependentRouter::CalculatePath) Error: Target position is invalid");
+        ERROR("(LaneIndependentRouter::CalculatePath) Error: Target position is invalid");
         return {};
     }
 
@@ -318,14 +318,14 @@ std::vector<Node> LaneIndependentRouter::CalculatePath(Position start, Position 
     // no pathToGoal is needed
     if (startRoad == targetRoad && startLaneId == targetLaneId)
     {
-        LOG("(LaneIndependentRouter::CalculatePath) Error: start pos and target pos on same road and lane");
+        ERROR("(LaneIndependentRouter::CalculatePath) Error: start pos and target pos on same road and lane");
         return {};
     }
 
     if (!nextElement)
     {
         // No link (next road element) found
-        LOG("(LaneIndependentRouter::CalculatePath) Error: No link from start pos");
+        ERROR("(LaneIndependentRouter::CalculatePath) Error: No link from start pos");
         return {};
     }
 
@@ -345,7 +345,7 @@ std::vector<Node> LaneIndependentRouter::CalculatePath(Position start, Position 
     }
     else
     {
-        LOG("(LaneIndependentRouter::CalculatePath) Warning: Path to target not found");
+        WARN("(LaneIndependentRouter::CalculatePath) Warning: Path to target not found");
     }
     std::reverse(pathToGoal.begin(), pathToGoal.end());
     return pathToGoal;
@@ -416,7 +416,7 @@ double RoadCalculations::CalcAverageSpeed(Road *road)
     if (roadTypeCount == 0)
     {
         // Assume road is rural
-        LOG("Warning: Road %d has no road types (and speed limit)", road->GetId());
+        WARN("Warning: Road {} has no road types (and speed limit)", road->GetId());
         return roadTypeToSpeed[Road::RoadType::ROADTYPE_RURAL];
     }
 
@@ -436,7 +436,7 @@ double RoadCalculations::CalcAverageSpeed(Road *road)
             }
             else
             {
-                LOG("Error: Road %d has undefined road type", road->GetId());
+                ERROR("Error: Road {} has undefined road type", road->GetId());
             }
         }
     }
@@ -487,7 +487,7 @@ double RoadCalculations::CalcWeight(Node *previousNode, Position::RouteStrategy 
     }
     else
     {
-        LOG("Error: Position::RouteStrategy weight calculation is not defined");
+        ERROR("Error: Position::RouteStrategy weight calculation is not defined");
         return 0;
     }
 }

@@ -81,7 +81,7 @@ double OSCPrivateAction::TransitionDynamics::EvaluatePrimPeak()
         }
         else
         {
-            LOG("Invalid Dynamics shape: %d", shape_);
+            ERROR("Invalid Dynamics shape: {}", shape_);
         }
     }
 
@@ -108,7 +108,7 @@ double OSCPrivateAction::TransitionDynamics::GetTargetParamValByPrimPeak(double 
     }
     else
     {
-        LOG("Invalid Dynamics shape: %d", shape_);
+        ERROR("Invalid Dynamics shape: {}", shape_);
     }
 
     return 0.0;
@@ -138,7 +138,7 @@ double OSCPrivateAction::TransitionDynamics::GetTargetParamValByPrimPrimPeak(dou
     }
     else
     {
-        LOG("Invalid Dynamics shape: %d", shape_);
+        ERROR("Invalid Dynamics shape: {}", shape_);
     }
 
     return 0.0;
@@ -164,7 +164,7 @@ double OSCPrivateAction::TransitionDynamics::EvaluatePrim()
     }
     else
     {
-        LOG("Invalid Dynamics shape: %d", shape_);
+        ERROR("Invalid Dynamics shape: {}", shape_);
     }
 
     return 0;
@@ -202,7 +202,7 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(DynamicsShape shape)
     }
     else
     {
-        LOG("Invalid Dynamics shape: %d", shape);
+        ERROR("Invalid Dynamics shape: {}", shape);
     }
 
     return GetTargetVal();
@@ -563,20 +563,20 @@ void AssignControllerAction::Start(double simTime)
                 if (lat_activation_mode_ != ControlActivationMode::UNDEFINED || long_activation_mode_ != ControlActivationMode::UNDEFINED ||
                     light_activation_mode_ != ControlActivationMode::UNDEFINED || anim_activation_mode_ != ControlActivationMode::UNDEFINED)
                 {
-                    controller_->Activate(lat_activation_mode_, long_activation_mode_, light_activation_mode_, anim_activation_mode_);
-                    LOG("Controller %s activated (lat %s, long %s, light %s, anim %s), domain mask=0x%X",
-                        controller_->GetName().c_str(),
-                        DomainActivation2Str(lat_activation_mode_).c_str(),
-                        DomainActivation2Str(long_activation_mode_).c_str(),
-                        DomainActivation2Str(light_activation_mode_).c_str(),
-                        DomainActivation2Str(anim_activation_mode_).c_str(),
-                        controller_->GetActiveDomains());
+                    controller_->Activate(lat_activation_mode_, long_activation_mode_, light_activation_mode_, anim_activation_mode_);                    
+                    INFO("Controller {} activated (lat {}, long {}, light {}, anim {}), domain mask=0x{}",
+                        controller_->GetName(),
+                        DomainActivation2Str(lat_activation_mode_),
+                        DomainActivation2Str(long_activation_mode_),
+                        DomainActivation2Str(light_activation_mode_),
+                        DomainActivation2Str(anim_activation_mode_),
+                        controller_->GetActiveDomains());    
                 }
             }
             else
             {
-                LOG("Controller %s already active (domainmask 0x%X), should not happen when just assigned!",
-                    controller_->GetName().c_str(),
+                INFO("Controller {} already active (domainmask 0x{}), should not happen when just assigned!",
+                    controller_->GetName(),
                     controller_->GetActiveDomains());
             }
         }
@@ -589,7 +589,7 @@ void ActivateControllerAction::Start(double simTime)
 {
     if (object_->controllers_.size() == 0)
     {
-        LOG("No controller assigned to object %s!", object_->name_.c_str());
+        INFO("No controller assigned to object {}!", object_->name_);
     }
     else
     {
@@ -601,10 +601,10 @@ void ActivateControllerAction::Start(double simTime)
 
             if (scenarioEngine_->GetScenarioReader()->GetVersionMinor() > 2)
             {
-                LOG("Warning: No controller name given for activation on object %s, %s: %s",
-                    object_->name_.c_str(),
+                WARN("Warning: No controller name given for activation on object {}, {}: {}",
+                    object_->name_,
                     object_->GetNrOfAssignedControllers() > 1 ? "pick most recently assigned" : "using assigned controller",
-                    controller_->GetName().c_str());
+                    controller_->GetName());
             }
         }
         else
@@ -612,7 +612,7 @@ void ActivateControllerAction::Start(double simTime)
             controller_ = object_->GetController(ctrl_name_);
             if (controller_ == nullptr)
             {
-                LOG("Error: Controller %s is not assigned to object %s", ctrl_name_.c_str(), object_->GetName().c_str());
+                ERROR("Error: Controller {} is not assigned to object {}", ctrl_name_, object_->GetName());
             }
         }
 
@@ -623,49 +623,49 @@ void ActivateControllerAction::Start(double simTime)
             if (long_activation_mode_ == ControlActivationMode::ON &&
                 (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG)) != nullptr)
             {
-                LOG("Deactivating conflicting ctrl %s on domain %s",
-                    ctrl->GetName().c_str(),
-                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)).c_str());
+                WARN("Deactivating conflicting ctrl {} on domain {}",
+                    ctrl->GetName(),
+                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)));
                 ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG));
             }
             if (lat_activation_mode_ == ControlActivationMode::ON &&
                 (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LAT)) != nullptr)
             {
-                LOG("Deactivating conflicting ctrl %s on domain %s",
-                    ctrl->GetName().c_str(),
-                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)).c_str());
+                WARN("Deactivating conflicting ctrl {} on domain {}",
+                    ctrl->GetName(),
+                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)));
                 ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT));
             }
             if (anim_activation_mode_ == ControlActivationMode::ON &&
                 (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_ANIM)) != nullptr)
             {
-                LOG("Deactivating conflicting ctrl %s on domain %s",
-                    ctrl->GetName().c_str(),
-                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM)).c_str());
+                WARN("Deactivating conflicting ctrl {} on domain {}",
+                    ctrl->GetName(),
+                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM)));
                 ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM));
             }
             if (light_activation_mode_ == ControlActivationMode::ON &&
                 (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LIGHT)) != nullptr)
             {
-                LOG("Deactivating conflicting ctrl %s on domain %s",
-                    ctrl->GetName().c_str(),
-                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT)).c_str());
+                WARN("Deactivating conflicting ctrl %s on domain %s",
+                    ctrl->GetName(),
+                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT)));
                 ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT));
             }
 
             if (controller_->Activate(lat_activation_mode_, long_activation_mode_, light_activation_mode_, anim_activation_mode_) == 0)
             {
                 object_->SetDirtyBits(Object::DirtyBit::CONTROLLER);
-                LOG("Controller %s active on domains: %s (mask=0x%x)",
-                    controller_->GetName().c_str(),
-                    ControlDomain2Str(controller_->GetActiveDomains()).c_str(),
+                INFO("Controller {} active on domains: {} (mask=0x{})",
+                    controller_->GetName(),
+                    ControlDomain2Str(controller_->GetActiveDomains()),
                     controller_->GetActiveDomains());
                 OSCAction::Start(simTime);
                 End();  // action ends immediately
             }
             else
             {
-                LOG("Error: Failed to activate controller %s assigned to object %s!", controller_->GetName().c_str(), object_->GetName().c_str());
+                ERROR("Error: Failed to activate controller {} assigned to object {}!", controller_->GetName(), object_->GetName());
             }
         }
     }
@@ -709,7 +709,7 @@ void LatLaneChangeAction::Start(double simTime)
         }
         else
         {
-            LOG("LaneChange RelativeTarget ref entity not found!");
+            WARN("LaneChange RelativeTarget ref entity not found!");
         }
     }
 
@@ -774,7 +774,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
             transition_.Step(step_len * transition_.GetParamTargetVal() / abs(transition_.GetTargetVal() - transition_.GetStartVal()));
             if (!NEAR_NUMBERS(heading_agnostic_, SIGN(object_->speed_) * (M_PI_2 - SMALL_NUMBER)) && transition_.shape_ != DynamicsShape::LINEAR)
             {
-                LOG("LatLaneChangeAction: Limiting lateral motion and falling back to linear interpolation");
+                WARN("LatLaneChangeAction: Limiting lateral motion and falling back to linear interpolation");
             }
             offset_agnostic   = transition_.Evaluate(DynamicsShape::LINEAR);
             heading_agnostic_ = SIGN(object_->speed_) * SIGN(rate) * (M_PI_2 - SMALL_NUMBER);  // avoid ambiguous driving direction
@@ -789,7 +789,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
     }
     else
     {
-        LOG("Unexpected, unsupported transition dimension: %d", transition_.dimension_);
+        ERROR("Unexpected, unsupported transition dimension: {}", transition_.dimension_);
     }
 
     // Restore position to target lane and new offset
@@ -816,7 +816,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
         // Check whether updated position still is on the route, i.e. same road ID, or not
         if (!object_->pos_.IsInJunction() && !internal_pos_.GetTrackId() && object_->pos_.GetTrackId() != internal_pos_.GetTrackId())
         {
-            LOG("Warning/Info: LaneChangeAction moved away from route (track id %d -> track id %d), disabling route",
+            WARN("Warning/Info: LaneChangeAction moved away from route (track id {} -> track id {}), disabling route",
                 object_->pos_.GetTrackId(),
                 internal_pos_.GetTrackId());
             object_->pos_.SetRoute(nullptr);
@@ -981,7 +981,7 @@ double LongSpeedAction::TargetRelative::GetValue()
     }
     else
     {
-        LOG("Invalid value type: %d", value_type_);
+        ERROR("Invalid value type: {}", value_type_);
     }
 
     return 0;
@@ -1299,7 +1299,7 @@ void LongSpeedProfileAction::Start(double simTime)
                 t1 = (2 * j1 * (v0 + t0 * j1 * (t0 - t3) - v3) + pow(k0, 2) + 2 * k0 * j1 * (t3 - 2 * t0)) / (2 * j1 * (j1 * (t0 - t3) - k0));
                 if (t1 < 0)
                 {
-                    LOG("SpeedProfile: No solution found (t1) - fallback to Position mode");
+                    ERROR("SpeedProfile: No solution found (t1) - fallback to Position mode");
                 }
                 else
                 {
@@ -1308,7 +1308,7 @@ void LongSpeedProfileAction::Start(double simTime)
                     t2 = (k1 / j1) + t3;
                     if (t2 < 0)
                     {
-                        LOG("SpeedProfile: No solution found (t2)");
+                        ERROR("SpeedProfile: No solution found (t2)");
                     }
                     else
                     {
@@ -1323,7 +1323,7 @@ void LongSpeedProfileAction::Start(double simTime)
             }
             else
             {
-                LOG("SpeedProfile: No solution found (t3)");
+                ERROR("SpeedProfile: No solution found (t3)");
             }
         }
         else
@@ -1340,7 +1340,7 @@ void LongSpeedProfileAction::Start(double simTime)
 
                 if (IS_IN_SPAN(k1, -dynamics_.max_deceleration_, dynamics_.max_acceleration_) && t3 > vertex[1].t_)
                 {
-                    LOG("SpeedProfile: Can't reach target speed %.2f on target time %.2fs with given jerk constraints, extend to %.2fs",
+                    WARN("SpeedProfile: Can't reach target speed {:.2f} on target time {:.2f}s with given jerk constraints, extend to {:.2f}s",
                         v3,
                         vertex[1].t_,
                         t3);
@@ -1349,7 +1349,7 @@ void LongSpeedProfileAction::Start(double simTime)
             else
             {
                 // need a linear segment to reach speed at specified time
-                LOG("SpeedProfile: Add linear segment to reach target speed on time.");
+                INFO("SpeedProfile: Add linear segment to reach target speed on time.");
                 t1 = (-sqrt(factor) - j0 * (k0 + t3 * j1) + t0 * pow(j0, 2)) / (j0 * (j0 - j1));
                 v1 = v0 + k0 * (t1 - t0) + j0 * 0.5 * pow(t1 - t0, 2);
                 k1 = init_acc_ + j0 * (t1 - t0);
@@ -1375,12 +1375,12 @@ void LongSpeedProfileAction::Start(double simTime)
         {
             if (k1 > dynamics_.max_acceleration_)
             {
-                LOG("SpeedProfile: Constraining acceleration from %.2f to %.2f", k1, dynamics_.max_acceleration_);
+                INFO("SpeedProfile: Constraining acceleration from {:.2f} to {:.2f}", k1, dynamics_.max_acceleration_);
                 k1 = dynamics_.max_acceleration_;
             }
             else if (k1 < -dynamics_.max_deceleration_)
             {
-                LOG("SpeedProfile: Constraining deceleration from %.2f to %.2f", -k1, dynamics_.max_deceleration_);
+                INFO("SpeedProfile: Constraining deceleration from {:.2f} to {:.2f}", -k1, dynamics_.max_deceleration_);
                 k1 = -dynamics_.max_deceleration_;
             }
 
@@ -1390,7 +1390,7 @@ void LongSpeedProfileAction::Start(double simTime)
             v2 = v3 + pow(k1, 2) / (2 * j1);
             t3 = -v1 / k1 + v3 / k1 + t1 - k1 / (2 * j1);
 
-            LOG("SpeedProfile: Extend %.2f s", t3 - vertex.back().t_);
+            INFO("SpeedProfile: Extend {:.2f} s", t3 - vertex.back().t_);
 
             // add linear segment
             AddSpeedSegment(t1, v1, k1, 0.0);
@@ -1461,7 +1461,7 @@ void LongSpeedProfileAction::Start(double simTime)
 
                     if (t1 < t0)
                     {
-                        LOG("LongSpeedProfileAction failed at point %d (time=%.2f). Falling back to linear (Position) mode.",
+                        WARN("LongSpeedProfileAction failed at point {} (time={:.2f}). Falling back to linear (Position) mode.",
                             index,
                             vertex[index].t_);
                         following_mode_ = FollowingMode::POSITION;
@@ -1523,7 +1523,7 @@ void LongSpeedProfileAction::CheckAcceleration(double acc)
 
     if (acc > dynamics_.max_acceleration_ + SMALL_NUMBER || acc < -dynamics_.max_deceleration_ - SMALL_NUMBER)
     {
-        LOG("Acceleration %.2f not within constrained span [%.2f:%.2f], revert to linear mode",
+        WARN("Acceleration {:.2f} not within constrained span [{:.2f}:{:.2f}], revert to linear mode",
             acc,
             dynamics_.max_acceleration_,
             -dynamics_.max_deceleration_);
@@ -1541,7 +1541,7 @@ void LongSpeedProfileAction::CheckAccelerationRate(double acc_rate)
 
     if (acc_rate > dynamics_.max_acceleration_rate_ + SMALL_NUMBER || acc_rate < -dynamics_.max_deceleration_rate_ - SMALL_NUMBER)
     {
-        LOG("Acceleration rate %.2f not within constrained span [%.2f:%.2f], revert to linear mode",
+        WARN("Acceleration rate {:.2f} not within constrained span [{:.2f}:{:.2f}], revert to linear mode",
             acc_rate,
             dynamics_.max_acceleration_rate_,
             -dynamics_.max_deceleration_rate_);
@@ -1559,7 +1559,7 @@ void LongSpeedProfileAction::CheckSpeed(double speed)
 
     if (speed > dynamics_.max_speed_ + SMALL_NUMBER || speed < -dynamics_.max_speed_ - SMALL_NUMBER)
     {
-        LOG("Speed %.2f not within constrained span [%.2f:%.2f], revert to linear mode", speed, dynamics_.max_speed_, -dynamics_.max_speed_);
+        WARN("Speed {:.2f} not within constrained span [{:.2f}:{:.2f}], revert to linear mode", speed, dynamics_.max_speed_, -dynamics_.max_speed_);
 
         following_mode_ = FollowingMode::POSITION;
     }
@@ -1607,7 +1607,7 @@ void LongDistanceAction::Start(double simTime)
     sim_time_ = simTime;
     if (target_object_ == 0)
     {
-        LOG("Can't trig without set target object ");
+        ERROR("Can't trig without set target object ");
         return;
     }
 
@@ -1776,7 +1776,7 @@ void LongDistanceAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 void TeleportAction::Start(double simTime)
 {
     OSCAction::Start(simTime);
-    LOG("Starting teleport Action");
+    INFO("Starting teleport Action");
 
     if (object_->IsGhost() && IsGhostRestart() && scenarioEngine_->getSimulationTime() > SMALL_NUMBER)
     {
@@ -1813,7 +1813,7 @@ void TeleportAction::Start(double simTime)
         (static_cast<Vehicle*>(object_))->AlignTrailers();
     }
 
-    LOG("%s New position:", object_->name_.c_str());
+    INFO("{} New position:", object_->name_);
     object_->pos_.Print();
 
     object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED | Object::DirtyBit::TELEPORT);
@@ -1848,24 +1848,24 @@ void ConnectTrailerAction::Start(double simTime)
         {
             if (object_->TrailerVehicle() == trailer_object_)
             {
-                LOG("Trailer %s already connected to %s - keep connection", trailer_object_->GetName().c_str(), object_->GetName().c_str());
+                INFO("Trailer {} already connected to {} - keep connection", trailer_object_->GetName(), object_->GetName());
             }
             else
             {
-                LOG("Disconnecting currently connected trailer: %s", object_->TrailerVehicle()->GetName().c_str());
+                INFO("Disconnecting currently connected trailer: {}", object_->TrailerVehicle()->GetName());
                 reinterpret_cast<Vehicle*>(object_)->DisconnectTrailer();
             }
         }
 
         if (trailer_object_ != object_->TrailerVehicle())
         {
-            LOG("Connect trailer %s to %s", reinterpret_cast<Vehicle*>(trailer_object_)->GetName().c_str(), object_->GetName().c_str());
+            INFO("Connect trailer {} to {}", reinterpret_cast<Vehicle*>(trailer_object_)->GetName(), object_->GetName());
             reinterpret_cast<Vehicle*>(object_)->ConnectTrailer(reinterpret_cast<Vehicle*>(trailer_object_));
         }
     }
     else
     {
-        LOG("No trailer to disconnect from %s", object_->GetName().c_str());
+        INFO("No trailer to disconnect from {}", object_->GetName());
     }
 }
 
@@ -1896,12 +1896,12 @@ void DisconnectTrailerAction::Start(double simTime)
 
     if (object_->TrailerVehicle())
     {
-        LOG("Disconnecting %s from %s", object_->TrailerVehicle()->GetName().c_str(), object_->GetName().c_str());
+        INFO("Disconnecting {} from {}", object_->TrailerVehicle()->GetName(), object_->GetName());
         reinterpret_cast<Vehicle*>(object_)->DisconnectTrailer();
     }
     else
     {
-        LOG("DisconnectTrailerAction: No trailer connected, ignoring action");
+        WARN("DisconnectTrailerAction: No trailer connected, ignoring action");
     }
 }
 
@@ -1993,7 +1993,7 @@ const char* SynchronizeAction::SubMode2Str(SynchSubmode submode)
 
 void SynchronizeAction::PrintStatus(const char* custom_msg)
 {
-    LOG("%s, mode=%s (%d) sub-mode=%s (%d)", custom_msg, Mode2Str(mode_), mode_, SubMode2Str(submode_), submode_);
+    INFO("{}, mode={} ({}) sub-mode={} ({})", custom_msg, Mode2Str(mode_), mode_, SubMode2Str(submode_), submode_);
 }
 
 void SynchronizeAction::Start(double simTime)
@@ -2058,22 +2058,22 @@ void SynchronizeAction::Step(double simTime, double dt)
     // Done when distance increases, indicating that destination just has been reached or passed
     if (dist < tolerance_ + SMALL_NUMBER)
     {
-        LOG("Synchronize dist (%.2f) < tolerance (%.2f)", dist, tolerance_);
+        INFO("Synchronize dist ({:.2f}) < tolerance ({:.2f})", dist, tolerance_);
         done = true;
     }
     else if (masterDist < tolerance_master_ + SMALL_NUMBER)
     {
-        LOG("Synchronize masterDist (%.2f) < tolerance (%.2f)", masterDist, tolerance_master_);
+        INFO("Synchronize masterDist ({:.2f}) < tolerance ({:.2f})", masterDist, tolerance_master_);
         done = true;
     }
     else if (dist > lastDist_)
     {
-        LOG("Synchronize dist increasing (%.2f > %.2f) - missed destination", dist, lastDist_);
+        INFO("Synchronize dist increasing ({:.2f} > {:.2f}) - missed destination", dist, lastDist_);
         done = true;
     }
     else if (masterDist > lastMasterDist_)
     {
-        LOG("Synchronize masterDist increasing (%.2f > %.2f) - missed destination", masterDist, lastMasterDist_);
+        INFO("Synchronize masterDist increasing ({:.2f} > {:.2f}) - missed destination", masterDist, lastMasterDist_);
         done = true;
     }
 
@@ -2095,7 +2095,7 @@ void SynchronizeAction::Step(double simTime, double dt)
 
         if (masterTimeToDest < dt)
         {
-            LOG("Synchronize masterTimeToDest (%.3f) reached within this timestep (%.3f)", masterTimeToDest, dt);
+            INFO("Synchronize masterTimeToDest ({:.3f}) reached within this timestep ({:.3f})", masterTimeToDest, dt);
             done = true;
         }
     }
@@ -2125,7 +2125,7 @@ void SynchronizeAction::Step(double simTime, double dt)
                     submode_ = SynchSubmode::SUBMODE_NONE;
                     if (time_to_ss > masterTimeToDest && (time_to_ss - masterTimeToDest) * final_speed_->GetValue() > tolerance_)
                     {
-                        LOG("Entering Stead State according to criteria but not enough time to reach destination");
+                        INFO("Entering Stead State according to criteria but not enough time to reach destination");
                     }
                     // PrintStatus("SteadyState");
                 }
@@ -2450,7 +2450,7 @@ int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status
     }
     else
     {
-        LOG_AND_QUIT("Unexpected override type: %d", status.type);
+        ERROR_AND_QUIT("Unexpected override type: {}", status.type);
     }
 
     return 0;
@@ -2480,18 +2480,18 @@ double OverrideControlAction::RangeCheckAndErrorLog(Object::OverrideType type, d
     {
         if (!ifRound)
         {
-            LOG("%d value %.2f is within range.", type, valueCheck);
+            INFO("{} value {:.2f} is within range.", type, valueCheck);
         }
         else
         {
             valueCheck = round(temp);
-            LOG("%d value %.1f is within range and the value is rounded to %.1f.", type, temp, valueCheck);
+            INFO("{} value {:.1f} is within range and the value is rounded to {:.1f}.", type, temp, valueCheck);
         }
     }
     else
     {
         valueCheck = (valueCheck > upperLimit) ? upperLimit : lowerLimit;
-        LOG("%d value is not within range and is modified from %f to %.1f.", type, temp, valueCheck);
+        INFO("{} value is not within range and is modified from {:.1f} to {:.1f}.", type, temp, valueCheck);
     }
     return valueCheck;
 }

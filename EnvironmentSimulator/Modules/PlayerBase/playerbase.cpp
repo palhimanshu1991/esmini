@@ -22,6 +22,8 @@
 #include "playerbase.hpp"
 #include "helpText.hpp"
 #include "OSCParameterDistribution.hpp"
+#include "logger.hpp"
+#include "Utils.h"
 
 #ifdef _USE_OSG
 #include "viewer.hpp"
@@ -107,7 +109,9 @@ ScenarioPlayer::~ScenarioPlayer()
         }
     }
 #endif  // _USE_OSG
-    Logger::Inst().SetTimePtr(0);
+    //Logger::Inst().SetTimePtr(0);  
+      
+    SetLoggerTime(0); 
     if (scenarioEngine)
     {
         delete scenarioEngine;
@@ -221,7 +225,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
 
         if (scenarioEngine->getSimulationTime() > 3600 && !messageShown)
         {
-            LOG("Info: Simulation time > 1 hour. Put a stopTrigger for automatic ending");
+            INFO("Info: Simulation time > 1 hour. Put a stopTrigger for automatic ending");
             messageShown = true;
         }
 
@@ -323,14 +327,6 @@ void ScenarioPlayer::ScenarioPostFrame()
         }
     }
 #endif  // _USE_OSI
-
-    // LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
-    //     scenarioEngine->entities_.object_[0]->pos_.GetTrackId(),
-    //     scenarioEngine->entities_.object_[0]->pos_.GetLaneId(),
-    //     scenarioEngine->entities_.object_[0]->pos_.GetS(),
-    //     scenarioEngine->entities_.object_[0]->pos_.GetH(),
-    //     scenarioEngine->entities_.object_[0]->pos_.GetHRoad(),
-    //     scenarioEngine->entities_.object_[0]->pos_.GetHRelative());
 
     mutex.Unlock();
 }
@@ -563,7 +559,7 @@ OffScreenImage* ScenarioPlayer::FetchCapturedImagePtr()
 
         if (viewer_->capturedImage_.data == nullptr)
         {
-            LOG("FetchCapturedImagePtr Error: No image data");
+            ERROR("FetchCapturedImagePtr Error: No image data");
             return nullptr;
         }
 
@@ -711,7 +707,7 @@ int ScenarioPlayer::InitViewer()
         int mask = strtoi(arg_str);
         if (mask < 0 || mask > 3)
         {
-            LOG_AND_QUIT("Invalid on-screen info mode %d. Valid range is 0-3", mask);
+            ERROR_AND_QUIT("Invalid on-screen info mode {}. Valid range is 0-3", mask);
         }
         viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO | viewer::NodeMask::NODE_MASK_INFO_PER_OBJ,
                                  mask * viewer::NodeMask::NODE_MASK_INFO);
@@ -721,7 +717,7 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("capture_screen"))
     {
-        LOG("Activate continuous screen capture");
+        INFO("Activate continuous screen capture");
         viewer_->SaveImagesToFile(-1);
     }
 
@@ -730,7 +726,7 @@ int ScenarioPlayer::InitViewer()
         int mask = strtoi(arg_str);
         if (mask < 0 || mask > 3)
         {
-            LOG_AND_QUIT("Invalid trail_mode %d. Valid range is 0-3", mask);
+            ERROR_AND_QUIT("Invalid trail_mode {}. Valid range is 0-3", mask);
         }
         viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAIL_LINES | viewer::NodeMask::NODE_MASK_TRAIL_DOTS,
                                  mask * viewer::NodeMask::NODE_MASK_TRAIL_LINES);
@@ -738,7 +734,7 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("hide_trajectories"))
     {
-        LOG("Hide trajectories");
+        INFO("Hide trajectories");
         viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAJECTORY_LINES);
     }
 
@@ -753,7 +749,7 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("hide_route_waypoints"))
     {
-        LOG("Disable route waypoint visualization");
+        INFO("Disable route waypoint visualization");
         viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
     }
 
@@ -787,11 +783,11 @@ int ScenarioPlayer::InitViewer()
 
                 if (i < 2 && pos == std::string::npos)
                 {
-                    LOG_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got only %d values", i + 1);
+                    ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got only {} values", i + 1);
                 }
                 else if (i == 3 && pos == std::string::npos)
                 {
-                    LOG_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got %d values", i + 1);
+                    ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got {} values", i + 1);
                 }
                 v[i] = strtod(arg_str.substr(0, pos));
                 arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
@@ -805,18 +801,18 @@ int ScenarioPlayer::InitViewer()
             }
             if (!arg_str.empty())
             {
-                LOG_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
+                ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
             }
 
             if (i == 2)
             {
                 AddCustomCamera(v[0], v[1], v[2], false);
-                LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f)", counter, v[0], v[1], v[2]);
+                INFO("Created custom fixed camera {} ({:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2]);
             }
             else
             {
                 AddCustomCamera(v[0], v[1], v[2], v[3], v[4], false);
-                LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3], v[4]);
+                INFO("Created custom fixed camera {} ({:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2], v[3], v[4]);
             }
             counter++;
         }
@@ -837,11 +833,11 @@ int ScenarioPlayer::InitViewer()
 
                 if (i < 2 && pos == std::string::npos)
                 {
-                    LOG_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got only %d values", i + 1);
+                    ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got only {} values", i + 1);
                 }
                 else if (i == 3 && pos == std::string::npos)
                 {
-                    LOG_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got %d values", i + 1);
+                    ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got {} values", i + 1);
                 }
                 v[i] = strtod(arg_str.substr(0, pos));
                 arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
@@ -855,18 +851,18 @@ int ScenarioPlayer::InitViewer()
             }
             if (!arg_str.empty())
             {
-                LOG_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
+                ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
             }
 
             if (i == 2)
             {
                 AddCustomCamera(v[0], v[1], v[2], true);
-                LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f)", counter, v[0], v[1], v[2]);
+                INFO("Created custom fixed camera {} ({:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2]);
             }
             else
             {
                 AddCustomCamera(v[0], v[1], v[2], v[3], v[4], true);
-                LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3], v[4]);
+                INFO("Created custom fixed camera {} ({:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2], v[3], v[4]);
             }
             counter++;
         }
@@ -885,18 +881,18 @@ int ScenarioPlayer::InitViewer()
                 pos = arg_str.find(",");
                 if (i < 3 && pos == std::string::npos)
                 {
-                    LOG_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>, got only %d values", i + 1);
+                    ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>, got only {} values", i + 1);
                 }
                 v[i] = strtod(arg_str.substr(0, pos));
                 arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
             }
             if (!arg_str.empty())
             {
-                LOG_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>, got too many values. Make sure only 4 values is specified");
+                ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>, got too many values. Make sure only 4 values is specified");
             }
 
             AddCustomFixedTopCamera(v[0], v[1], v[2], v[3]);
-            LOG("Created custom fixed top camera %d (%.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3]);
+            INFO("Created custom fixed top camera {} ({:.2f}, {:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2], v[3]);
             counter++;
         }
     }
@@ -915,24 +911,24 @@ int ScenarioPlayer::InitViewer()
                 pos = arg_str.find(",");
                 if (i < 3 && pos == std::string::npos)
                 {
-                    LOG_AND_QUIT("Expected custom_light <x,y,z,intensity>, got only %d values", i + 1);
+                    ERROR_AND_QUIT("Expected custom_light <x,y,z,intensity>, got only {} values", i + 1);
                 }
                 v[i] = strtod(arg_str.substr(0, pos));
                 arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
             }
             if (!arg_str.empty())
             {
-                LOG_AND_QUIT("Expected custom_light <x,y,z,intensity>, got too many values. Make sure only 4 values is specified");
+                ERROR_AND_QUIT("Expected custom_light <x,y,z,intensity>, got too many values. Make sure only 4 values is specified");
             }
 
             if (AddCustomLightSource(v[0], v[1], v[2], v[3]) == 0)
             {
-                LOG("Created custom light source %d (%.2f, %.2f, %.2f, %.2f)", lightCounter, v[0], v[1], v[2], v[3]);
+                INFO("Created custom light source {} ({:.2f}, {:.2f}, {:.2f}, {:.2f})", lightCounter, v[0], v[1], v[2], v[3]);
                 lightCounter++;
             }
             else
             {
-                LOG("Max nr custom lights (%d) reached. Ignoring (%.2f, %.2f, %.2f, %.2f)", lightCounter, v[0], v[1], v[2], v[3]);
+                INFO("Max nr custom lights ({}) reached. Ignoring ({:.2f}, {:.2f}, {:.2f}, {:.2f})", lightCounter, v[0], v[1], v[2], v[3]);
             }
             counter++;
         }
@@ -970,7 +966,7 @@ int ScenarioPlayer::InitViewer()
         }
         else
         {
-            LOG("Unsupported camera mode: %s - using default (orbit)", arg_str.c_str());
+            INFO("Unsupported camera mode: {} - using default (orbit)", arg_str);
         }
     }
 
@@ -1038,7 +1034,7 @@ int ScenarioPlayer::InitViewer()
     // Choose vehicle to look at initially (switch with 'Tab')
     if (opt.GetOptionSet("follow_object"))
     {
-        LOG("Follow object %d", strtoi(opt.GetOptionArg("follow_object")));
+        INFO("Follow object {}", strtoi(opt.GetOptionArg("follow_object")));
         viewer_->SetVehicleInFocus(strtoi(opt.GetOptionArg("follow_object")));
     }
     else
@@ -1258,7 +1254,7 @@ void ScenarioPlayer::PrintUsage()
 #endif
 }
 
-int ScenarioPlayer::Init()
+int ScenarioPlayer::Init(bool logTime)
 {
     // Use logger callback
     if (!(Logger::Inst().IsCallbackSet()))
@@ -1307,6 +1303,10 @@ int ScenarioPlayer::Init()
     opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
     opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
+    opt.AddOption("log_meta_data", "log file name, function name and line number");
+    opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
+    opt.AddOption("log_Only_Modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
+    opt.AddOption("log_Skip_Modules", "skip log from these modules, all remaining modules will be logged.", "modulename(s)"); 
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
 #ifdef _USE_OSI
@@ -1346,13 +1346,10 @@ int ScenarioPlayer::Init()
         PrintUsage();
         return -2;
     }
-
-    if (opt.GetOptionSet("version"))
+    if( logTime)
     {
-        Logger::Inst().LogVersion();
-        return -2;
-    }
-
+        LogTimeOnly();
+    }    
     if (opt.GetOptionSet("help"))
     {
         PrintUsage();
@@ -1362,79 +1359,15 @@ int ScenarioPlayer::Init()
     if (opt.GetOptionSet("disable_stdout"))
     {
         Logger::Inst().SetCallback(0);
+        
     }
 
-    if (opt.GetOptionSet("use_signs_in_external_model"))
-    {
-        LOG("Use sign models in external scene graph model, skip creating sign models");
-    }
-
-    OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
-
-    if (dist.GetNumPermutations() > 0)
-    {
-        LOG("Re-using parameter distribution %s", dist.GetFilename().c_str());
-    }
-    else if (opt.IsOptionArgumentSet("param_dist"))
-    {
-        if (dist.GetNumPermutations() == 0)
-        {
-            if (LoadParameterDistribution(opt.GetOptionArg("param_dist")) != 0)
-            {
-                return -1;
-            }
-        }
-    }
-
-    if (opt.GetOptionSet("return_nr_permutations"))
-    {
-        LOG("Nr permutations: %d", dist.GetNumPermutations());
-        // The distribution is loadad and we can abort the initialization here
-        // the outer scope will deliver the number of permutations as return value
-        return 0;
-    }
-
-    if (opt.IsOptionArgumentSet("param_permutation"))  // permutation index set by argument
-    {
-        int permutation_index = strtoi(opt.GetOptionArg("param_permutation"));
-
-        if (dist.GetNumPermutations() > 0)
-        {
-            if (permutation_index >= static_cast<int>(dist.GetNumPermutations()) || permutation_index < 0)
-            {
-                LOG("Requested permutation %d out of range [%d .. %d]", permutation_index, 0, dist.GetNumPermutations() - 1);
-                return -1;
-            }
-            else
-            {
-                dist.SetIndex(static_cast<unsigned int>(permutation_index));
-            }
-        }
-        else if (permutation_index > 0)
-        {
-            LOG("No permutations available, requested permutation %d ignored", permutation_index);
-            return -1;
-        }
-    }
-    else if (dist.GetNumPermutations() > 0)
-    {
-        if (dist.GetRequestedIndex() > -1)  // Requested via lib API
-        {
-            if (dist.SetIndex(static_cast<unsigned int>(dist.GetRequestedIndex())) != 0)
-            {
-                LOG_AND_QUIT("Failed to set requested index %d", dist.GetRequestedIndex());
-            }
-        }
-        else
-        {
-            dist.IncrementIndex();
-        }
-    }
-
+    // Setup logger
     std::string log_filename = SE_Env::Inst().GetLogFilePath();
-
+    LoggerConfig logConfig;
     if (opt.GetOptionSet("disable_log"))
     {
+        logConfig.fileLoggingEnabled_ = false;
         log_filename = "";
         printf("Disable logfile\n");
     }
@@ -1456,11 +1389,116 @@ int ScenarioPlayer::Init()
 
         if (arg_str.empty())
         {
+            logConfig.fileLoggingEnabled_ = false;
             printf("Custom logfile path empty, disable logfile\n");
         }
         else
         {
             printf("Custom logfile path: %s\n", log_filename.c_str());
+        }
+    }
+    if( opt.IsOptionArgumentSet("log_level"))
+    {
+        arg_str = opt.GetOptionArg("log_level");        
+        logConfig.logLevel_ = GetLogLevelFromStr(arg_str);
+        
+    }
+    if( opt.GetOptionSet("log_meta_data"))
+    {        
+        logConfig.metaDataEnabled_ = true;
+    }
+    if( opt.IsOptionArgumentSet("log_Only_Modules"))
+    {
+        arg_str = opt.GetOptionArg("log_Only_Modules");        
+        const auto splitted = utils::SplitString(arg_str, ',');        
+        if( !splitted.empty())
+        {
+            logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
+        }        
+    }
+    if( opt.IsOptionArgumentSet("log_Skip_Modules"))
+    {
+        arg_str = opt.GetOptionArg("log_Skip_Modules");        
+        const auto splitted = utils::SplitString(arg_str, ',');
+        if( !splitted.empty())
+        {
+            logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
+        }        
+    }
+    
+    SetupLogger(logConfig, GetVersionInfoForLog());
+
+    if (opt.GetOptionSet("version"))
+    {
+        //Logger::Inst().LogVersion();
+        LogVersion();
+        return -2;
+    }
+
+    if (opt.GetOptionSet("use_signs_in_external_model"))
+    {
+        INFO("Use sign models in external scene graph model, skip creating sign models");
+    }
+
+    OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
+
+    if (dist.GetNumPermutations() > 0)
+    {
+        INFO("Re-using parameter distribution {}", dist.GetFilename());
+    }
+    else if (opt.IsOptionArgumentSet("param_dist"))
+    {
+        if (dist.GetNumPermutations() == 0)
+        {
+            if (LoadParameterDistribution(opt.GetOptionArg("param_dist")) != 0)
+            {
+                return -1;
+            }
+        }
+    }
+
+    if (opt.GetOptionSet("return_nr_permutations"))
+    {
+        INFO("Nr permutations: {}", dist.GetNumPermutations());
+        // The distribution is loadad and we can abort the initialization here
+        // the outer scope will deliver the number of permutations as return value
+        return 0;
+    }
+
+    if (opt.IsOptionArgumentSet("param_permutation"))  // permutation index set by argument
+    {
+        int permutation_index = strtoi(opt.GetOptionArg("param_permutation"));
+
+        if (dist.GetNumPermutations() > 0)
+        {
+            if (permutation_index >= static_cast<int>(dist.GetNumPermutations()) || permutation_index < 0)
+            {
+                INFO("Requested permutation {} out of range [{} .. {}]", permutation_index, 0, dist.GetNumPermutations() - 1);
+                return -1;
+            }
+            else
+            {
+                dist.SetIndex(static_cast<unsigned int>(permutation_index));
+            }
+        }
+        else if (permutation_index > 0)
+        {
+            ERROR("No permutations available, requested permutation {} ignored", permutation_index);
+            return -1;
+        }
+    }
+    else if (dist.GetNumPermutations() > 0)
+    {
+        if (dist.GetRequestedIndex() > -1)  // Requested via lib API
+        {
+            if (dist.SetIndex(static_cast<unsigned int>(dist.GetRequestedIndex())) != 0)
+            {
+                ERROR_AND_QUIT("Failed to set requested index %d", dist.GetRequestedIndex());
+            }
+        }
+        else
+        {
+            dist.IncrementIndex();
         }
     }
 
@@ -1469,30 +1507,30 @@ int ScenarioPlayer::Init()
         log_filename = dist.AddInfoToFilepath(log_filename);
     }
 
-    Logger::Inst().OpenLogfile(log_filename);
-    Logger::Inst().LogVersion();
-
+    //Logger::Inst().OpenLogfile(log_filename);
+    //Logger::Inst().LogVersion();
+    
     if (dist.GetNumPermutations() > 0)
     {
-        LOG("Using parameter distribution file: %s", dist.GetFilename().c_str());
+        INFO("Using parameter distribution file: {}", dist.GetFilename());
     }
 
     if (opt.GetOptionSet("threads"))
     {
 #ifdef __APPLE__
-        LOG("Separate viewer thread requested. Unfortunately only supported on Windows and Linux.");
-        LOG("See https://www.mail-archive.com/osg-users@lists.openscenegraph.org/msg72698.html for an explanation.");
+        WARN("Separate viewer thread requested. Unfortunately only supported on Windows and Linux.");
+        INFO("See https://www.mail-archive.com/osg-users@lists.openscenegraph.org/msg72698.html for an explanation.");
         return -1;
 #else
         threads = true;
-        LOG("Run viewer in separate thread");
+        INFO("Run viewer in separate thread");
 #endif
     }
 
     if (opt.GetOptionSet("server"))
     {
         launch_server = true;
-        LOG("Launch server to receive state of external Ego simulator");
+        INFO("Launch server to receive state of external Ego simulator");
     }
 
     int index = 0;
@@ -1502,16 +1540,16 @@ int ScenarioPlayer::Init()
         if (timestep > SMALL_NUMBER)
         {
             SetFixedTimestep(std::stod(arg_str));
-            LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
+            INFO("Run simulation decoupled from realtime, with fixed timestep: {:.2f}", GetFixedTimestep());
         }
         else
         {
-            LOG("Zero timestep ignored, running in realtime speed");
+            INFO("Zero timestep ignored, running in realtime speed");
         }
     }
     if (index == 0)
     {
-        LOG("No fixed timestep specified - running in realtime speed");
+        INFO("No fixed timestep specified - running in realtime speed");
     }
 
     if (opt.GetOptionArg("path") != "")
@@ -1520,7 +1558,7 @@ int ScenarioPlayer::Init()
         while ((arg_str = opt.GetOptionArg("path", counter)) != "")
         {
             SE_Env::Inst().AddPath(arg_str);
-            LOG("Added path %s", arg_str.c_str());
+            INFO("Added path {}", arg_str);
             counter++;
         }
     }
@@ -1528,34 +1566,34 @@ int ScenarioPlayer::Init()
     if (opt.GetOptionSet("disable_controllers"))
     {
         disable_controllers_ = true;
-        LOG("Disable entity controllers");
+        INFO("Disable entity controllers");
     }
 
     if (opt.GetOptionSet("ignore_z"))
     {
-        LOG("Ignoring z values and placing vehicle relative to road");
+        INFO("Ignoring z values and placing vehicle relative to road");
     }
 
     if (opt.GetOptionSet("ignore_p"))
     {
-        LOG("Ignoring pitch values and placing vehicle relative to road");
+        INFO("Ignoring pitch values and placing vehicle relative to road");
     }
 
     if (opt.GetOptionSet("ignore_r"))
     {
-        LOG("Ignoring roll values and placing vehicle relative to road");
+        INFO("Ignoring roll values and placing vehicle relative to road");
     }
 
     // Use specific seed for repeatable scenarios?
     if ((arg_str = opt.GetOptionArg("seed")) != "")
     {
         unsigned int seed = static_cast<unsigned int>(std::stoul(arg_str));
-        LOG("Using specified seed %u", seed);
+        INFO("Using specified seed {}", seed);
         SE_Env::Inst().GetRand().SetSeed(seed);
     }
     else
     {
-        LOG("Generated seed %u", SE_Env::Inst().GetRand().GetSeed());
+        INFO("Generated seed {}", SE_Env::Inst().GetRand().GetSeed());
     }
 
     if (opt.GetOptionSet("collision"))
@@ -1568,18 +1606,18 @@ int ScenarioPlayer::Init()
         if (opt.GetOptionArg("plot") != "synchronous")
         {
 #ifdef __APPLE__
-            LOG("Plot mode %s not supported on mac systems (OpenGL graphics must run in main thread), applying synchronous mode",
-                opt.GetOptionArg("plot").c_str());
+            INFO("Plot mode {} not supported on mac systems (OpenGL graphics must run in main thread), applying synchronous mode",
+                opt.GetOptionArg("plot"));
             opt.ChangeOptionArg("plot", "synchronous");
 #else
             if (opt.GetOptionArg("plot") != "asynchronous")
             {
-                LOG("Plot mode %s not recognized. applying default asynchronous mode", opt.GetOptionArg("plot").c_str());
+                WARN("Plot mode {} not recognized. applying default asynchronous mode", opt.GetOptionArg("plot"));
                 opt.ChangeOptionArg("plot", "asynchronous");
             }
 #endif  // __APPLE__
         }
-        LOG("Plot mode: %s", opt.GetOptionArg("plot").c_str());
+        INFO("Plot mode: {}", opt.GetOptionArg("plot"));
     }
 
     // Create scenario engine
@@ -1590,6 +1628,7 @@ int ScenarioPlayer::Init()
             SE_Env::Inst().AddPath(DirNameOf(arg_str));  // add scenario directory to list pf paths
             scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
             Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
+            SetLoggerTime(scenarioEngine->GetSimulationTimePtr());            
         }
         else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
         {
@@ -1602,10 +1641,11 @@ int ScenarioPlayer::Init()
             }
             scenarioEngine = new ScenarioEngine(doc, disable_controllers_);
             Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
+            SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
         }
         else
         {
-            LOG("Error: Missing required OpenSCENARIO filename argument or XML string");
+            ERROR("Error: Missing required OpenSCENARIO filename argument or XML string");
             PrintUsage();
 
             return -1;
@@ -1613,7 +1653,7 @@ int ScenarioPlayer::Init()
     }
     catch (std::logic_error& e)
     {
-        LOG(std::string("Exception: ").append(e.what()).c_str());
+        ERROR(std::string("Exception: ").append(e.what()));
         return -1;
     }
 
@@ -1682,11 +1722,11 @@ int ScenarioPlayer::Init()
     {
         if (!osiReporter->IsFileOpen())
         {
-            LOG("Specifying osi frequency without --osi_file on is not possible");
+            ERROR("Specifying osi frequency without --osi_file on is not possible");
             return -1;
         }
         osi_freq_ = atoi(arg_str.c_str());
-        LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
+        INFO("Run simulation decoupled from realtime, with fixed timestep: {:.2f}", GetFixedTimestep());
     }
 #endif  // _USE_OSI
 
@@ -1704,11 +1744,11 @@ int ScenarioPlayer::Init()
             }
 
             CSV_Log->Open(scenarioEngine->getScenarioFilename(), static_cast<int>(scenarioEngine->entities_.object_.size()), filename);
-            LOG("Log all vehicle data in csv file");
+            INFO("Log all vehicle data in csv file");
         }
         else
         {
-            LOG("Failed to open CSV log %s");
+            ERROR("Failed to open CSV log");
         }
     }
 
@@ -1738,7 +1778,7 @@ int ScenarioPlayer::Init()
             filename = dist.AddInfoToFilepath(filename);
         }
 
-        LOG("Recording data to file %s", filename.c_str());
+        INFO("Recording data to file {}", filename);
         scenarioGateway->RecordToFile(filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
     }
 
@@ -1750,7 +1790,7 @@ int ScenarioPlayer::Init()
 
     if (opt.GetOptionSet("player_server"))
     {
-        LOG("Launch server to receive actions to inject");
+        INFO("Launch server to receive actions to inject");
 
         // Launch UDP server to receive actions from external process
         player_server_->Start();
@@ -1773,16 +1813,16 @@ int ScenarioPlayer::Init()
 
             if (viewerState_ == ViewerState::VIEWER_STATE_NOT_STARTED)
             {
-                LOG("Viewer still not ready. Start scenario anyway. Viewer will launch when ready.");
+                WARN("Viewer still not ready. Start scenario anyway. Viewer will launch when ready.");
             }
             else if (viewerState_ == ViewerState::VIEWER_STATE_DONE)
             {
-                LOG("Viewer already signaled done - something went wrong");
+                ERROR("Viewer already signaled done - something went wrong");
                 return -1;
             }
             else if (viewerState_ == ViewerState::VIEWER_STATE_FAILED)
             {
-                LOG("Viewer initialization failed");
+                ERROR("Viewer initialization failed");
                 return -1;
             }
         }
@@ -1790,7 +1830,7 @@ int ScenarioPlayer::Init()
         {
             if (InitViewer() != 0)
             {
-                LOG("Viewer initialization failed");
+                ERROR("Viewer initialization failed");
                 return -1;
             }
 
@@ -1798,13 +1838,13 @@ int ScenarioPlayer::Init()
         }
 
 #else
-        LOG("window requested, but esmini compiled without OSG capabilities");
+        WARN("window requested, but esmini compiled without OSG capabilities");
 #endif
     }
     else if (opt.GetOptionSet("capture_screen"))
     {
         PrintUsage();
-        LOG_AND_QUIT("Capture screen requires a window to be specified!");
+        ERROR_AND_QUIT("Capture screen requires a window to be specified!");
     }
 
     if (opt.HasUnknownArgs())
@@ -1967,7 +2007,7 @@ int ScenarioPlayer::LoadParameterDistribution(std::string filename)
 
     if (dist.GetNumPermutations() > 0)
     {
-        LOG("Parameter distribution already loaded, reusing it");
+        INFO("Parameter distribution already loaded, reusing it");
         return -2;
     }
     else

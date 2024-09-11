@@ -46,7 +46,7 @@ namespace scenarioengine
 
         virtual void Update()
         {
-            LOG("Virtual, should be overridden");
+            ERROR("Virtual, should be overridden");
         };
     };
 

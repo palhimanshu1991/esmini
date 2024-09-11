@@ -29,6 +29,7 @@
 #include "Replay.hpp"
 #include "helpText.hpp"
 #include "collision.hpp"
+#include "logger.hpp"
 
 using namespace scenarioengine;
 
@@ -348,8 +349,10 @@ int main(int argc, char** argv)
 
     // Use logger callback for console output instead of logfile
     Logger::Inst().SetCallback(log_callback);
-    Logger::Inst().LogVersion();
-
+    // riz init logger
+    //LoggerConfig logConfig;    
+    //SetupLogger(logConfig, GetVersionInfoForLog());
+    //Logger::Inst().LogVersion();    
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
     // use common options parser to manage the program arguments
@@ -419,7 +422,7 @@ int main(int argc, char** argv)
         while ((arg_str = opt.GetOptionArg("path", counter)) != "")
         {
             SE_Env::Inst().AddPath(arg_str);
-            LOG("Added path %s", arg_str.c_str());
+            INFO("Added path {}", arg_str);
             counter++;
         }
     }
@@ -432,7 +435,7 @@ int main(int argc, char** argv)
 
     if (opt.GetOptionSet("use_signs_in_external_model"))
     {
-        LOG("Use sign models in external scene graph model, skip creating sign models");
+        INFO("Use sign models in external scene graph model, skip creating sign models");
     }
 
     // Create player
@@ -447,7 +450,7 @@ int main(int argc, char** argv)
 
             if (!save_merged.empty())
             {
-                LOG("Merged data saved in %s", save_merged.c_str());
+                INFO("Merged data saved in {}", save_merged);
                 return 0;
             }
         }
@@ -455,7 +458,7 @@ int main(int argc, char** argv)
         {
             if (!save_merged.empty())
             {
-                LOG("\"--saved_merged\" works only in combination with \"--dir\" argument, combining multiple dat files");
+                ERROR("\"--saved_merged\" works only in combination with \"--dir\" argument, combining multiple dat files");
                 return -1;
             }
             player = std::make_unique<Replay>(opt.GetOptionArg("file"), true);
@@ -463,7 +466,7 @@ int main(int argc, char** argv)
     }
     catch (const std::exception& e)
     {
-        LOG(std::string("Exception: ").append(e.what()).c_str());
+        ERROR("Exception: ", e.what());
         return -1;
     }
 
@@ -559,7 +562,7 @@ int main(int argc, char** argv)
             }
             else
             {
-                LOG("Unsupported camera mode: %s - using default (orbit)", arg_str.c_str());
+                WARN("Unsupported camera mode: %s - using default (orbit)", arg_str.c_str());
             }
         }
 
@@ -578,11 +581,11 @@ int main(int argc, char** argv)
 
                     if (i < 2 && pos == std::string::npos)
                     {
-                        LOG_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got only %d values", i + 1);
+                        ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got only {} values", i + 1);
                     }
                     else if (i == 3 && pos == std::string::npos)
                     {
-                        LOG_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got %d values", i + 1);
+                        ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got {} values", i + 1);
                     }
                     v[i] = strtod(arg_str.substr(0, pos));
                     arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
@@ -596,18 +599,18 @@ int main(int argc, char** argv)
                 }
                 if (!arg_str.empty())
                 {
-                    LOG_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
+                    ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
                 }
 
                 if (i == 2)
                 {
                     viewer->AddCustomCamera(v[0], v[1], v[2], false);
-                    LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f)", counter, v[0], v[1], v[2]);
+                    INFO("Created custom fixed camera {} ({:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2]);
                 }
                 else
                 {
                     viewer->AddCustomCamera(v[0], v[1], v[2], v[3], v[4], false);
-                    LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3], v[4]);
+                    INFO("Created custom fixed camera {} ({:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2], v[3], v[4]);
                 }
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
 
@@ -630,11 +633,11 @@ int main(int argc, char** argv)
 
                     if (i < 2 && pos == std::string::npos)
                     {
-                        LOG_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got only %d values", i + 1);
+                        ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got only {} values", i + 1);
                     }
                     else if (i == 3 && pos == std::string::npos)
                     {
-                        LOG_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got %d values", i + 1);
+                        ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got {} values", i + 1);
                     }
                     v[i] = strtod(arg_str.substr(0, pos));
                     arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
@@ -648,18 +651,18 @@ int main(int argc, char** argv)
                 }
                 if (!arg_str.empty())
                 {
-                    LOG_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
+                    ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
                 }
 
                 if (i == 2)
                 {
                     viewer->AddCustomCamera(v[0], v[1], v[2], true);
-                    LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f)", counter, v[0], v[1], v[2]);
+                    INFO("Created custom fixed camera {} ({:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2]);
                 }
                 else
                 {
                     viewer->AddCustomCamera(v[0], v[1], v[2], v[3], v[4], true);
-                    LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3], v[4]);
+                    INFO("Created custom fixed camera {} ({:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2], v[3], v[4]);
                 }
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
                 counter++;
@@ -679,19 +682,19 @@ int main(int argc, char** argv)
                     pos = arg_str.find(",");
                     if (i < 3 && pos == std::string::npos)
                     {
-                        LOG_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>, got only %d values", i + 1);
+                        ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>, got only {} values", i + 1);
                     }
                     v[i] = strtod(arg_str.substr(0, pos));
                     arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
                 }
                 if (!arg_str.empty())
                 {
-                    LOG_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>, got too many values. Make sure only 4 values is specified");
+                    ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>, got too many values. Make sure only 4 values is specified");
                 }
 
                 viewer->AddCustomFixedTopCamera(v[0], v[1], v[2], v[3]);
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
-                LOG("Created custom fixed top camera %d (%.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3]);
+                INFO("Created custom fixed top camera {} ({:.2f}, {:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2], v[3]);
                 counter++;
             }
         }
@@ -701,7 +704,7 @@ int main(int argc, char** argv)
             int mask = strtoi(arg_str);
             if (mask < 0 || mask > 3)
             {
-                LOG_AND_QUIT("Invalid on-screen info mode %d. Valid range is 0-3", mask);
+                ERROR_AND_QUIT("Invalid on-screen info mode {}. Valid range is 0-3", mask);
             }
             viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO | viewer::NodeMask::NODE_MASK_INFO_PER_OBJ,
                                     mask * viewer::NodeMask::NODE_MASK_INFO);
@@ -739,7 +742,7 @@ int main(int argc, char** argv)
 
         if (opt.GetOptionSet("capture_screen"))
         {
-            LOG("Activate continuous screen capture");
+            INFO("Activate continuous screen capture");
             viewer->SaveImagesToFile(-1);
         }
 
@@ -1047,10 +1050,10 @@ int main(int argc, char** argv)
                                                                (player->GetState(scenarioEntity[j].id)->info.speed)) *
                                                            3.6f;
                                         double rel_angle = static_cast<double>(scenarioEntity[i].pos.h - scenarioEntity[j].pos.h) * 180.0 / M_PI;
-                                        LOG("Collision between %s (id %d) and %s (id %d) at time %.2f.\n- Relative speed %.2f km/h\n- Angle %.2f degrees (ego to target)",
-                                            scenarioEntity[i].name.c_str(),
+                                        WARN("Collision between {} (id {}) and {} (id {}) at time {:.2f}.\n- Relative speed {:.2f} km/h\n- Angle {:.2f} degrees (ego to target)",
+                                            scenarioEntity[i].name,
                                             scenarioEntity[i].id,
-                                            scenarioEntity[j].name.c_str(),
+                                            scenarioEntity[j].name,
                                             scenarioEntity[j].id,
                                             simTime,
                                             rel_speed,

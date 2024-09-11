@@ -60,7 +60,7 @@ typedef int64_t __int64;
 #define LOG_FILENAME                  "log.txt"
 #define DAT_FILENAME                  "sim.dat"
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
-
+/*
 #define LOG(...)       Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
 #define LOG_TRACE(...) Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
 #define LOG_ONCE(...)                                                                            \
@@ -83,7 +83,7 @@ typedef int64_t __int64;
     }
 #define LOG_AND_QUIT(...)       Logger::Inst().Log(true, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
 #define LOG_TRACE_AND_QUIT(...) Logger::Inst().Log(true, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-
+*/
 // Time functions
 __int64 SE_getSystemTime();
 void    SE_sleep(unsigned int msec);
@@ -741,7 +741,7 @@ double strtod(std::string s);
         @param terminate If true the dest will always be terminated, at latest at dest[size-1]
 */
 void StrCopy(char* dest, const char* src, size_t size, bool terminate = true);
-
+std::string GetVersionInfoForLog();
 // Global Logger class
 class Logger
 {

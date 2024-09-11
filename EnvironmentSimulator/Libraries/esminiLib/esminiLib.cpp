@@ -124,7 +124,7 @@ static void ConvertArguments()
         StrCopy(argv_[i], args_v[i].c_str(), static_cast<unsigned int>(args_v[i].size()) + 1);
         argument_list += std::string(" ") + argv_[i];
     }
-    LOG("Player arguments: %s", argument_list.c_str());
+    INFO("Player arguments: {}", argument_list);
 }
 
 static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectStateStruct *gw_state)
@@ -171,7 +171,7 @@ static int getObjectById(int object_id, Object *&obj)
         obj = player->scenarioEngine->entities_.GetObjectById(object_id);
         if (obj == nullptr)
         {
-            LOG("Invalid object_id (%d)", object_id);
+            ERROR("Invalid object_id ({})", object_id);
             return -1;
         }
     }
@@ -280,7 +280,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     Object *ghost = obj->GetGhost();
     if (ghost == 0)
     {
-        LOG("Ghost object not available for object id %d", object_id);
+        ERROR("Ghost object not available for object id {}", object_id);
         return -1;
     }
 
@@ -355,7 +355,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     Object *ghost = obj->GetGhost();
     if (ghost == nullptr)
     {
-        LOG("Ghost object not available for object id %d", object_id);
+        ERROR("Ghost object not available for object id {}", object_id);
 
         return -1;
     }
@@ -368,7 +368,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
 
     if (ghost->trail_.FindPointAtTime(static_cast<double>(time) - ghost->GetHeadstartTime(), trailPos, index_out, obj->trail_follow_index_) != 0)
     {
-        LOG("Failed to lookup point at time %.2f (time arg = %.2f) along ghost (%d) trail",
+        ERROR("Failed to lookup point at time {:.2f} (time arg = {:.2f}) along ghost ({}) trail",
             player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + static_cast<double>(time),
             static_cast<double>(time),
             ghost->GetId());
@@ -413,9 +413,16 @@ static int InitScenario()
     std::setlocale(LC_ALL, "C.UTF-8");
 
     Logger::Inst().SetCallback(log_callback);
-    Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
-    Logger::Inst().LogVersion();
-
+    //Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
+    //Logger::Inst().LogVersion();
+    // riz temp
+    // LoggerConfig logConfig;
+    // if( !SE_Env::Inst().GetLogFilePath().empty())
+    // {
+    //     logConfig.logFilePath_ = SE_Env::Inst().GetLogFilePath();
+    // }    
+    // SetupLogger(loggerConfig, GetVersionInfoForLog());
+    LogTimeOnly();   
     ConvertArguments();
 
     // Create scenario engine
@@ -423,14 +430,14 @@ static int InitScenario()
     {
         // Initialize the scenario engine and viewer
         player     = new ScenarioPlayer(argc_, argv_);
-        int retval = player->Init();
+        int retval = player->Init(false);
         if (retval == -1)
         {
-            LOG("Failed to initialize scenario player");
+            ERROR("Failed to initialize scenario player");
         }
         else if (retval == -2)
         {
-            LOG("Skipped initialize scenario player");
+            ERROR("Skipped initialize scenario player");
         }
 
         if (retval != 0)
@@ -441,7 +448,7 @@ static int InitScenario()
     }
     catch (const std::exception &e)
     {
-        LOG(e.what());
+        ERROR(e.what());
         resetScenario();
         return -1;
     }
@@ -464,7 +471,8 @@ extern "C"
 
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
     {
-        SE_Env::Inst().SetLogFilePath(logFilePath);
+        //SE_Env::Inst().SetLogFilePath(logFilePath);
+        CreateNewFileForLogging(logFilePath);
     }
 
     SE_DLL_API void SE_SetDatFilePath(const char *datFilePath)
@@ -577,7 +585,7 @@ extern "C"
 
             if (use_viewer & ~(0xf))  // check for invalid bits 0xf == 1+2+4+8
             {
-                LOG("Unexpected use_viewer value: %d. Valid range: (0, %d) / (0x0, 0x%x) (%d, %d)", use_viewer, 0, 0xf, 0xf);
+                ERROR("Unexpected use_viewer value: {}. Valid range: (0, {}) / (0x0, 0x{}) ({}, {})", use_viewer, 0, 0xf, 0xf);
             }
         }
 
@@ -599,7 +607,7 @@ extern "C"
 #ifndef _USE_OSG
         if (use_viewer)
         {
-            LOG("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
+            ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
         }
 #endif
         resetScenario();
@@ -629,7 +637,7 @@ extern "C"
 #ifndef _USE_OSG
         if (use_viewer)
         {
-            LOG("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
+            ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
         }
 #endif
         resetScenario();
@@ -926,6 +934,7 @@ extern "C"
 
     SE_DLL_API void SE_LogToConsole(bool mode)
     {
+        //SetOptions()
         logToConsole = mode;
     }
 
@@ -1092,7 +1101,7 @@ extern "C"
             }
             else
             {
-                LOG("SE_AddObject: Object type %d not supported yet", object_type);
+                ERROR("SE_AddObject: Object type {} not supported yet", object_type);
                 return -1;
             }
 
@@ -1723,12 +1732,13 @@ extern "C"
 
     SE_DLL_API void SE_LogMessage(const char *message)
     {
-        LOG(message);
+        INFO(message);
     }
 
     SE_DLL_API void SE_CloseLogFile()
     {
-        Logger::Inst().CloseLogFile();
+        //Logger::Inst().CloseLogFile();
+        StopFileLogging();
     }
 
     SE_DLL_API int SE_ObjectHasGhost(int object_id)
@@ -1988,7 +1998,7 @@ extern "C"
         {
             if (sensor_id < 0 || sensor_id >= static_cast<int>(player->sensor.size()))
             {
-                LOG("Invalid sensor_id (%d specified / %d available)", sensor_id, player->sensor.size());
+                ERROR("Invalid sensor_id ({} specified / {} available)", sensor_id, player->sensor.size());
                 return -1;
             }
 
@@ -2666,7 +2676,7 @@ extern "C"
 
         if (route_index >= static_cast<int>(obj->pos_.GetRoute()->all_waypoints_.size()))
         {
-            LOG("Requested waypoint index %d invalid, only %d registered", route_index, obj->pos_.GetRoute()->all_waypoints_.size());
+            ERROR("Requested waypoint index {} invalid, only {} registered", route_index, obj->pos_.GetRoute()->all_waypoints_.size());
             return -1;
         }
 

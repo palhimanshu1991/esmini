@@ -10,6 +10,8 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
+#include "logger.hpp"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <cmath>
@@ -126,17 +128,17 @@ std::map<int, std::string> ParseModelIds()
 
     if (i == file_name_candidates.size())
     {
-        LOG("Failed to load %s file. Tried:", filename.c_str());
+        ERROR("Failed to load {} file. Tried:", filename);
         for (unsigned int j = 0; j < file_name_candidates.size(); j++)
         {
-            LOG("  %s", file_name_candidates[j].c_str());
+            INFO("  {}", file_name_candidates[j].c_str());
         }
 
-        LOG("  continue with internal hard coded list:");
+        INFO("  continue with internal hard coded list:");
         for (int j = 0; static_cast<unsigned int>(j) < sizeof(entityModelsFilesFallbackList_) / sizeof(char*); j++)
         {
             entity_model_map_[j] = entityModelsFilesFallbackList_[j];
-            LOG("    %2d: %s", j, entity_model_map_[j].c_str());
+            INFO("    {:>2d}: {}", j, entity_model_map_[j]);
         }
     }
 
@@ -680,6 +682,19 @@ void StrCopy(char* dest, const char* src, size_t size, bool terminate)
     }
 }
 
+std::string GetVersionInfoForLog()
+{    
+    std::string info = "esmini GIT REV: ";
+    info.append(esmini_git_rev());
+    info.append("\nesmini GIT TAG: ");
+    info.append(esmini_git_tag());
+    info.append("\nesmini GIT BRANCH: ");
+    info.append(esmini_git_branch());
+    info.append("\nesmini BUILD VERSION: ");
+    info.append(esmini_build_version());
+    return info;  
+}
+
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
 
 #include <windows.h>
@@ -1016,7 +1031,7 @@ int InvertMatrix3(const double m[3][3], double mi[3][3])
         double pivot = augmented_matrix[i][i];
         if (pivot == 0)
         {
-            LOG("Matrix is singular. Inversion not possible.");
+            ERROR("Matrix is singular. Inversion not possible.");
             return -1;
         }
 
@@ -1198,11 +1213,11 @@ std::string SE_Env::GetModelFilenameById(int model_id)
 
     if (name.empty())
     {
-        LOG("Failed to lookup 3d model filename for model_id %d in list:", model_id);
+        ERROR("Failed to lookup 3d model filename for model_id {} in list:", model_id);
         std::map<int, std::string>::iterator it;
         for (it = entity_model_map_.begin(); it != entity_model_map_.end(); ++it)
         {
-            LOG("  %d %s", it->first, it->second.c_str());
+            INFO("  {} {}", it->first, it->second);
         }
     }
 
@@ -1331,7 +1346,7 @@ void Logger::CloseLogFile()
 }
 
 void Logger::LogVersion()
-{
+{    
     static char message[1024];
 
     snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
@@ -1551,7 +1566,7 @@ void CSV_Logger::LogVehicleData(bool        isendline,
 }
 
 void CSV_Logger::SetCallback(FuncPtr callback)
-{
+{    
     callback_ = callback;
 
     static char message[1024];
@@ -1569,7 +1584,7 @@ void CSV_Logger::SetCallback(FuncPtr callback)
 // instantiator
 // Filename and vehicle number are used for dynamic header creation
 void CSV_Logger::Open(std::string scenario_filename, int numvehicles, std::string csv_filename)
-{
+{    
     if (file_.is_open())
     {
         file_.close();
@@ -1713,7 +1728,7 @@ SE_Mutex::SE_Mutex()
 
     if (mutex_ == NULL)
     {
-        LOG("CreateMutex error: %d\n", GetLastError());
+        ERROR("CreateMutex error: {}\n", GetLastError());
         mutex_ = 0;
     }
 #else
@@ -1879,7 +1894,7 @@ int SE_Options::SetOptionValue(std::string opt, std::string value, bool add)
         }
         else
         {
-            LOG("Argument parser error: Missing option %s argument", opt.c_str());
+            ERROR("Argument parser error: Missing option {} argument", opt);
             return -1;
         }
     }
@@ -1929,7 +1944,7 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
                 }
                 else
                 {
-                    LOG("Argument parser error: Missing option %s argument", option->opt_str_.c_str());
+                    ERROR("Argument parser error: Missing option {} argument", option->opt_str_);
                     option->set_ = false;
                     returnVal    = -1;
                 }
@@ -1997,13 +2012,13 @@ int SE_WritePPM(const char* filename, int width, int height, const unsigned char
 
     if (pixelSize != 3)
     {
-        LOG("PPM PixelSize %d not supported yet, only 3", pixelSize);
+        ERROR("PPM PixelSize {} not supported yet, only 3", pixelSize);
         return -2;
     }
 
     if (pixelFormat != static_cast<int>(PixelFormat::BGR) && pixelFormat != static_cast<int>(PixelFormat::RGB))
     {
-        LOG("PPM PixelFormat %d not supported yet, only 0x%x (RGB) and 0x%x (BGR)", PixelFormat::RGB, PixelFormat::BGR);
+        ERROR("PPM PixelFormat {} not supported yet, only 0x{} (RGB) and 0x{} (BGR)", PixelFormat::RGB, PixelFormat::BGR);
         return -3;
     }
 
@@ -2072,13 +2087,13 @@ int SE_WriteTGA(const char* filename, int width, int height, const unsigned char
 
     if (pixelSize != 3)
     {
-        LOG("TGA PixelSize %d not supported yet, only 3", pixelSize);
+        ERROR("TGA PixelSize {} not supported yet, only 3", pixelSize);
         return -2;
     }
 
     if (pixelFormat != static_cast<int>(PixelFormat::BGR) && pixelFormat != static_cast<int>(PixelFormat::RGB))
     {
-        LOG("TGA PixelFormat 0x%x not supported yet, only 0x%x (RGB) and 0x%x (BGR)", pixelFormat, PixelFormat::RGB, PixelFormat::BGR);
+        ERROR("TGA PixelFormat 0x{} not supported yet, only 0x{} (RGB) and 0x{} (BGR)", pixelFormat, PixelFormat::RGB, PixelFormat::BGR);
         return -3;
     }
 
@@ -2138,7 +2153,7 @@ int SE_ReadCSVFile(const char* filename, std::vector<std::vector<std::string>>& 
         {
             if (!getline(file, line))
             {
-                LOG("Failed to skip %d lines in CSV file %s", skip_lines, filename);
+                ERROR("Failed to skip {} lines in CSV file {}", skip_lines, filename);
                 return -1;
             }
         }
@@ -2155,7 +2170,7 @@ int SE_ReadCSVFile(const char* filename, std::vector<std::vector<std::string>>& 
     }
     else
     {
-        LOG("Failed to open CSV file %s", filename);
+        ERROR("Failed to open CSV file {}", filename);
         return -1;
     }
 

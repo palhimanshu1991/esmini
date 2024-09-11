@@ -38,7 +38,7 @@ TEST_F(FollowRouteControllerTest, PerformSingleLaneChange)
     while (se->getSimulationTime() < (10.0 - SMALL_NUMBER))
     {
         Position p = se->entities_.object_[0]->pos_;
-        // LOG("s=%f, r=%d, l=%d", p.GetS(), p.GetTrackId(), p.GetLaneId());
+        DEBUG("s={:.2f}, r={}, l={}", p.GetS(), p.GetTrackId(), p.GetLaneId());
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
@@ -229,27 +229,9 @@ TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
     delete se;
 }
 
-// Uncomment to print log output to console
-// #define LOG_TO_CONSOLE
-
-#ifdef LOG_TO_CONSOLE
-static void log_callback(const char *str)
-{
-    printf("%s\n", str);
-}
-#endif
-
 int main(int argc, char **argv)
 {
-#ifdef LOG_TO_CONSOLE
-    if (!(Logger::Inst().IsCallbackSet()))
-    {
-        Logger::Inst().SetCallback(log_callback);
-    }
-#endif
-
     // testing::GTEST_FLAG(filter) = "*TestOptionHandling*";
-
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

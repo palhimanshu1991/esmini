@@ -20,6 +20,7 @@
 #include <list>
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
+#include "logger.hpp"
 
 #define PARAMPOLY3_STEPS 100
 #define FRICTION_DEFAULT 1.0
@@ -3896,7 +3897,7 @@ namespace roadmanager
             }
             else
             {
-                LOG("Unexpected position mode type: %d", type);
+                ERROR("Unexpected position mode type: {}", type);
                 return 0;
             }
         }
