@@ -206,7 +206,8 @@ ObjectState::ObjectState(int            id,
 
 void ObjectState::Print()
 {
-    LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\tctrl_type: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f\twheel_angle %.2f type %d category %d role %d",
+    LOG_INFO(
+        "state: \n\tid {}\n\tname {}\n\tmodel_id: {}\n\tctrl_type: {}\n\ttime {:.2f}\n\tx {:.2f}\n\ty {:.2f}\n\th {:.2f}\n\tspeed {:.2f}\twheel_angle {:.2f} type {} category {} role {}",
         state_.info.id,
         state_.info.name,
         state_.info.model_id,
@@ -220,7 +221,8 @@ void ObjectState::Print()
         state_.info.obj_type,
         state_.info.obj_category,
         state_.info.obj_role);
-    LOG("state: \n\tbounding box: \ncenter: x: %.2f, y: %.2f, z: %.2f\n\tdimensions: width: %.2f, length: %.2f, height: %.2f scaleMode: %d visMask: %d",
+    LOG_INFO(
+        "state: \n\tbounding box: \ncenter: x: {:.2f}, y: {:.2f}, z: {:.2f}\n\tdimensions: width: {:.2f}, length: {:.2f}, height: {:.2f} scaleMode: {} visMask: {}",
         static_cast<double>(state_.info.boundingbox.center_.x_),
         static_cast<double>(state_.info.boundingbox.center_.y_),
         static_cast<double>(state_.info.boundingbox.center_.z_),
@@ -395,7 +397,7 @@ int ScenarioGateway::reportObject(int            id,
     if (obj_state == 0)
     {
         // Create state and set permanent information
-        LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
+        LOG_INFO("Creating new object \"{}\" (id {}, timestamp {:.2f})", name, id, timestamp);
         obj_state = new ObjectState(id,
                                     name,
                                     obj_type,
@@ -457,7 +459,7 @@ int ScenarioGateway::reportObject(int            id,
     if (obj_state == 0)
     {
         // Create state and set permanent information
-        LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
+        LOG_INFO("Creating new object \"{}\" (id {}, timestamp {:.2f})", name, id, timestamp);
         obj_state = new ObjectState(id,
                                     name,
                                     obj_type,
@@ -520,7 +522,7 @@ int ScenarioGateway::reportObject(int            id,
     if (obj_state == 0)
     {
         // Create state and set permanent information
-        LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
+        LOG_INFO("Creating new object \"{}\" (id {}, timestamp {:.2f})", name, id, timestamp);
         obj_state = new ObjectState(id,
                                     name,
                                     obj_type,
@@ -580,7 +582,7 @@ int ScenarioGateway::reportObject(int            id,
     if (obj_state == 0)
     {
         // Create state and set permanent information
-        LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
+        LOG_INFO("Creating new object \"{}\" (id {}, timestamp {:.2f})", name, id, timestamp);
         obj_state = new ObjectState(id,
                                     name,
                                     obj_type,
@@ -622,7 +624,7 @@ int ScenarioGateway::updateObjectPos(int id, double timestamp, roadmanager::Posi
     if (obj_state == 0)
     {
         // Create state and set permanent information
-        LOG("Object id: %d must be reported before updated", id);
+        LOG_ERROR("Object id: {} must be reported before updated", id);
         return -1;
     }
     else
@@ -643,7 +645,7 @@ int ScenarioGateway::updateObjectRoadPos(int id, double timestamp, int roadId, d
     if (obj_state == 0)
     {
         // Create state and set permanent information
-        LOG("Object id: %d must be reported before updated", id);
+        LOG_ERROR("Object id: {} must be reported before updated", id);
         return -1;
     }
     else
@@ -664,7 +666,7 @@ int ScenarioGateway::updateObjectLanePos(int id, double timestamp, int roadId, i
     if (obj_state == 0)
     {
         // Create state and set permanent information
-        LOG("Object id: %d must be reported before updated", id);
+        LOG_ERROR("Object id: {} must be reported before updated", id);
     }
     else
     {
@@ -684,7 +686,7 @@ int ScenarioGateway::updateObjectWorldPosXYH(int id, double timestamp, double x,
     if (obj_state == 0)
     {
         // Create state and set permanent information
-        LOG("Object id: %d must be reported before updated", id);
+        LOG_ERROR("Object id: {} must be reported before updated", id);
     }
     else
     {
@@ -704,7 +706,7 @@ int ScenarioGateway::updateObjectWorldPosXYHMode(int id, double timestamp, doubl
     if (obj_state == 0)
     {
         // Create state and set permanent information
-        LOG("Object id: %d must be reported before updated", id);
+        LOG_ERROR("Object id: {} must be reported before updated", id);
     }
     else
     {
@@ -724,7 +726,7 @@ int ScenarioGateway::updateObjectWorldPos(int id, double timestamp, double x, do
     if (obj_state == 0)
     {
         // Create state and set permanent information
-        LOG("Object id: %d must be reported before updated", id);
+        LOG_ERROR("Object id: {} must be reported before updated", id);
     }
     else
     {
@@ -744,7 +746,7 @@ int ScenarioGateway::updateObjectWorldPosMode(int id, double timestamp, double x
     if (obj_state == 0)
     {
         // Create state and set permanent information
-        LOG("Object id: %d must be reported before updated", id);
+        LOG_ERROR("Object id: {} must be reported before updated", id);
     }
     else
     {
@@ -764,7 +766,7 @@ int ScenarioGateway::updateObjectSpeed(int id, double timestamp, double speed)
 
     if (obj_state == nullptr)
     {
-        LOG_ONCE("Can't set speed for object %d yet. Please register object using reportObject() first.", id);
+        LOG_ERROR("Can't set speed for object {} yet. Please register object using reportObject() first.", id);
         return -1;
     }
 
@@ -781,7 +783,7 @@ int ScenarioGateway::updateObjectVel(int id, double timestamp, double x_vel, dou
 
     if (obj_state == nullptr)
     {
-        LOG_ONCE("Can't set velocity for object %d yet. Please register object using reportObject() first.", id);
+        LOG_ERROR("Can't set velocity for object {} yet. Please register object using reportObject() first.", id);
         return -1;
     }
 
@@ -798,7 +800,7 @@ int ScenarioGateway::updateObjectAcc(int id, double timestamp, double x_acc, dou
 
     if (obj_state == nullptr)
     {
-        LOG_ONCE("Can't set acceleration for object %d yet. Please register object using reportObject() first.", id);
+        LOG_ERROR("Can't set acceleration for object {} yet. Please register object using reportObject() first.", id);
         return -1;
     }
 
@@ -815,7 +817,7 @@ int ScenarioGateway::updateObjectAngularVel(int id, double timestamp, double h_r
 
     if (obj_state == nullptr)
     {
-        LOG_ONCE("Can't set angular velocity for object %d yet. Please register object using reportObject() first.", id);
+        LOG_ERROR("Can't set angular velocity for object {} yet. Please register object using reportObject() first.", id);
         return -1;
     }
 
@@ -832,7 +834,7 @@ int ScenarioGateway::updateObjectAngularAcc(int id, double timestamp, double h_a
 
     if (obj_state == nullptr)
     {
-        LOG_ONCE("Can't set angular acceleration for object %d yet. Please register object using reportObject() first.", id);
+        LOG_ERROR("Can't set angular acceleration for object {} yet. Please register object using reportObject() first.", id);
         return -1;
     }
 
@@ -849,7 +851,7 @@ int ScenarioGateway::updateObjectWheelAngle(int id, double timestamp, double whe
 
     if (obj_state == nullptr)
     {
-        LOG_ONCE("Can't set wheel angle for object %d yet. Please register object using reportObject() first.", id);
+        LOG_ERROR("Can't set wheel angle for object {} yet. Please register object using reportObject() first.", id);
         return -1;
     }
 
@@ -866,7 +868,7 @@ int ScenarioGateway::updateObjectWheelRotation(int id, double timestamp, double 
 
     if (obj_state == nullptr)
     {
-        LOG_ONCE("Can't set wheel rotation for object %d yet. Please register object using reportObject() first.", id);
+        LOG_ERROR("Can't set wheel rotation for object {} yet. Please register object using reportObject() first.", id);
         return -1;
     }
 
@@ -882,7 +884,7 @@ int ScenarioGateway::updateObjectVisibilityMask(int id, int visibilityMask)
 
     if (obj_state == nullptr)
     {
-        LOG_ONCE("Can't set visibility mask for object %d yet. Please register object using reportObject() first.", id);
+        LOG_ERROR("Can't set visibility mask for object {} yet. Please register object using reportObject() first.", id);
         return -1;
     }
 
@@ -898,7 +900,7 @@ int ScenarioGateway::updateObjectControllerType(int id, int controllerType)
 
     if (obj_state == nullptr)
     {
-        LOG_ONCE("Can't set controller type for object %d yet. Please register object using reportObject() first.", id);
+        LOG_ERROR("Can't set controller type for object {} yet. Please register object using reportObject() first.", id);
         return -1;
     }
 
@@ -914,7 +916,7 @@ int ScenarioGateway::updateObjectFrictionCoefficients(int id, double friction[4]
 
     if (obj_state == nullptr)
     {
-        LOG_ONCE("Can't set friction coefficients for object %d yet. Please register object using reportObject() first.", id);
+        LOG_ERROR("Can't set friction coefficients for object {} yet. Please register object using reportObject() first.", id);
         return -1;
     }
 
@@ -933,13 +935,13 @@ int ScenarioGateway::setObjectPositionMode(int id, int type, int mode)
 
     if (obj_state == nullptr)
     {
-        LOG_ONCE("Can't set alignment mode for object %d yet. Please register object using reportObject() first.", id);
+        LOG_ERROR("Can't set alignment mode for object {} yet. Please register object using reportObject() first.", id);
         return -1;
     }
 
     if (type < 0 || type > static_cast<int>(roadmanager::Position::PosModeType::UPDATE))
     {
-        LOG_ONCE("Unexpected ObjectPositionMode type %d, skipping", type);
+        LOG_ERROR_ONCE("Unexpected ObjectPositionMode type {}, skipping", type);
         return -1;
     }
 
@@ -979,7 +981,7 @@ int ScenarioGateway::setObjectPositionModeDefault(int id, int type)
 
     if (obj_state == nullptr)
     {
-        LOG_ONCE("Can't set alignment mode for object %d yet. Please register object using reportObject() first.", id);
+        LOG_ERROR("Can't set alignment mode for object {} yet. Please register object using reportObject() first.", id);
         return -1;
     }
 
@@ -1088,7 +1090,7 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
         data_file_.open(filename, std::ofstream::binary);
         if (data_file_.fail())
         {
-            LOG("Cannot open file: %s", filename.c_str());
+            LOG_ERROR("Cannot open file: {}", filename);
             return -1;
         }
         DatHeader header;

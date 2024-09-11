@@ -11,6 +11,7 @@
  */
 
 #include "OSCPosition.hpp"
+#include "logger.hpp"
 
 using namespace scenarioengine;
 
@@ -96,7 +97,7 @@ OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset
     }
     else
     {
-        LOG("Unexpected orientation type: %d", orientation.type_);
+        LOG_ERROR("Unexpected orientation type: {}", orientation.type_);
     }
 
     position_.SetLanePosMode(roadId, laneId, s, offset, position_.GetMode(roadmanager::Position::PosModeType::UPDATE));
@@ -106,7 +107,7 @@ OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation 
 {
     if (position_.GetRoadById(roadId) == nullptr)
     {
-        LOG_AND_QUIT("Reffered road ID %d not available in road network", roadId);
+        LOG_ERROR_AND_QUIT("Reffered road ID {} not available in road network", roadId);
     }
 
     SetPositionModesGeneric(position_, orientation, false);
@@ -125,7 +126,7 @@ OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation 
     }
     else
     {
-        LOG("Unexpected orientation type: %d", orientation.type_);
+        LOG_ERROR("Unexpected orientation type: {}", orientation.type_);
     }
 
     position_.SetTrackPosMode(roadId, s, t, position_.GetMode(roadmanager::Position::PosModeType::UPDATE));

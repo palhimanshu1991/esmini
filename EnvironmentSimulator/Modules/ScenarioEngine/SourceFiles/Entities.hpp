@@ -648,7 +648,7 @@ namespace scenarioengine
             }
             else
             {
-                LOG("Vehicle category %s not supported yet", category.c_str());
+                LOG_ERROR("Vehicle category {} not supported yet", category);
             }
 
             return;
@@ -742,7 +742,7 @@ namespace scenarioengine
             }
             else
             {
-                LOG("Pedestrian category %s not supported yet", category.c_str());
+                LOG_ERROR("Pedestrian category {} not supported yet", category);
             }
 
             return;
@@ -857,7 +857,7 @@ namespace scenarioengine
             }
             else
             {
-                LOG("MiscObject category %s not supported yet", category.c_str());
+                LOG_ERROR("MiscObject category {} not supported yet", category);
             }
 
             return;
