@@ -2,7 +2,7 @@
 
 #include "CommonMini.hpp"
 #include "esminiLib.hpp"
-
+#include "TestHelper.hpp"
 struct Coordinate2D
 {
     double x;
@@ -240,7 +240,7 @@ TEST(ProgramOptions, Persisted)
 int main(int argc, char** argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";
-
+    ParseAndSetLoggerOptions(argc, argv);
     testing::InitGoogleTest(&argc, argv);
 
     return RUN_ALL_TESTS();
