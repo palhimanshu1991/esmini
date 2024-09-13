@@ -26,6 +26,7 @@
 #include "OSCCondition.hpp"
 #include "Storyboard.hpp"
 #include "OSCParameterDistribution.hpp"
+#include "Utils.h"
 
 using namespace scenarioengine;
 
@@ -416,12 +417,29 @@ static int InitScenario()
     //Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
     //Logger::Inst().LogVersion();
     // riz temp
-    // LoggerConfig logConfig;
-    // if( !SE_Env::Inst().GetLogFilePath().empty())
-    // {
-    //     logConfig.logFilePath_ = SE_Env::Inst().GetLogFilePath();
-    // }    
-    // SetupLogger(loggerConfig, GetVersionInfoForLog());
+    
+    LoggerConfig logConfig;
+    SE_Options& opt = SE_Env::Inst().GetOptions();
+    if( opt.IsOptionArgumentSet("log_Only_Modules"))
+    {
+        auto arg_str = opt.GetOptionArg("log_Only_Modules");        
+        const auto splitted = utils::SplitString(arg_str, ',');
+        if( !splitted.empty())
+        {
+            logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
+        }        
+    }
+
+    if( opt.IsOptionArgumentSet("log_Skip_Modules"))
+    {
+        auto arg_str = opt.GetOptionArg("log_Skip_Modules");        
+        const auto splitted = utils::SplitString(arg_str, ',');
+        if( !splitted.empty())
+        {
+            logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
+        }        
+    }
+    SetupLogger(logConfig);
     LogTimeOnly();   
     ConvertArguments();
 

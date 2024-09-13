@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <string_view>
 #include <vector>
@@ -5,8 +7,12 @@
 namespace utils
 {
 
-std::vector<std::string> SplitString(const std::string &str, char delimiter) 
+static std::vector<std::string> SplitString(const std::string &str, char delimiter) 
 {
+    if( str.empty())
+    {
+        return {};
+    }
     std::vector<std::string> result;    
     size_t start = 0, end = 0;
 

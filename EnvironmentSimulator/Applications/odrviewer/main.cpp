@@ -459,13 +459,12 @@ int main(int argc, char **argv)
     LoggerConfig logConfig;
     if (opt.GetOptionSet("disable_stdout"))
     {
-        logConfig.consoleLoggingEnabled_ = false;
+        
         Logger::Inst().SetCallback(0);
     }
 
     if (opt.GetOptionSet("disable_log"))
     {
-        logConfig.fileLoggingEnabled_ = false;
         SE_Env::Inst().SetLogFilePath("");
         printf("Disable logfile\n");
     }
@@ -475,7 +474,6 @@ int main(int argc, char **argv)
         SE_Env::Inst().SetLogFilePath(arg_str);
         if (arg_str.empty())
         {
-            logConfig.fileLoggingEnabled_ = false;
             printf("Custom logfile path empty, disable logfile\n");
         }
         else
@@ -484,17 +482,6 @@ int main(int argc, char **argv)
         }
         logConfig.logFilePath_ = arg_str;
     }
-    
-    if( opt.IsOptionArgumentSet("log_level"))
-    {
-        arg_str = opt.GetOptionArg("log_level");     
-        logConfig.logLevel_ = GetLogLevelFromStr(arg_str);
-    }
-
-    if( opt.GetOptionSet("log_meta_data"))
-    {     
-        logConfig.metaDataEnabled_ = true;
-    } 
     
     if( opt.IsOptionArgumentSet("log_Only_Modules"))
     {
@@ -519,7 +506,7 @@ int main(int argc, char **argv)
     {
         logConfig.logFilePath_ = SE_Env::Inst().GetLogFilePath();
     }
-    //SetupLogger(logConfig, GetVersionInfoForLog());    
+    SetupLogger(logConfig);    
     //Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
     //Logger::Inst().LogVersion();  
     if ((arg_str = opt.GetOptionArg("path")) != "")

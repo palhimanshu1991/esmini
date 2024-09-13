@@ -773,51 +773,28 @@ int ScenarioPlayer::InitViewer()
         int counter = 0;
 
         while ((arg_str = opt.GetOptionArg("custom_camera", counter)) != "")
-        {
-            size_t pos  = 0;
-            double v[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
-            int    i    = 0;
-            for (i = 0; i < 5; i++)
+        {                
+            const auto splitted = utils::SplitString(arg_str, ',');
+            
+            if( splitted.size() == 3)
             {
-                pos = arg_str.find(",");
-
-                if (i < 2 && pos == std::string::npos)
-                {
-                    ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got only {} values", i + 1);
-                }
-                else if (i == 3 && pos == std::string::npos)
-                {
-                    ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got {} values", i + 1);
-                }
-                v[i] = strtod(arg_str.substr(0, pos));
-                arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
-
-                if (i == 2 && pos == std::string::npos)
-                {
-                    // Only position specified, stop now
-
-                    break;
-                }
+                AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), false);
+                INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
             }
-            if (!arg_str.empty())
+            else if( splitted.size() == 5)
             {
-                ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
+                AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]), strtod(splitted[4]), false);                    
+                INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3], splitted[4]);
+            }
+            else 
+            {
+                ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());    
             }
 
-            if (i == 2)
-            {
-                AddCustomCamera(v[0], v[1], v[2], false);
-                INFO("Created custom fixed camera {} ({:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2]);
-            }
-            else
-            {
-                AddCustomCamera(v[0], v[1], v[2], v[3], v[4], false);
-                INFO("Created custom fixed camera {} ({:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2], v[3], v[4]);
-            }
             counter++;
         }
     }
-
+    
     if (opt.GetOptionSet("custom_fixed_camera") == true)
     {
         int counter = 0;
@@ -1302,6 +1279,7 @@ int ScenarioPlayer::Init(bool logTime)
     opt.AddOption("ignore_p", "Ignore provided pitch values from OSC file and place vehicle relative to road");
     opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
+    opt.AddOption("log_append", "log all scenarios in the same txt file");
     opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
     opt.AddOption("log_meta_data", "log file name, function name and line number");
     opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
@@ -1366,8 +1344,7 @@ int ScenarioPlayer::Init(bool logTime)
     std::string log_filename = SE_Env::Inst().GetLogFilePath();
     LoggerConfig logConfig;
     if (opt.GetOptionSet("disable_log"))
-    {
-        logConfig.fileLoggingEnabled_ = false;
+    {        
         log_filename = "";
         printf("Disable logfile\n");
     }
@@ -1389,23 +1366,12 @@ int ScenarioPlayer::Init(bool logTime)
 
         if (arg_str.empty())
         {
-            logConfig.fileLoggingEnabled_ = false;
             printf("Custom logfile path empty, disable logfile\n");
         }
         else
         {
             printf("Custom logfile path: %s\n", log_filename.c_str());
         }
-    }
-    if( opt.IsOptionArgumentSet("log_level"))
-    {
-        arg_str = opt.GetOptionArg("log_level");        
-        logConfig.logLevel_ = GetLogLevelFromStr(arg_str);
-        
-    }
-    if( opt.GetOptionSet("log_meta_data"))
-    {        
-        logConfig.metaDataEnabled_ = true;
     }
     if( opt.IsOptionArgumentSet("log_Only_Modules"))
     {
@@ -1426,7 +1392,7 @@ int ScenarioPlayer::Init(bool logTime)
         }        
     }
     
-    SetupLogger(logConfig, GetVersionInfoForLog());
+    SetupLogger(logConfig);
 
     if (opt.GetOptionSet("version"))
     {

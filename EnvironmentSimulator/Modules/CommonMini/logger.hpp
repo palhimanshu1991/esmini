@@ -20,21 +20,15 @@ struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::forma
 
 struct LoggerConfig
 {
-	bool loggingEnabled_ = true;  // derived
-	bool consoleLoggingEnabled_ = true;
-	bool fileLoggingEnabled_ = true;	
-	bool createNewFile_ = true;
-	bool metaDataEnabled_ = false;
 	std::string logFilePath_ = "log.txt";
-	spdlog::level::level_enum logLevel_ = spdlog::level::info;
 	std::unordered_set<std::string> enabledFiles_;
 	std::unordered_set<std::string> disabledFiles_;	
-	double * time_;
+	double * time_ = nullptr;
 };
 
 static LoggerConfig loggerConfig;
-void SetupLogger(const LoggerConfig& logConfig, const std::string& esminiVersion);
-void InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger, const std::string& esminiVersion);
+void SetupLogger(const LoggerConfig& logConfig);
+void InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger);
 bool ShouldLogModule(char const* file);
 void LogVersion();
 std::string AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& level, const std::string& log);
