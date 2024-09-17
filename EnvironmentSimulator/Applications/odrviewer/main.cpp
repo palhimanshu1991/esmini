@@ -625,48 +625,23 @@ int main(int argc, char **argv)
 
             while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
             {
-                size_t pos  = 0;
-                double v[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
-                int    i    = 0;
-                for (i = 0; i < 5; i++)
+                const auto splitted = utils::SplitString(arg_str, ',');
+                
+                if( splitted.size() == 3)
                 {
-                    pos = arg_str.find(",");
-
-                    if (i < 2 && pos == std::string::npos)
-                    {
-                        ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got only {} values", i + 1);
-                    }
-                    else if (i == 3 && pos == std::string::npos)
-                    {
-                        ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got {} values", i + 1);
-                    }
-                    v[i] = strtod(arg_str.substr(0, pos));
-                    arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
-
-                    if (i == 2 && pos == std::string::npos)
-                    {
-                        // Only position specified, stop now
-
-                        break;
-                    }
+                    viewer->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), true);
+                    INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
                 }
-                if (!arg_str.empty())
-                {                    
-                    ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
-                }
-
-                if (i == 2)
+                else if( splitted.size() == 5)
                 {
-                    viewer->AddCustomCamera(v[0], v[1], v[2], true);
-                    viewer->SetCameraMode(-1);  // activate last camera which is the one just added
-                    INFO("Created custom fixed camera {} ({:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2]);
+                    viewer->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]), strtod(splitted[4]), true);                    
+                    INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3], splitted[4]);
                 }
-                else
+                else 
                 {
-                    viewer->AddCustomCamera(v[0], v[1], v[2], v[3], v[4], true);
-                    viewer->SetCameraMode(-1);  // activate last camera which is the one just added
-                    INFO("Created custom fixed camera {} ({:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2], v[3], v[4]);
+                    ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());    
                 }
+                viewer->SetCameraMode(-1);  // activate last camera which is the one just added
                 counter++;
             }
         }
@@ -677,28 +652,16 @@ int main(int argc, char **argv)
 
             while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
             {
-                size_t pos  = 0;
-                double v[4] = {0.0, 0.0, 0.0, 0.0};
-                for (int i = 0; i < 4; i++)
+                const auto splitted = utils::SplitString(arg_str, ',');
+                if( splitted.size() != 4)
                 {
-                    pos = arg_str.find(",");
-                    if (i < 3 && pos == std::string::npos)
-                    {
-                        ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>, got only {} values", i + 1);
-                    }
-                    v[i] = strtod(arg_str.substr(0, pos));
-                    arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
+                    ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
                 }
-                if (!arg_str.empty())
-                {
-                    ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>, got too many values. Make sure only 4 values is specified");
-                }
-
-                viewer->AddCustomFixedTopCamera(v[0], v[1], v[2], v[3]);
+                viewer->AddCustomFixedTopCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]));
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
 
-                INFO("Created custom fixed top camera {} ({:.2f}, {:.2f}, {:.2f}, {:.2f})", counter, v[0], v[1], v[2], v[3]);
-                counter++;
+                INFO("Created custom fixed top camera {} ({}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3]);
+                counter++;                
             }
         }
 
