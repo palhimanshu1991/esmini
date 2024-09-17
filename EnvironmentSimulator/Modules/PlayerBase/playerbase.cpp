@@ -1236,8 +1236,8 @@ int ScenarioPlayer::Init(bool logTime)
     opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
     opt.AddOption("log_meta_data", "log file name, function name and line number");
     opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
-    opt.AddOption("log_Only_Modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
-    opt.AddOption("log_Skip_Modules", "skip log from these modules, all remaining modules will be logged.", "modulename(s)"); 
+    opt.AddOption("log_only_modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
+    opt.AddOption("log_skip_modules", "skip log from these modules, all remaining modules will be logged.", "modulename(s)"); 
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
 #ifdef _USE_OSI
@@ -1428,7 +1428,7 @@ int ScenarioPlayer::Init(bool logTime)
 
     //Logger::Inst().OpenLogfile(log_filename);
     //Logger::Inst().LogVersion();
-    
+    CreateNewFileForLogging(log_filename.c_str());
     if (dist.GetNumPermutations() > 0)
     {
         INFO("Using parameter distribution file: {}", dist.GetFilename());

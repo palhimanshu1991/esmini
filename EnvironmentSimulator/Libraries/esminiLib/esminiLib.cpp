@@ -440,6 +440,7 @@ static int InitScenario()
         }        
     }
     SetupLogger(logConfig);
+    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath().c_str());
     LogTimeOnly();   
     ConvertArguments();
 

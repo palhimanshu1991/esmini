@@ -509,6 +509,7 @@ int main(int argc, char **argv)
     SetupLogger(logConfig);    
     //Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
     //Logger::Inst().LogVersion();  
+    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath().c_str());
     if ((arg_str = opt.GetOptionArg("path")) != "")
     {
         SE_Env::Inst().AddPath(arg_str);

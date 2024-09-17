@@ -101,7 +101,7 @@ bool LogFile()
 
 void CreateNewFileForLogging(const char* filePath)
 {	
-	if( filePath)
+	if( !filePath)
 	{		
 		return;
 	}	

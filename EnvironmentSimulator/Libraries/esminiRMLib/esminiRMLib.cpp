@@ -161,7 +161,7 @@ extern "C"
 
         //Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
         //Logger::Inst().LogVersion();
-        
+        CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath().c_str());
         // LoggerConfig logConfig;
         // if( !SE_Env::Inst().GetLogFilePath().empty())
         // {
