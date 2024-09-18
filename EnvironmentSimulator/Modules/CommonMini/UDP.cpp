@@ -36,7 +36,7 @@ UDPBase::UDPBase(unsigned short int port) : port_(port), sock_(SE_INVALID_SOCKET
 
     if ((sock_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SE_INVALID_SOCKET)
     {
-        ERROR_AND_QUIT("socket failed");
+        LOG_ERROR_AND_QUIT("socket failed");
         return;
     }
 }
@@ -47,13 +47,13 @@ int UDPBase::Bind(struct sockaddr_in& addr)
     if (retval != 0)
     {
 #ifdef _WIN32
-        ERROR("bind error {}", WSAGetLastError());
+        LOG_ERROR("bind error {}", WSAGetLastError());
 #else
         perror("bind socket");
-        ERROR("bind socket error");
+        LOG_ERROR("bind socket error");
 #endif
         CloseGracefully();
-        ERROR_AND_QUIT("Bind UDP socket on port {} failed (return code {})", port_, retval);
+        LOG_ERROR_AND_QUIT("Bind UDP socket on port {} failed (return code {})", port_, retval);
         return -1;
     }
 
@@ -69,10 +69,10 @@ void UDPBase::CloseGracefully()
 #endif
     {
 #ifdef _WIN32
-        ERROR("Failed closing socket {}", WSAGetLastError());
+        LOG_ERROR("Failed closing socket {}", WSAGetLastError());
 #else
         perror("close socket");
-        ERROR("close socket error");
+        LOG_ERROR("close socket error");
 #endif
     }
 

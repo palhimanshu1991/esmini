@@ -151,7 +151,7 @@ namespace scenarioengine
 
             if (catalog == 0)
             {
-                ERROR("Couldn't find catalog {}", catalog_name);
+                LOG_ERROR("Couldn't find catalog {}", catalog_name);
                 return 0;
             }
             else
@@ -159,7 +159,7 @@ namespace scenarioengine
                 entry = catalog->FindEntryByName(entry_name);
                 if (entry == 0)
                 {
-                    ERROR("Couldn't find entry {} in catalog {}", entry_name, catalog_name);
+                    LOG_ERROR("Couldn't find entry {} in catalog {}", entry_name, catalog_name);
                 }
             }
             return entry;
@@ -176,7 +176,7 @@ namespace scenarioengine
             }
             else
             {
-                ERROR("Couldn't get element in entry {} in catalog {}", entry_name, catalog_name);
+                LOG_ERROR("Couldn't get element in entry {} in catalog {}", entry_name, catalog_name);
             }
 
             return node;

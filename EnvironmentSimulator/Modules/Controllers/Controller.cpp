@@ -19,7 +19,7 @@ using namespace scenarioengine;
 
 Controller* scenarioengine::InstantiateController(void* args)
 {
-    ERROR("The base class should not be instantiated");
+    LOG_ERROR("The base class should not be instantiated");
 
     return new Controller(static_cast<Controller::InitArgs*>(args));
 }
@@ -43,7 +43,7 @@ Controller::Controller(InitArgs* args)  // init operatingdomains
     }
     else
     {
-        ERROR_AND_QUIT("Controller constructor missing args");
+        LOG_ERROR_AND_QUIT("Controller constructor missing args");
     }
 
     if (args->properties && args->properties->ValueExists("mode"))
@@ -59,7 +59,7 @@ Controller::Controller(InitArgs* args)  // init operatingdomains
         }
         else
         {
-            WARN("Unexpected mode \"{}\", falling back to default \"override\"", mode);
+            LOG_WARN("Unexpected mode \"{}\", falling back to default \"override\"", mode);
             mode_ = ControlOperationMode::MODE_OVERRIDE;
         }
     }
@@ -140,10 +140,10 @@ int Controller::Activate(ControlActivationMode lat_mode,
         {
             if ((operating_domains_ & control_domains[i]) == 0)
             {
-                WARN("Warning: Controller {} operating domains: {}. Skipping activation on domain {}",
-                     GetName(),
-                     ControlDomain2Str(operating_domains_),
-                     ControlDomain2Str(control_domains[i]));
+                LOG_WARN("Warning: Controller {} operating domains: {}. Skipping activation on domain {}",
+                         GetName(),
+                         ControlDomain2Str(operating_domains_),
+                         ControlDomain2Str(control_domains[i]));
             }
             else
             {
@@ -168,7 +168,7 @@ void scenarioengine::Controller::DeactivateDomains(unsigned int domains)
 
 void Controller::ReportKeyEvent(int key, bool down)
 {
-    DEBUG("Key {} {}", key, down ? "down" : "up");
+    LOG_DEBUG("Key {} {}", key, down ? "down" : "up");
 }
 
 std::string Controller::Mode2Str(ControlOperationMode mode)
@@ -187,8 +187,8 @@ std::string Controller::Mode2Str(ControlOperationMode mode)
     }
     else
     {
-        // ERROR("Unexpected mode \"{}\"", mode);
-        ERROR("Unexpected mode \"{}\"", std::to_string(static_cast<int>(mode)));
+        // LOG_ERROR("Unexpected mode \"{}\"", mode);
+        LOG_ERROR("Unexpected mode \"{}\"", std::to_string(static_cast<int>(mode)));
         return "invalid mode";
     }
 }

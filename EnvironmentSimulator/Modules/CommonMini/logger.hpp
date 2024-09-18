@@ -154,9 +154,9 @@ void __LOG_ERROR__AND__QUIT__(char const* function, char const* file, long line,
     throw std::runtime_error(logMsg);
 }
 
-#define ERROR_AND_QUIT(log, ...) __LOG_ERROR__AND__QUIT__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
+#define LOG_ERROR_AND_QUIT(log, ...) __LOG_ERROR__AND__QUIT__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
 
-#define ERROR_ONCE(log, ...)                                             \
+#define LOG_ERROR_ONCE(log, ...)                                         \
     static bool firstTime = true;                                        \
     if (firstTime)                                                       \
     {                                                                    \
@@ -164,9 +164,9 @@ void __LOG_ERROR__AND__QUIT__(char const* function, char const* file, long line,
         firstTime = false;                                               \
     }
 
-#define ERROR(log, ...) __LOG_ERROR__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
+#define LOG_ERROR(log, ...) __LOG_ERROR__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
 
-#define WARN_ONCE(log, ...)                                             \
+#define LOG_WARN_ONCE(log, ...)                                         \
     static bool firstTime = true;                                       \
     if (firstTime)                                                      \
     {                                                                   \
@@ -174,8 +174,8 @@ void __LOG_ERROR__AND__QUIT__(char const* function, char const* file, long line,
         firstTime = false;                                              \
     }
 
-#define WARN(log, ...) __LOG_WARN__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
+#define LOG_WARN(log, ...) __LOG_WARN__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
 
-#define INFO(log, ...) __LOG_INFO__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
+#define LOG_INFO(log, ...) __LOG_INFO__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
 
-#define DEBUG(log, ...) __LOG_DEBUG__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
+#define LOG_DEBUG(log, ...) __LOG_DEBUG__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)

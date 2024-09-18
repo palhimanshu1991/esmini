@@ -26,7 +26,7 @@ void Parameters::parseGlobalParameterDeclarations(pugi::xml_node node)
 {
     if (parameterDeclarations_.Parameter.size() != 0)
     {
-        ERROR("Unexpected non empty parameterDeclarations_ when about to parse global declarations");
+        LOG_ERROR("Unexpected non empty parameterDeclarations_ when about to parse global declarations");
     }
 
     parseParameterDeclarations(node, &parameterDeclarations_);
@@ -49,7 +49,7 @@ void Parameters::RestoreParameterDeclarations()
     }
     else
     {
-        ERROR("Unexpected empty parameterdeclaration counter, can't clear local declarations");
+        LOG_ERROR("Unexpected empty parameterdeclaration counter, can't clear local declarations");
     }
 }
 
@@ -80,7 +80,7 @@ std::string Parameters::getParameter(OSCParameterDeclarations& parameterDeclarat
             return parameterDeclaration.Parameter[i].value._string;
         }
     }
-    ERROR("Failed to resolve parameter {}", name);
+    LOG_ERROR("Failed to resolve parameter {}", name);
     throw std::runtime_error("Failed to resolve parameter");
 }
 
@@ -108,7 +108,7 @@ const char* Parameters::GetParameterName(int index, OSCParameterDeclarations::Pa
 {
     if (index < 0 || static_cast<unsigned int>(index) >= parameterDeclarations_.Parameter.size())
     {
-        ERROR_AND_QUIT("index {} out of range [0:{}]", index, parameterDeclarations_.Parameter.size() - 1);
+        LOG_ERROR_AND_QUIT("index {} out of range [0:{}]", index, parameterDeclarations_.Parameter.size() - 1);
         return 0;
     }
 
@@ -147,7 +147,7 @@ int Parameters::setParameterValue(std::string name, const void* value)
     }
     else
     {
-        ERROR("Unexpected type: {}", ps->type);
+        LOG_ERROR("Unexpected type: {}", ps->type);
         return -1;
     }
 
@@ -181,7 +181,7 @@ int Parameters::getParameterValue(std::string name, void* value)
     }
     else
     {
-        ERROR("Unexpected type: {}", ps->type);
+        LOG_ERROR("Unexpected type: {}", ps->type);
         return -1;
     }
 
@@ -301,7 +301,7 @@ int Parameters::setParameterValueByString(std::string name, std::string value)
     }
     else if (ps->type != OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
     {
-        ERROR("Unexpected type: {}", ps->type);
+        LOG_ERROR("Unexpected type: {}", ps->type);
         return -1;
     }
 
@@ -404,7 +404,7 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
     {
         if (required)
         {
-            ERROR_AND_QUIT("Warning: Request to read empty attribute name in XML node {}", node.name());
+            LOG_ERROR_AND_QUIT("Warning: Request to read empty attribute name in XML node {}", node.name());
         }
         return return_value;
     }
@@ -436,24 +436,24 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
                     ExprReturnStruct rs = eval_expr(expr.c_str());
                     if (rs.type == EXPR_RETURN_UNDEFINED && isnan(rs._double))
                     {
-                        ERROR_AND_QUIT("Failed to evaluate the expression : {}\n", attr.value());
+                        LOG_ERROR_AND_QUIT("Failed to evaluate the expression : {}\n", attr.value());
                     }
 
                     if (rs.type == EXPR_RETURN_DOUBLE)
                     {
-                        INFO("Expr {} = {} = {:.10f}", attr.value(), expr, rs._double);
+                        LOG_INFO("Expr {} = {} = {:.10f}", attr.value(), expr, rs._double);
                         return_value = std::to_string(rs._double);
                     }
                     else if (rs.type == EXPR_RETURN_STRING)
                     {
-                        INFO("Expr {} = {} = {}", attr.value(), expr, rs._string.string);
+                        LOG_INFO("Expr {} = {} = {}", attr.value(), expr, rs._string.string);
                         return_value = rs._string.string;
                     }
                     clear_expr_result(&rs);
                 }
                 else
                 {
-                    ERROR_AND_QUIT("Expression syntax error: {}, missing end '}'", attr.value());
+                    LOG_ERROR_AND_QUIT("Expression syntax error: {}, missing end '}'", attr.value());
                 }
             }
             else
@@ -471,7 +471,7 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
     {
         if (required)
         {
-            ERROR_AND_QUIT("Error: missing required attribute: {} -> {}", node.name(), attribute_name.c_str());
+            LOG_ERROR_AND_QUIT("Error: missing required attribute: {} -> {}", node.name(), attribute_name.c_str());
         }
     }
 
@@ -516,14 +516,14 @@ void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSC
         }
         else
         {
-            ERROR_AND_QUIT("Missing parameter or variable type (or wrongly spelled attribute) for {}", param.name);
+            LOG_ERROR_AND_QUIT("Missing parameter or variable type (or wrongly spelled attribute) for {}", param.name);
         }
 
         if (type_str == "integer" || type_str == "int")
         {
             if (type_str == "int")
             {
-                WARN("INFO: int type should renamed into integer - accepting int this time.");
+                LOG_WARN("INFO: int type should renamed into integer - accepting int this time.");
             }
             param.type       = OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER;
             param.value._int = strtoi(param.value._string);
@@ -537,7 +537,7 @@ void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSC
         {
             if (type_str == "bool")
             {
-                WARN("INFO: bool type should renamed into boolean - accepting bool this time.");
+                LOG_WARN("INFO: bool type should renamed into boolean - accepting bool this time.");
             }
 
             param.type        = OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL;
@@ -549,11 +549,11 @@ void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSC
         }
         else if (type_str == "unsignedInt" || type_str == "unsignedShort" || type_str == "dateTime")
         {
-            ERROR("Type {} is not supported yet", type_str);
+            LOG_ERROR("Type {} is not supported yet", type_str);
         }
         else
         {
-            ERROR_AND_QUIT("Unexpected Type: {}", type_str);
+            LOG_ERROR_AND_QUIT("Unexpected Type: {}", type_str);
         }
         pd->Parameter.insert(pd->Parameter.begin(), param);
     }
@@ -571,11 +571,11 @@ void Parameters::Clear()
 
 void Parameters::Print(std::string typestr)
 {
-    INFO("{} {}{}", parameterDeclarations_.Parameter.size(), typestr, parameterDeclarations_.Parameter.size() > 0 ? ":" : "");
+    LOG_INFO("{} {}{}", parameterDeclarations_.Parameter.size(), typestr, parameterDeclarations_.Parameter.size() > 0 ? ":" : "");
 
     for (size_t i = 0; i < parameterDeclarations_.Parameter.size(); i++)
     {
-        INFO("   {} = {}", parameterDeclarations_.Parameter[i].name, parameterDeclarations_.Parameter[i].value._string);
+        LOG_INFO("   {} = {}", parameterDeclarations_.Parameter[i].name, parameterDeclarations_.Parameter[i].value._string);
     }
 }
 

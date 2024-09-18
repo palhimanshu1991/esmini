@@ -62,7 +62,7 @@ ControllerFollowGhost::ControllerFollowGhost(InitArgs* args)
         }
         else
         {
-            INFO("Unexpected follow mode \"{}\", falling back to default \"time\"", follow_mode);
+            LOG_INFO("Unexpected follow mode \"{}\", falling back to default \"time\"", follow_mode);
             follow_mode_ = FollowMode::FOLLOW_MODE_TIME;
         }
     }
@@ -93,7 +93,7 @@ void ControllerFollowGhost::Init()
     // FollowGhost controller forced into override mode - will not perform any scenario actions
     if (mode_ != ControlOperationMode::MODE_OVERRIDE)
     {
-        INFO("FollowGhost controller mode \"{}\" not applicable. Using override mode instead.", Mode2Str(mode_));
+        LOG_INFO("FollowGhost controller mode \"{}\" not applicable. Using override mode instead.", Mode2Str(mode_));
         mode_ = ControlOperationMode::MODE_OVERRIDE;
     }
 

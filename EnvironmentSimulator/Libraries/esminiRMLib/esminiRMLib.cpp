@@ -33,7 +33,7 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo* r
 
     if (index >= static_cast<int>(position.size()))
     {
-        ERROR("Object {} not available, only {} registered", index, position.size());
+        LOG_ERROR("Object {} not available, only {} registered", index, position.size());
         return -1;
     }
 
@@ -105,7 +105,7 @@ static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo*
 
     if (index >= static_cast<int>(position.size()))
     {
-        ERROR("Object {} not available, only {} registered", index, position.size());
+        LOG_ERROR("Object {} not available, only {} registered", index, position.size());
         return -1;
     }
 
@@ -161,6 +161,7 @@ extern "C"
 
         // Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
         // Logger::Inst().LogVersion();
+        LOG_INFO("calling CreateNewFileForLogging");
         CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
         // LoggerConfig logConfig;
         // if( !SE_Env::Inst().GetLogFilePath().empty())
@@ -174,7 +175,7 @@ extern "C"
 
         if (!roadmanager::Position::LoadOpenDrive(odrFilename))
         {
-            ERROR("Failed to load ODR {}", odrFilename);
+            LOG_ERROR("Failed to load ODR {}", odrFilename);
             return -1;
         }
         odrManager = roadmanager::Position::GetOpenDrive();
@@ -193,6 +194,7 @@ extern "C"
     RM_DLL_API void RM_SetLogFilePath(const char* logFilePath)
     {
         // SE_Env::Inst().SetLogFilePath(logFilePath);
+        LOG_INFO("calling CreateNewFileForLogging");
         CreateNewFileForLogging(logFilePath);
     }
 

@@ -26,7 +26,7 @@ namespace scenarioengine
 
         void Print()
         {
-            INFO("file: {}", filepath);
+            LOG_INFO("file: {}", filepath);
         };
     };
 

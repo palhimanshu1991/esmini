@@ -125,7 +125,7 @@ static void ConvertArguments()
         StrCopy(argv_[i], args_v[i].c_str(), static_cast<unsigned int>(args_v[i].size()) + 1);
         argument_list += std::string(" ") + argv_[i];
     }
-    INFO("Player arguments: {}", argument_list);
+    LOG_INFO("Player arguments: {}", argument_list);
 }
 
 static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectStateStruct *gw_state)
@@ -172,7 +172,7 @@ static int getObjectById(int object_id, Object *&obj)
         obj = player->scenarioEngine->entities_.GetObjectById(object_id);
         if (obj == nullptr)
         {
-            ERROR("Invalid object_id ({})", object_id);
+            LOG_ERROR("Invalid object_id ({})", object_id);
             return -1;
         }
     }
@@ -281,7 +281,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     Object *ghost = obj->GetGhost();
     if (ghost == 0)
     {
-        ERROR("Ghost object not available for object id {}", object_id);
+        LOG_ERROR("Ghost object not available for object id {}", object_id);
         return -1;
     }
 
@@ -356,7 +356,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     Object *ghost = obj->GetGhost();
     if (ghost == nullptr)
     {
-        ERROR("Ghost object not available for object id {}", object_id);
+        LOG_ERROR("Ghost object not available for object id {}", object_id);
 
         return -1;
     }
@@ -369,10 +369,10 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
 
     if (ghost->trail_.FindPointAtTime(static_cast<double>(time) - ghost->GetHeadstartTime(), trailPos, index_out, obj->trail_follow_index_) != 0)
     {
-        ERROR("Failed to lookup point at time {:.2f} (time arg = {:.2f}) along ghost ({}) trail",
-              player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + static_cast<double>(time),
-              static_cast<double>(time),
-              ghost->GetId());
+        LOG_ERROR("Failed to lookup point at time {:.2f} (time arg = {:.2f}) along ghost ({}) trail",
+                  player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + static_cast<double>(time),
+                  static_cast<double>(time),
+                  ghost->GetId());
         return -1;
     }
     else
@@ -452,11 +452,11 @@ static int InitScenario()
         int retval = player->Init(false);
         if (retval == -1)
         {
-            ERROR("Failed to initialize scenario player");
+            LOG_ERROR("Failed to initialize scenario player");
         }
         else if (retval == -2)
         {
-            ERROR("Skipped initialize scenario player");
+            LOG_ERROR("Skipped initialize scenario player");
         }
 
         if (retval != 0)
@@ -467,7 +467,7 @@ static int InitScenario()
     }
     catch (const std::exception &e)
     {
-        ERROR(e.what());
+        LOG_ERROR(e.what());
         resetScenario();
         return -1;
     }
@@ -491,6 +491,7 @@ extern "C"
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
     {
         // SE_Env::Inst().SetLogFilePath(logFilePath);
+        LOG_INFO("calling CreateNewFileForLogging");
         CreateNewFileForLogging(logFilePath);
     }
 
@@ -604,7 +605,7 @@ extern "C"
 
             if (use_viewer & ~(0xf))  // check for invalid bits 0xf == 1+2+4+8
             {
-                ERROR("Unexpected use_viewer value: {}. Valid range: (0, {}) / (0x0, 0x{}) ({}, {})", use_viewer, 0, 0xf, 0xf);
+                LOG_ERROR("Unexpected use_viewer value: {}. Valid range: (0, {}) / (0x0, 0x{}) ({}, {})", use_viewer, 0, 0xf, 0xf);
             }
         }
 
@@ -626,7 +627,7 @@ extern "C"
 #ifndef _USE_OSG
         if (use_viewer)
         {
-            ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
+            LOG_ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
         }
 #endif
         resetScenario();
@@ -656,7 +657,7 @@ extern "C"
 #ifndef _USE_OSG
         if (use_viewer)
         {
-            ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
+            LOG_ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
         }
 #endif
         resetScenario();
@@ -1120,7 +1121,7 @@ extern "C"
             }
             else
             {
-                ERROR("SE_AddObject: Object type {} not supported yet", object_type);
+                LOG_ERROR("SE_AddObject: Object type {} not supported yet", object_type);
                 return -1;
             }
 
@@ -1751,7 +1752,7 @@ extern "C"
 
     SE_DLL_API void SE_LogMessage(const char *message)
     {
-        INFO(message);
+        LOG_INFO(message);
     }
 
     SE_DLL_API void SE_CloseLogFile()
@@ -2017,7 +2018,7 @@ extern "C"
         {
             if (sensor_id < 0 || sensor_id >= static_cast<int>(player->sensor.size()))
             {
-                ERROR("Invalid sensor_id ({} specified / {} available)", sensor_id, player->sensor.size());
+                LOG_ERROR("Invalid sensor_id ({} specified / {} available)", sensor_id, player->sensor.size());
                 return -1;
             }
 
@@ -2695,7 +2696,7 @@ extern "C"
 
         if (route_index >= static_cast<int>(obj->pos_.GetRoute()->all_waypoints_.size()))
         {
-            ERROR("Requested waypoint index {} invalid, only {} registered", route_index, obj->pos_.GetRoute()->all_waypoints_.size());
+            LOG_ERROR("Requested waypoint index {} invalid, only {} registered", route_index, obj->pos_.GetRoute()->all_waypoints_.size());
             return -1;
         }
 

@@ -608,7 +608,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
             roadmanager::Lane* lane = lsec->GetLaneById(0);
             if (lane->GetOSIPoints() == 0)
             {
-                ERROR("Missing OSI points of centerlane road {} section {}", road->GetId(), j);
+                LOG_ERROR("Missing OSI points of centerlane road {} section {}", road->GetId(), j);
                 throw std::runtime_error("Missing OSI points");
             }
 
@@ -723,7 +723,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                                 }
                                 else
                                 {
-                                    ERROR("Unexpected l == 0\n");
+                                    LOG_ERROR("Unexpected l == 0\n");
                                     next_s = osiPoints[l].s;
                                 }
                                 insert_point = true;

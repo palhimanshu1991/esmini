@@ -186,7 +186,7 @@ int ControllerSloppyDriver::Activate(ControlActivationMode lat_activation_mode,
     {
         if (sloppiness_ < 0 || sloppiness_ > 1)
         {
-            WARN("Warning, sloppiness is {:.2f} recommended range is [0:1]", sloppiness_);
+            LOG_WARN("Warning, sloppiness is {:.2f} recommended range is [0:1]", sloppiness_);
         }
         speedTimerAverage_ = 3.0;
         speedTimer_.Start(0, speedTimerAverage_);

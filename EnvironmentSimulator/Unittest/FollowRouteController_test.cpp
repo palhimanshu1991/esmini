@@ -38,7 +38,7 @@ TEST_F(FollowRouteControllerTest, PerformSingleLaneChange)
     while (se->getSimulationTime() < (10.0 - SMALL_NUMBER))
     {
         Position p = se->entities_.object_[0]->pos_;
-        DEBUG("s={:.2f}, r={}, l={}", p.GetS(), p.GetTrackId(), p.GetLaneId());
+        LOG_DEBUG("s={:.2f}, r={}, l={}", p.GetS(), p.GetTrackId(), p.GetLaneId());
         se->step(dt);
         se->prepareGroundTruth(dt);
     }

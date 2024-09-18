@@ -767,13 +767,13 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 
     if (cs != CoordinateSystem::CS_LANE && cs != CoordinateSystem::CS_ROAD)
     {
-        ERROR("Unexpected coordinateSystem ({}). {} or {} expected.", CoordinateSystem::CS_LANE, CoordinateSystem::CS_ROAD);
+        LOG_ERROR("Unexpected coordinateSystem ({}). {} or {} expected.", CoordinateSystem::CS_LANE, CoordinateSystem::CS_ROAD);
         return -1;
     }
 
     if (cs == CoordinateSystem::CS_LANE)
     {
-        WARN("freespace LANE coordinateSystem not supported yet, falling back to freespace ROAD");
+        LOG_WARN("freespace LANE coordinateSystem not supported yet, falling back to freespace ROAD");
         cs = CoordinateSystem::CS_ROAD;
     }
 
@@ -870,7 +870,7 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, PositionDiff* posDif
 {
     if (posDiff == nullptr)
     {
-        ERROR("FreeSpaceDistanceObjectRoadLane: PositionDiff is NULL");
+        LOG_ERROR("FreeSpaceDistanceObjectRoadLane: PositionDiff is NULL");
         return -1;
     }
 
@@ -889,13 +889,13 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, PositionDiff* posDif
 
     if (cs != CoordinateSystem::CS_LANE && cs != CoordinateSystem::CS_ROAD)
     {
-        ERROR("Unexpected coordinateSystem ({}). {} or {} expected.", CoordinateSystem::CS_LANE, CoordinateSystem::CS_ROAD);
+        LOG_ERROR("Unexpected coordinateSystem ({}). {} or {} expected.", CoordinateSystem::CS_LANE, CoordinateSystem::CS_ROAD);
         return -1;
     }
 
     if (cs == CoordinateSystem::CS_LANE)
     {
-        WARN("freespace LANE coordinateSystem not supported yet, falling back to freespace ROAD");
+        LOG_WARN("freespace LANE coordinateSystem not supported yet, falling back to freespace ROAD");
         cs = CoordinateSystem::CS_ROAD;
     }
 
@@ -1065,14 +1065,14 @@ int Object::Distance(Object*                           target,
                 }
                 else
                 {
-                    ERROR("Unexpected relativeDistanceType: %d", relDistType);
+                    LOG_ERROR("Unexpected relativeDistanceType: %d", relDistType);
                     return -1;
                 }
             }
         }
         else
         {
-            ERROR("Unhandled case: cs %d reDistType %d freeSpace %d\n", cs, relDistType, freeSpace);
+            LOG_ERROR("Unhandled case: cs %d reDistType %d freeSpace %d\n", cs, relDistType, freeSpace);
             return -1;
         }
     }
@@ -1135,14 +1135,14 @@ int Object::Distance(double                            x,
                 }
                 else
                 {
-                    ERROR("Unexpected relativeDistanceType: {}", relDistType);
+                    LOG_ERROR("Unexpected relativeDistanceType: {}", relDistType);
                     return -1;
                 }
             }
         }
         else
         {
-            ERROR("Unhandled case: cs {} reDistType {} freeSpace {}\n", cs, relDistType, freeSpace);
+            LOG_ERROR("Unhandled case: cs {} reDistType {} freeSpace {}\n", cs, relDistType, freeSpace);
             return -1;
         }
     }
@@ -1271,7 +1271,7 @@ int Entities::addObject(Object* obj, bool activate, int call_index)
     const int max_trailers = 100;
     if (call_index >= max_trailers)
     {
-        ERROR_AND_QUIT("Error: addObject max recursion reached ({}). Check scenario trailer config", max_trailers);
+        LOG_ERROR_AND_QUIT("Error: addObject max recursion reached ({}). Check scenario trailer config", max_trailers);
     }
 
     obj->id_ = getNewId();
@@ -1320,7 +1320,7 @@ int Entities::activateObject(Object* obj, int call_index)
     const int max_trailers = 100;
     if (call_index >= max_trailers)
     {
-        ERROR_AND_QUIT("Error: activateObject max recursion reached ({}). Check scenario trailer config", max_trailers);
+        LOG_ERROR_AND_QUIT("Error: activateObject max recursion reached ({}). Check scenario trailer config", max_trailers);
     }
 
     int n_active_objs = static_cast<int>(std::count(object_.begin(), object_.end(), obj));
@@ -1337,12 +1337,12 @@ int Entities::activateObject(Object* obj, int call_index)
         }
         else if (n_objs > 1)
         {
-            ERROR("Unexpected: {} object instances in pool when activating obj {}. Duplicate names? not supported", n_objs, obj->GetName());
+            LOG_ERROR("Unexpected: {} object instances in pool when activating obj {}. Duplicate names? not supported", n_objs, obj->GetName());
             return -1;
         }
         else
         {
-            ERROR("Unexpected finding: Object {} missing in pool empty when activating.", obj->GetName());
+            LOG_ERROR("Unexpected finding: Object {} missing in pool empty when activating.", obj->GetName());
         }
 
         Vehicle* trailer_vehicle = static_cast<Vehicle*>(obj->TrailerVehicle());
@@ -1353,7 +1353,7 @@ int Entities::activateObject(Object* obj, int call_index)
     }
     else
     {
-        ERROR("Failed to activate obj {}. Already active ({} instances in active list) or duplicate name?", obj->GetName(), n_active_objs);
+        LOG_ERROR("Failed to activate obj {}. Already active ({} instances in active list) or duplicate name?", obj->GetName(), n_active_objs);
         return -1;
     }
 
@@ -1365,7 +1365,7 @@ int Entities::deactivateObject(Object* obj, int call_index)
     const int max_trailers = 100;
     if (call_index >= max_trailers)
     {
-        ERROR_AND_QUIT("Error: deactivateObject max recursion reached ({}). Check scenario trailer config", max_trailers);
+        LOG_ERROR_AND_QUIT("Error: deactivateObject max recursion reached ({}). Check scenario trailer config", max_trailers);
     }
 
     int n_active_objs = static_cast<int>(std::count(object_.begin(), object_.end(), obj));
@@ -1382,7 +1382,7 @@ int Entities::deactivateObject(Object* obj, int call_index)
         }
         else
         {
-            ERROR("Unexpected: Object {} already in pool ({} instances) when deactivating it.", obj->GetName(), n_objs);
+            LOG_ERROR("Unexpected: Object {} already in pool ({} instances) when deactivating it.", obj->GetName(), n_objs);
         }
 
         Vehicle* trailer_vehicle = static_cast<Vehicle*>(obj->TrailerVehicle());
@@ -1393,12 +1393,12 @@ int Entities::deactivateObject(Object* obj, int call_index)
     }
     else if (n_active_objs > 1)
     {
-        ERROR("Unexpected: {} object instances found when deactivating obj {}. Duplicate names? not supported", n_active_objs, obj->GetName());
+        LOG_ERROR("Unexpected: {} object instances found when deactivating obj {}. Duplicate names? not supported", n_active_objs, obj->GetName());
         return -1;
     }
     else
     {
-        ERROR("Failed to deactivate obj {}. Already inactive (0 in active list).", obj->GetName());
+        LOG_ERROR("Failed to deactivate obj {}. Already inactive (0 in active list).", obj->GetName());
         return -1;
     }
 
@@ -1657,7 +1657,7 @@ Object* Entities::GetObjectByName(std::string name)
         }
     }
 
-    ERROR("Failed to find object {}", name);
+    LOG_ERROR("Failed to find object {}", name);
 
     return 0;
 }
@@ -1680,7 +1680,7 @@ Object* Entities::GetObjectById(int id)
         }
     }
 
-    ERROR("Failed to find object with id {}", id);
+    LOG_ERROR("Failed to find object with id {}", id);
 
     return 0;
 }
@@ -1743,7 +1743,7 @@ Object* Object::TowVehicle()
                     tow_vehicle = static_cast<Vehicle*>(vehicle->trailer_coupler_->tow_vehicle_);
                     if (tow_vehicle != nullptr && tow_vehicle->trailer_hitch_ == nullptr)
                     {
-                        WARN_ONCE("Tow vehicle {} lacks hitch", tow_vehicle->GetName());
+                        LOG_WARN_ONCE("Tow vehicle {} lacks hitch", tow_vehicle->GetName());
                         tow_vehicle = nullptr;
                     }
                 }
@@ -1770,7 +1770,7 @@ Object* Object::TrailerVehicle()
                     trailer_vehicle = static_cast<Vehicle*>(vehicle->trailer_hitch_->trailer_vehicle_);
                     if (trailer_vehicle != nullptr && trailer_vehicle->trailer_coupler_ == nullptr)
                     {
-                        WARN_ONCE("Trailer vehicle {} lacks coupler", trailer_vehicle->GetName());
+                        LOG_WARN_ONCE("Trailer vehicle {} lacks coupler", trailer_vehicle->GetName());
                         trailer_vehicle = nullptr;
                     }
                 }

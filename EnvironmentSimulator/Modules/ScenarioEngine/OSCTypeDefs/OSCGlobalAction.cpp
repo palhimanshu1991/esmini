@@ -44,7 +44,7 @@ int SwarmTrafficAction::counter_ = 0;
 
 void ParameterSetAction::Start(double simTime)
 {
-    INFO("Set parameter {} = {}", name_, value_);
+    LOG_INFO("Set parameter {} = {}", name_, value_);
     parameters_->setParameterValueByString(name_, value_);
     OSCAction::Start(simTime);
 }
@@ -59,7 +59,7 @@ void ParameterSetAction::Step(double simTime, double dt)
 
 void VariableSetAction::Start(double simTime)
 {
-    INFO("Set variable {} = {}", name_, value_);
+    LOG_INFO("Set variable {} = {}", name_, value_);
     variables_->setParameterValueByString(name_, value_);
     OSCAction::Start(simTime);
 }
@@ -76,19 +76,19 @@ void AddEntityAction::Start(double simTime)
 {
     if (entity_ == nullptr)
     {
-        ERROR("AddEntityAction missing entity");
+        LOG_ERROR("AddEntityAction missing entity");
         return;
     }
 
     if (entities_->activateObject(entity_) != 0)
     {
-        ERROR("AddEntityAction: Entity already active. Skipping action.");
+        LOG_ERROR("AddEntityAction: Entity already active. Skipping action.");
         return;
     }
 
     entity_->pos_.TeleportTo(pos_);
 
-    ERROR("Added entity {}", entity_->GetName());
+    LOG_ERROR("Added entity {}", entity_->GetName());
 
     OSCAction::Start(simTime);
 }
@@ -105,19 +105,19 @@ void DeleteEntityAction::Start(double simTime)
 {
     if (entity_ == nullptr)
     {
-        ERROR("DeleteEntityAction missing entity");
+        LOG_ERROR("DeleteEntityAction missing entity");
         return;
     }
 
     if (entities_->deactivateObject(entity_) != 0)
     {
-        WARN("DeleteEntityAction: Entity already deactivated. Skipping action.");
+        LOG_WARN("DeleteEntityAction: Entity already deactivated. Skipping action.");
         return;
     }
 
     gateway_->removeObject(entity_->name_);
 
-    WARN("Deleted entity {}", entity_->GetName());
+    LOG_WARN("Deleted entity {}", entity_->GetName());
 
     OSCAction::Start(simTime);
 }
@@ -229,12 +229,12 @@ SwarmTrafficAction::~SwarmTrafficAction()
 
 void SwarmTrafficAction::Start(double simTime)
 {
-    INFO("Swarm IR: {:.2f}, SMjA: {:.2f}, SMnA: {:.2f}, maxV: {} vel: {:.2f}",
-         innerRadius_,
-         semiMajorAxis_,
-         semiMinorAxis_,
-         numberOfVehicles,
-         velocity_);
+    LOG_INFO("Swarm IR: {:.2f}, SMjA: {:.2f}, SMnA: {:.2f}, maxV: {} vel: {:.2f}",
+             innerRadius_,
+             semiMajorAxis_,
+             semiMinorAxis_,
+             numberOfVehicles,
+             velocity_);
     double x0, y0, x1, y1;
 
     midSMjA  = (semiMajorAxis_ + innerRadius_) / 2.0;
@@ -289,7 +289,7 @@ void SwarmTrafficAction::Start(double simTime)
         }
         else
         {
-            ERROR_AND_QUIT("No vehicles available to populate swarm traffic. Vehicle catalog empty?");
+            LOG_ERROR_AND_QUIT("No vehicles available to populate swarm traffic. Vehicle catalog empty?");
         }
     }
 
@@ -422,7 +422,7 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions& sols,
     // Sample the number of cars to spawn
     if (maxN < minN)
     {
-        ERROR("Unstable behavior detected (maxN < minN)");
+        LOG_ERROR("Unstable behavior detected (maxN < minN)");
         return;
     }
 
@@ -531,7 +531,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             if (!Lane)
             {
-                WARN("Warning: invalid lane index");
+                LOG_WARN("Warning: invalid lane index");
                 continue;
             }
             else

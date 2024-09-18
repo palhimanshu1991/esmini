@@ -66,11 +66,11 @@ void ControllerFollowRoute::Init()
     // FollowRoute controller forced into additive mode - will perform scenario actions, except during lane changes
     if (mode_ != ControlOperationMode::MODE_ADDITIVE)
     {
-        WARN("FollowRoute controller mode \"{}\" not applicable. Using additive mode (except during lane changes).", Mode2Str(mode_));
+        LOG_WARN("FollowRoute controller mode \"{}\" not applicable. Using additive mode (except during lane changes).", Mode2Str(mode_));
         mode_ = ControlOperationMode::MODE_ADDITIVE;
     }
 
-    INFO("FollowRoute init");
+    LOG_INFO("FollowRoute init");
 
     Controller::Init();
 }
@@ -79,7 +79,7 @@ void ControllerFollowRoute::Step(double timeStep)
 {
     if (object_->pos_.GetRoute() == nullptr)
     {
-        DEBUG("Route = nullptr");
+        LOG_DEBUG("Route = nullptr");
         Controller::Step(timeStep);
         return;
     }
@@ -129,7 +129,7 @@ int ControllerFollowRoute::Activate(ControlActivationMode lat_activation_mode,
                                     ControlActivationMode light_activation_mode,
                                     ControlActivationMode anim_activation_mode)
 {
-    INFO("FollowRoute activate");
+    LOG_INFO("FollowRoute activate");
 
     if (object_ != nullptr)
     {
@@ -158,7 +158,7 @@ void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, ro
     {
         case PASSED_WAYPOINT:  // Get next waypoint and calculate path to it
         {
-            DEBUG("Passed waypoint: r={}, l={}, s={}", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
+            LOG_DEBUG("Passed waypoint: r={}, l={}, s={}", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
             currentWaypointIndex_++;
             if (nextWaypoint.GetTrackId() == waypoints_.back().GetTrackId())
             {
@@ -181,7 +181,7 @@ void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, ro
             return;
         }
         case MISSED_WAYPOINT:  // Missed waypoint, re-calculate path to waypoint
-            DEBUG("Missed waypoint: r={}, l={}, s={}", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
+            LOG_DEBUG("Missed waypoint: r={}, l={}, s={}", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
             if (object_->pos_.GetRoute() != nullptr)
             {
                 pathCalculated_ = false;
@@ -207,7 +207,7 @@ void ControllerFollowRoute::CalculateWaypoints()
         scenarioWaypointIndex_++;
         if (static_cast<unsigned int>(scenarioWaypointIndex_) >= object_->pos_.GetRoute()->scenario_waypoints_.size())
         {
-            ERROR("Error: start and target on same road, scenarioWaypointIndex out of bounds, deactivating controller");
+            LOG_ERROR("Error: start and target on same road, scenarioWaypointIndex out of bounds, deactivating controller");
             Deactivate();
             return;
         }
@@ -217,7 +217,7 @@ void ControllerFollowRoute::CalculateWaypoints()
     std::vector<roadmanager::Node> pathToGoal = router.CalculatePath(startPos, targetPos);
     if (pathToGoal.empty())
     {
-        ERROR("Error: Path not found, deactivating controller");
+        LOG_ERROR("Error: Path not found, deactivating controller");
         Deactivate();
     }
     else
@@ -373,7 +373,7 @@ void ControllerFollowRoute::Deactivate()
     {
         gateway_->updateObjectSpeed(object_->GetId(), 0.0, 0.0);
     }
-    INFO("ControllerFollowRoute - Deactivated");
+    LOG_INFO("ControllerFollowRoute - Deactivated");
     Controller::Deactivate();
 }
 

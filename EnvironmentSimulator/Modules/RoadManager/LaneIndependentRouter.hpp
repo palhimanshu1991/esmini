@@ -24,7 +24,7 @@ namespace roadmanager
         Node     *previous;
         void      Print()
         {
-            INFO("road={}, cl={}, fl={}, w={}", road->GetId(), currentLaneId, fromLaneId, weight);
+            LOG_INFO("road={}, cl={}, fl={}, w={}", road->GetId(), currentLaneId, fromLaneId, weight);
         }
         bool operator==(const Node &rhs)
         {

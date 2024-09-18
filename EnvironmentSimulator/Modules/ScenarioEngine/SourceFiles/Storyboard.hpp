@@ -116,7 +116,7 @@ namespace scenarioengine
 
         void Print()
         {
-            INFO("\tname = {}", GetName());
+            LOG_INFO("\tname = {}", GetName());
         };
     };
 

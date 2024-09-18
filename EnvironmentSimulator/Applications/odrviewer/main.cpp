@@ -184,13 +184,13 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
                     lane         = road->GetDrivingLaneByIdx(s, lane_idx);
                     if (lane == nullptr)
                     {
-                        ERROR("Spawn: Failed locate driving lane {} at s {:.2f}", lane_idx, s);
+                        LOG_ERROR("Spawn: Failed locate driving lane {} at s {:.2f}", lane_idx, s);
                         continue;
                     }
                 }
                 else
                 {
-                    ERROR("Spawn: No driving lanes on road {} at s {:.2f}", road->GetId(), s);
+                    LOG_ERROR("Spawn: No driving lanes on road {} at s {:.2f}", road->GetId(), s);
                     continue;
                 }
 
@@ -203,7 +203,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
                 // randomly choose model
                 int carModelID = SE_Env::Inst().GetRand().GetNumberBetween(0, (sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) - 1);
-                DEBUG("Adding car of model {} to road nr {} (road id {} s {:.2f} lane id {}), ", carModelID, r, road->GetId(), s, lane->GetId());
+                LOG_DEBUG("Adding car of model {} to road nr {} (road id {} s {:.2f} lane id {}), ", carModelID, r, road->GetId(), s, lane->GetId());
 
                 Car *car_ = new Car;
                 // Higher speeds in lanes closer to reference lane
@@ -508,23 +508,24 @@ int main(int argc, char **argv)
     SetupLogger(logConfig);
     // Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
     // Logger::Inst().LogVersion();
-    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath().c_str());
+    LOG_INFO("calling CreateNewFileForLogging");
+    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
     if ((arg_str = opt.GetOptionArg("path")) != "")
     {
         SE_Env::Inst().AddPath(arg_str);
-        INFO("Added path {}", arg_str);
+        LOG_INFO("Added path {}", arg_str);
     }
 
     // Use specific seed for repeatable scenarios?
     if ((arg_str = opt.GetOptionArg("seed")) != "")
     {
         unsigned int seed = static_cast<unsigned int>(std::stoul(arg_str));
-        INFO("Using specified seed {}", seed);
+        LOG_INFO("Using specified seed {}", seed);
         SE_Env::Inst().GetRand().SetSeed(seed);
     }
     else
     {
-        INFO("Generated seed {}", SE_Env::Inst().GetRand().GetSeed());
+        LOG_INFO("Generated seed {}", SE_Env::Inst().GetRand().GetSeed());
     }
 
     std::string odrFilename = opt.GetOptionArg("odr");
@@ -542,25 +543,25 @@ int main(int argc, char **argv)
     {
         density = strtod(opt.GetOptionArg("density"));
     }
-    INFO("density: {:.2f}", density);
+    LOG_INFO("density: {:.2f}", density);
 
     if (opt.GetOptionArg("speed_factor") != "")
     {
         global_speed_factor = strtod(opt.GetOptionArg("speed_factor"));
     }
-    INFO("global speed factor: {:.2f}", global_speed_factor);
+    LOG_INFO("global speed factor: {:.2f}", global_speed_factor);
 
     if (opt.GetOptionArg("traffic_rule") != "")
     {
         if (opt.GetOptionArg("traffic_rule") == "left")
         {
             rule = roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC;
-            INFO("Enforce left hand traffic");
+            LOG_INFO("Enforce left hand traffic");
         }
         else if (opt.GetOptionArg("traffic_rule") == "right")
         {
             rule = roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC;
-            INFO("Enforce right hand traffic");
+            LOG_INFO("Enforce right hand traffic");
         }
     }
 
@@ -571,7 +572,7 @@ int main(int argc, char **argv)
 
     if (opt.GetOptionSet("use_signs_in_external_model"))
     {
-        INFO("Use sign models in external scene graph model, skip creating sign models");
+        LOG_INFO("Use sign models in external scene graph model, skip creating sign models");
     }
 
     try
@@ -591,7 +592,7 @@ int main(int argc, char **argv)
 
         if (opt.GetOptionSet("capture_screen"))
         {
-            INFO("Activate continuous screen capture");
+            LOG_INFO("Activate continuous screen capture");
             viewer->SaveImagesToFile(-1);
         }
 
@@ -630,7 +631,7 @@ int main(int argc, char **argv)
                 if (splitted.size() == 3)
                 {
                     viewer->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), true);
-                    INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
+                    LOG_INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
                 }
                 else if (splitted.size() == 5)
                 {
@@ -640,17 +641,17 @@ int main(int argc, char **argv)
                                             strtod(splitted[3]),
                                             strtod(splitted[4]),
                                             true);
-                    INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})",
-                         counter,
-                         splitted[0],
-                         splitted[1],
-                         splitted[2],
-                         splitted[3],
-                         splitted[4]);
+                    LOG_INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})",
+                             counter,
+                             splitted[0],
+                             splitted[1],
+                             splitted[2],
+                             splitted[3],
+                             splitted[4]);
                 }
                 else
                 {
-                    ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
+                    LOG_ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
                 }
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
                 counter++;
@@ -666,12 +667,12 @@ int main(int argc, char **argv)
                 const auto splitted = utils::SplitString(arg_str, ',');
                 if (splitted.size() != 4)
                 {
-                    ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
+                    LOG_ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
                 }
                 viewer->AddCustomFixedTopCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]));
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
 
-                INFO("Created custom fixed top camera {} ({}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3]);
+                LOG_INFO("Created custom fixed top camera {} ({}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3]);
                 counter++;
             }
         }
@@ -682,15 +683,15 @@ int main(int argc, char **argv)
             opt.PrintUsage();
         }
 
-        INFO("osi_features: lines %s points %s",
-             viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_LINES) ? "on" : "off",
-             viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_POINTS) ? "on" : "off");
+        LOG_INFO("osi_features: lines %s points %s",
+                 viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_LINES) ? "on" : "off",
+                 viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_POINTS) ? "on" : "off");
 
         if (SetupCars(odrManager, viewer) == -1)
         {
             return 4;
         }
-        INFO("%d cars added", static_cast<int>(cars.size()));
+        LOG_INFO("%d cars added", static_cast<int>(cars.size()));
 
         __int64 now            = 0;
         __int64 lastTimeStamp  = 0;

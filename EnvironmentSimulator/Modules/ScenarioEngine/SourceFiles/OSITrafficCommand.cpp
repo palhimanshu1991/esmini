@@ -23,7 +23,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
 
     if (obj == nullptr)
     {
-        ERROR("Error: Missing object in private action {}", action->GetName());
+        LOG_ERROR("Error: Missing object in private action {}", action->GetName());
         return -1;
     }
 
@@ -33,7 +33,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
         {
             osi3::TrafficAction *ta = tc->add_action();
 
-            INFO("OSITrafficCmd: Lane change action {} started for obj {}", action->GetName(), action->object_ ? action->object_->GetId() : -1);
+            LOG_INFO("OSITrafficCmd: Lane change action {} started for obj {}", action->GetName(), action->object_ ? action->object_->GetId() : -1);
             tc->mutable_traffic_participant_id()->set_value(action->object_ ? static_cast<unsigned int>(action->object_->GetId()) : UINT_MAX);
 
             ta->mutable_lane_change_action()->mutable_action_header()->mutable_action_id()->set_value(action->GetId());
@@ -74,7 +74,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
             }
             else
             {
-                ERROR("OSITrafficCmd: Unrecognized shape type: {}", a->transition_.shape_);
+                LOG_ERROR("OSITrafficCmd: Unrecognized shape type: {}", a->transition_.shape_);
                 ta->mutable_lane_change_action()->set_dynamics_shape(osi3::TrafficAction_DynamicsShape_DYNAMICS_SHAPE_UNSPECIFIED);
             }
 
@@ -94,7 +94,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
         {
             osi3::TrafficAction *ta = tc->add_action();
 
-            INFO("OSITrafficCmd: Speed action {} started for obj {}", action->GetName(), action->object_ ? action->object_->GetId() : -1);
+            LOG_INFO("OSITrafficCmd: Speed action {} started for obj {}", action->GetName(), action->object_ ? action->object_->GetId() : -1);
 
             tc->mutable_traffic_participant_id()->set_value(action->object_ ? static_cast<unsigned int>(action->object_->GetId()) : UINT_MAX);
 
@@ -136,7 +136,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
             }
             else
             {
-                ERROR("Unrecognized shape type: {}", a->transition_.shape_);
+                LOG_ERROR("Unrecognized shape type: {}", a->transition_.shape_);
                 ta->mutable_speed_action()->set_dynamics_shape(osi3::TrafficAction_DynamicsShape_DYNAMICS_SHAPE_UNSPECIFIED);
             }
 
@@ -155,7 +155,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
         {
             osi3::TrafficAction *ta = tc->add_action();
 
-            INFO("OSITrafficCmd: Teleport action {} started for obj {}", action->GetName(), action->object_ ? action->object_->GetId() : -1);
+            LOG_INFO("OSITrafficCmd: Teleport action {} started for obj {}", action->GetName(), action->object_ ? action->object_->GetId() : -1);
 
             tc->mutable_traffic_participant_id()->set_value(action->object_ ? static_cast<unsigned int>(action->object_->GetId()) : UINT_MAX);
 
@@ -177,7 +177,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
 
         default:
 
-            ERROR("OSITrafficCommand: Unsupported type {} of action {}", action->action_type_, action->GetName());
+            LOG_ERROR("OSITrafficCommand: Unsupported type {} of action {}", action->action_type_, action->GetName());
     }
 
     return 0;

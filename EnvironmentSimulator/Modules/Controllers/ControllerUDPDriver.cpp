@@ -58,7 +58,7 @@ ControllerUDPDriver::ControllerUDPDriver(InitArgs* args)
         }
         else
         {
-            ERROR_AND_QUIT("ControllerExternalDriverModel unexpected arg inputMode {}", args->properties->GetValueStr("inputMode").c_str());
+            LOG_ERROR_AND_QUIT("ControllerExternalDriverModel unexpected arg inputMode {}", args->properties->GetValueStr("inputMode").c_str());
         }
     }
 
@@ -67,7 +67,7 @@ ControllerUDPDriver::ControllerUDPDriver(InitArgs* args)
         int portTmp = strtoi(args->properties->GetValueStr("port"));
         if (portTmp < 0 || portTmp > 65535)
         {
-            ERROR_AND_QUIT("Invlaid driver model port: {} (valid range is [0, 65535]", portTmp);
+            LOG_ERROR_AND_QUIT("Invlaid driver model port: {} (valid range is [0, 65535]", portTmp);
         }
         else
         {
@@ -80,11 +80,11 @@ ControllerUDPDriver::ControllerUDPDriver(InitArgs* args)
         int basePortTmp = strtoi(args->properties->GetValueStr("basePort"));
         if (basePortTmp < 0 || basePortTmp > 65535)
         {
-            ERROR_AND_QUIT("Invlaid driver model basePort: {} (valid range is [0, 65535]", basePortTmp);
+            LOG_ERROR_AND_QUIT("Invlaid driver model basePort: {} (valid range is [0, 65535]", basePortTmp);
         }
         else if (basePortTmp != basePort_)
         {
-            INFO("Changing base port to {} (from {})", basePortTmp, basePort_);
+            LOG_INFO("Changing base port to {} (from {})", basePortTmp, basePort_);
             basePort_ = basePortTmp;
         }
     }
@@ -101,7 +101,7 @@ ControllerUDPDriver::ControllerUDPDriver(InitArgs* args)
         }
         else
         {
-            ERROR_AND_QUIT("ControllerExternalDriverModel unexpected arg execMode {}", args->properties->GetValueStr("execMode"));
+            LOG_ERROR_AND_QUIT("ControllerExternalDriverModel unexpected arg execMode {}", args->properties->GetValueStr("execMode"));
         }
     }
 
@@ -110,7 +110,7 @@ ControllerUDPDriver::ControllerUDPDriver(InitArgs* args)
     {
         if (args->properties->GetValueStr("intputMode") == "additive")
         {
-            WARN("ExternalDriverModelController only support override mode, ignoring requested additive mode");
+            LOG_WARN("ExternalDriverModelController only support override mode, ignoring requested additive mode");
         }
     }
     mode_ = ControlOperationMode::MODE_OVERRIDE;
@@ -168,7 +168,7 @@ void ControllerUDPDriver::Init()
     if (basePort_ == -1)
     {
         basePort_ = DEFAULT_UDP_DRIVER_PORT;
-        WARN("ControllerUDPDriver: using default baseport {}", basePort_);
+        LOG_WARN("ControllerUDPDriver: using default baseport {}", basePort_);
     }
     Controller::Init();
 }
@@ -212,9 +212,9 @@ void ControllerUDPDriver::Step(double timeStep)
 
         if (msg.header.version != UDP_DRIVER_MESSAGE_VERSION)
         {
-            ERROR_ONCE("ControllerUDPDriver: Got unsupported msg version {} (only accepting version {})",
-                       msg.header.version,
-                       UDP_DRIVER_MESSAGE_VERSION);
+            LOG_ERROR_ONCE("ControllerUDPDriver: Got unsupported msg version {} (only accepting version {})",
+                           msg.header.version,
+                           UDP_DRIVER_MESSAGE_VERSION);
         }
 
         if (msg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR))
@@ -288,7 +288,7 @@ void ControllerUDPDriver::Step(double timeStep)
         }
         else
         {
-            ERROR("ControllerExternalDriverModel received {} bytes and unexpected input mode {}", retval, msg.header.inputMode);
+            LOG_ERROR("ControllerExternalDriverModel received {} bytes and unexpected input mode {}", retval, msg.header.inputMode);
         }
     }
     else if (timeStep > SMALL_NUMBER &&
@@ -316,7 +316,7 @@ void ControllerUDPDriver::Step(double timeStep)
         }
         else
         {
-            ERROR_AND_QUIT("Unexpected msg type {}", lastMsg.header.inputMode);
+            LOG_ERROR_AND_QUIT("Unexpected msg type {}", lastMsg.header.inputMode);
         }
 
         double ds = speed * timeStep;
@@ -375,7 +375,7 @@ int ControllerUDPDriver::Activate(ControlActivationMode lat_activation_mode,
             {
                 udpServer_ = new UDPServer(static_cast<unsigned short>(port_), UDP_SYNCHRONOUS_MODE_TIMEOUT_MS);
             }
-            INFO("ExternalDriverModel server listening on port {} execMode: {}", port_, ExecMode2Str(execMode_));
+            LOG_INFO("ExternalDriverModel server listening on port {} execMode: {}", port_, ExecMode2Str(execMode_));
         }
 
         vehicle_.Reset();

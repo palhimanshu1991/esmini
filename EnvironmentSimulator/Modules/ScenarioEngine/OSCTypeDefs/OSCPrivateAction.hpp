@@ -157,12 +157,12 @@ namespace scenarioengine
 
         virtual void print()
         {
-            WARN("Virtual, should be overridden");
+            LOG_WARN("Virtual, should be overridden");
         };
 
         virtual OSCPrivateAction* Copy()
         {
-            WARN("Virtual, should be overridden");
+            LOG_WARN("Virtual, should be overridden");
             return 0;
         };
 
@@ -400,7 +400,7 @@ namespace scenarioengine
 
         void print()
         {
-            INFO("");
+            LOG_INFO("");
         }
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);

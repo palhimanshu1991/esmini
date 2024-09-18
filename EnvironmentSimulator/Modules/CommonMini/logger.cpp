@@ -21,6 +21,24 @@ namespace fs = std::experimental::filesystem;
 std::shared_ptr<spdlog::logger> consoleLogger;
 std::shared_ptr<spdlog::logger> fileLogger;
 std::string                     strTime;
+std::string                     currentLogFileName;
+
+void CreateFileLogger(const std::string& path)
+{
+    // std::cout << "currentLogFileName: " << currentLogFileName << " new file path: " << path << std::endl;
+    if (path != currentLogFileName)
+    {
+        bool createNewFile = !SE_Env::Inst().GetOptions().GetOptionSet("log_append");
+        // std::cout << path << " ----------------------------------creating new file\n";
+        fileLogger = spdlog::basic_logger_mt("file", path, createNewFile);
+        InitIndivisualLogger(fileLogger);
+        currentLogFileName = path;
+    }
+    else
+    {
+        std::cout << "not creating log file" << std::endl;
+    }
+}
 
 bool LogConsole()
 {
@@ -57,8 +75,10 @@ bool LogFile(const std::string& providedPath)
     {
         if (fileLoggerDisabled)
         {
+            // std::cout << "deleting current file : " << currentLogFileName << " as logger disabled"<< std::endl;
             spdlog::drop("file");
             fileLogger.reset();
+            currentLogFileName = "";
             return false;
         }
     }
@@ -70,12 +90,16 @@ bool LogFile(const std::string& providedPath)
         }
         else
         {
-            bool createNewFile = !SE_Env::Inst().GetOptions().GetOptionSet("log_append");
+            // bool createNewFile = !SE_Env::Inst().GetOptions().GetOptionSet("log_append");
 
             if (!providedPath.empty())
             {
-                fileLogger = spdlog::basic_logger_mt("file", providedPath, createNewFile);
-                InitIndivisualLogger(fileLogger);
+                // std::cout << "currentLogFileName: " << currentLogFileName << " providedPath: " << providedPath << "
+                // -------------------------------------------------77----creating new file\n";
+                // fileLogger = spdlog::basic_logger_mt("file", providedPath, createNewFile);
+                // InitIndivisualLogger(fileLogger);
+                // currentLogFileName = providedPath;
+                CreateFileLogger(providedPath);
                 return true;
             }
 
@@ -90,16 +114,22 @@ bool LogFile(const std::string& providedPath)
                 }
                 else
                 {
-                    // printf("Custom logfile path: %s\n", filePath.c_str());
-                    fileLogger = spdlog::basic_logger_mt("file", filePath, createNewFile);
-                    InitIndivisualLogger(fileLogger);
+                    printf("Custom logfile path: %s\n", filePath.c_str());
+                    // std::cout << "currentLogFileName: " << currentLogFileName << " filePath: " << filePath << "
+                    // ------------------------------------------------95-----creating new file\n"; fileLogger = spdlog::basic_logger_mt("file",
+                    // filePath, createNewFile); InitIndivisualLogger(fileLogger); currentLogFileName = filePath;
+                    CreateFileLogger(filePath);
                 }
             }
             else
             {
                 // std::cout << "Custom logfile path: log.txt new file flag " << createNewFile << std::endl;
-                fileLogger = spdlog::basic_logger_mt("file", "log.txt", createNewFile);
-                InitIndivisualLogger(fileLogger);
+                // std::cout << "currentLogFileName: " << currentLogFileName << "
+                // -------------------------------------------103--log.txt--------creating new file\n";
+                // fileLogger = spdlog::basic_logger_mt("file", "log.txt", createNewFile);
+                // InitIndivisualLogger(fileLogger);
+                // currentLogFileName = "log.txt";
+                CreateFileLogger("log.txt");
             }
         }
     }
@@ -108,14 +138,17 @@ bool LogFile(const std::string& providedPath)
 
 void CreateNewFileForLogging(const std::string& filePath)
 {
-    if (filePath.empty())
+    if (filePath.empty() || currentLogFileName == filePath)
     {
+        // In principle this shouldn't be true but edge cases make it happen :(
         return;
     }
     if (fileLogger)
     {
+        // std::cout << "deleting current file : " << currentLogFileName << " for new file : " << filePath << std::endl;
         spdlog::drop("file");
         fileLogger.reset();
+        currentLogFileName = "";
     }
     LogFile(filePath);
 }
@@ -124,8 +157,10 @@ void StopFileLogging()
 {
     if (fileLogger && !SE_Env::Inst().GetOptions().GetOptionSet("log_append"))
     {
+        // std::cout << "deleting current file : " << currentLogFileName << " as stop called" << std::endl;
         spdlog::drop("file");
         fileLogger.reset();
+        currentLogFileName = "";
     }
 }
 
@@ -241,7 +276,6 @@ void InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger)
         {
             logger->set_level(spdlog::level::info);  // we keep info level as default
         }
-        // std::cout << "logger initialization done" << std::endl;
     }
     catch (const std::exception& e)
     {

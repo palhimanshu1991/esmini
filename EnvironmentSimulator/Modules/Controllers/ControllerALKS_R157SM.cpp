@@ -20,28 +20,28 @@
 
 using namespace scenarioengine;
 
-#define R157_LOG(level, format, ...)                                                                  \
-    {                                                                                                 \
-        if (level > 0 && level <= GetLogLevel())                                                      \
-        {                                                                                             \
-            INFO((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str(), ##__VA_ARGS__); \
-        }                                                                                             \
-        else                                                                                          \
-        {                                                                                             \
-            (void)0;                                                                                  \
-        }                                                                                             \
+#define R157_LOG(level, format, ...)                                                                      \
+    {                                                                                                     \
+        if (level > 0 && level <= GetLogLevel())                                                          \
+        {                                                                                                 \
+            LOG_INFO((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str(), ##__VA_ARGS__); \
+        }                                                                                                 \
+        else                                                                                              \
+        {                                                                                                 \
+            (void)0;                                                                                      \
+        }                                                                                                 \
     }
 
-#define R157_LOG_SIMPLE(level, format)                                                 \
-    {                                                                                  \
-        if (level > 0 && level <= GetLogLevel())                                       \
-        {                                                                              \
-            INFO((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str()); \
-        }                                                                              \
-        else                                                                           \
-        {                                                                              \
-            (void)0;                                                                   \
-        }                                                                              \
+#define R157_LOG_SIMPLE(level, format)                                                     \
+    {                                                                                      \
+        if (level > 0 && level <= GetLogLevel())                                           \
+        {                                                                                  \
+            LOG_INFO((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str()); \
+        }                                                                                  \
+        else                                                                               \
+        {                                                                                  \
+            (void)0;                                                                       \
+        }                                                                                  \
     }
 
 std::map<ControllerALKS_R157SM::ScenarioType, std::string> ControllerALKS_R157SM::ScenarioTypeName = {
@@ -97,29 +97,30 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
                 }
                 else
                 {
-                    WARN("ControllerALKS_R157SM: Unexpected cutInPerceptionDelayMode: {}", args->properties->GetValueStr("cutInPerceptionDelayMode"));
+                    LOG_WARN("ControllerALKS_R157SM: Unexpected cutInPerceptionDelayMode: {}",
+                             args->properties->GetValueStr("cutInPerceptionDelayMode"));
                 }
             }
-            INFO("ALKS_R157SM ReferenceDriver perceptionDelayMode: {}",
-                 ref_driver->cut_in_perception_delay_mode_ == ReferenceDriver::CutInPerceptionDelayMode::TIME ? "Time" : "Dist");
+            LOG_INFO("ALKS_R157SM ReferenceDriver perceptionDelayMode: {}",
+                     ref_driver->cut_in_perception_delay_mode_ == ReferenceDriver::CutInPerceptionDelayMode::TIME ? "Time" : "Dist");
 
             if (args->properties->ValueExists("pedestrianRiskEvaluationTime"))
             {
                 ref_driver->SetPedestrianRiskEvaluationTime(strtod(args->properties->GetValueStr("pedestrianRiskEvaluationTime")));
             }
-            INFO("ALKS_R157SM PedestrianRiskEvaluationTime: {:.2f}", ref_driver->GetPedestrianRiskEvaluationTime());
+            LOG_INFO("ALKS_R157SM PedestrianRiskEvaluationTime: {:.2f}", ref_driver->GetPedestrianRiskEvaluationTime());
 
             if (args->properties->ValueExists("aebTTC"))
             {
                 ref_driver->aeb_.ttc_critical_aeb_ = strtod(args->properties->GetValueStr("aebTTC"));
             }
-            INFO("ALKS_R157SM AEB TTC: {:.2f}", ref_driver->aeb_.ttc_critical_aeb_);
+            LOG_INFO("ALKS_R157SM AEB TTC: {:.2f}", ref_driver->aeb_.ttc_critical_aeb_);
 
             if (args->properties->ValueExists("aebDeceleration"))
             {
                 ref_driver->aeb_.max_dec_ = strtod(args->properties->GetValueStr("aebDeceleration"));
             }
-            INFO("ALKS_R157SM AEB deceleration: {:.2f}", ref_driver->aeb_.max_dec_);
+            LOG_INFO("ALKS_R157SM AEB deceleration: {:.2f}", ref_driver->aeb_.max_dec_);
 
             if (args->properties->ValueExists("aebAvailable"))
             {
@@ -128,21 +129,21 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
                     ref_driver->aeb_.available_ = false;
                 }
             }
-            INFO("ALKS_R157SM AEB {}available", ref_driver->aeb_.available_ ? "" : "not ");
+            LOG_INFO("ALKS_R157SM AEB {}available", ref_driver->aeb_.available_ ? "" : "not ");
 
             if (args->properties->ValueExists("lateralTrigDistance"))
             {
                 ref_driver->lateral_dist_trigger_             = new ReferenceDriver::LateralDistTrigger(ref_driver);
                 ref_driver->lateral_dist_trigger_->threshold_ = strtod(args->properties->GetValueStr("lateralTrigDistance"));
                 ref_driver->lateral_dist_trigger_->SetName("LateralDistTrigger");
-                INFO("ALKS_R157SM AEB LateralTrigDistance: {:.2f}", ref_driver->lateral_dist_trigger_->threshold_);
+                LOG_INFO("ALKS_R157SM AEB LateralTrigDistance: {:.2f}", ref_driver->lateral_dist_trigger_->threshold_);
             }
 
             if (args->properties->ValueExists("overlapTolerance"))
             {
                 ref_driver->overlap_tolerance_ = strtod(args->properties->GetValueStr("overlapTolerance"));
             }
-            INFO("ALKS_R157SM Overlap tolerance: {:.2f}", ref_driver->overlap_tolerance_);
+            LOG_INFO("ALKS_R157SM Overlap tolerance: {:.2f}", ref_driver->overlap_tolerance_);
 
             if (!ref_driver->lateral_dist_trigger_)
             {
@@ -157,7 +158,7 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
             {
                 model_->max_dec_ = strtod(args->properties->GetValueStr("driverDeceleration"));
             }
-            INFO("ALKS_R157SM driver deceleration: {:.2f}", model_->max_dec_);
+            LOG_INFO("ALKS_R157SM driver deceleration: {:.2f}", model_->max_dec_);
         }
         else if (args->properties->GetValueStr("model") == "RSS")
         {
@@ -165,27 +166,27 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
         }
         else
         {
-            ERROR_AND_QUIT("ControllerALKS_R157SM unexpected model {}", args->properties->GetValueStr("model"));
+            LOG_ERROR_AND_QUIT("ControllerALKS_R157SM unexpected model {}", args->properties->GetValueStr("model"));
         }
-        INFO("ALKS_R157SM model: {}", model_->GetModelName());
+        LOG_INFO("ALKS_R157SM model: {}", model_->GetModelName());
 
         if (args->properties->ValueExists("logLevel"))
         {
             model_->SetLogging(strtoi(args->properties->GetValueStr("logLevel")));
         }
-        INFO("ALKS_R157SM logLevel: {}", model_->log_level_);
+        LOG_INFO("ALKS_R157SM logLevel: {}", model_->log_level_);
 
         if (args->properties->ValueExists("fullStop"))
         {
             model_->SetFullStop(args->properties->GetValueStr("fullStop") == "true" ? true : false);
         }
-        INFO("ALKS_R157SM fullStop: {}", model_->GetFullStop() ? "true" : "false");
+        LOG_INFO("ALKS_R157SM fullStop: {}", model_->GetFullStop() ? "true" : "false");
 
         if (args->properties->ValueExists("alwaysTrigOnScenario"))
         {
             model_->SetAlwaysTrigOnScenario(args->properties->GetValueStr("alwaysTrigOnScenario") == "true" ? true : false);
         }
-        INFO("ALKS_R157SM alwaysTrigOnScenario: {}", model_->GetAlwaysTrigOnScenario() ? "true" : "false");
+        LOG_INFO("ALKS_R157SM alwaysTrigOnScenario: {}", model_->GetAlwaysTrigOnScenario() ? "true" : "false");
 
         if (args->properties->ValueExists("cruise"))
         {
@@ -198,7 +199,7 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
                 model_->SetCruise(false);
             }
         }
-        INFO("ALKS_R157SM cruise: {}", model_->cruise_ ? "true" : "false");
+        LOG_INFO("ALKS_R157SM cruise: {}", model_->cruise_ ? "true" : "false");
     }
 }
 
@@ -217,8 +218,8 @@ void ControllerALKS_R157SM::Init()
 
 void ControllerALKS_R157SM::Step(double timeStep)
 {
-    // INFO("ALKS_R157SM step called with {:.2f}", timeStep);
-    // ERROR_AND_QUIT("I m qutting {} {} {} {}", 1, 2, 3, "go");
+    // LOG_INFO("ALKS_R157SM step called with {:.2f}", timeStep);
+    // LOG_ERROR_AND_QUIT("I m qutting {} {} {} {}", 1, 2, 3, "go");
     double speed = model_->Step(timeStep);
 
     if (mode_ == ControlOperationMode::MODE_OVERRIDE)
@@ -241,7 +242,7 @@ void ControllerALKS_R157SM::LinkObject(Object* object)
 
     if (object->type_ != Object::Type::VEHICLE)
     {
-        ERROR("Failed attempt to assign ControllerALKS_R157SM controller to a non vehicle object {}", object->GetName());
+        LOG_ERROR("Failed attempt to assign ControllerALKS_R157SM controller to a non vehicle object {}", object->GetName());
         return;
     }
 
@@ -287,7 +288,7 @@ int ControllerALKS_R157SM::Model::Detect()
 
     if (entities_ == 0)
     {
-        ERROR("ALKS_R157SM: No entities! Register scenarioengine - SetScenarioEngine()");
+        LOG_ERROR("ALKS_R157SM: No entities! Register scenarioengine - SetScenarioEngine()");
         return -1;
     }
 

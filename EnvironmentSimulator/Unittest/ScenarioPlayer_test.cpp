@@ -1,4 +1,3 @@
-#include "TestHelper.hpp"
 #include <iostream>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -6,6 +5,7 @@
 #include <stdexcept>
 
 #include "playerbase.hpp"
+#include "TestHelper.hpp"
 
 using namespace roadmanager;
 using namespace scenarioengine;
@@ -458,7 +458,7 @@ int main(int argc, char** argv)
 #endif
 
     // testing::GTEST_FLAG(filter) = "*TestCustomCameraVariants*";
-
+    ParseAndSetLoggerOptions(argc, argv);
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

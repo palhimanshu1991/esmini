@@ -175,7 +175,7 @@ namespace scenarioengine
             }
             else
             {
-                ERROR("Invalid transition requested from {} to {}", state2str(GetCurrentState()), state2str(State::STANDBY));
+                LOG_ERROR("Invalid transition requested from {} to {}", state2str(GetCurrentState()), state2str(State::STANDBY));
             }
         }
 

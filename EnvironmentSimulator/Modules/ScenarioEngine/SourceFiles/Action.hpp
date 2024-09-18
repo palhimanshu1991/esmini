@@ -165,7 +165,7 @@ namespace scenarioengine
 
         void Start(double simTime) override
         {
-            INFO("Starting {} type: {} content: {}", Type2Str(), user_action_type_, content_);
+            LOG_INFO("Starting {} type: {} content: {}", Type2Str(), user_action_type_, content_);
             OSCAction::Start(simTime);
         }
 

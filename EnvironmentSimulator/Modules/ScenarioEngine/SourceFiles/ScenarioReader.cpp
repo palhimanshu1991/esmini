@@ -118,7 +118,7 @@ int ScenarioReader::loadOSCFile(const char *path)
     pugi::xml_parse_result result = doc_.load_file(path);
     if (!result)
     {
-        WARN("{} at offset (character position): {}", result.description(), result.offset);
+        LOG_WARN("{} at offset (character position): {}", result.description(), result.offset);
         return -1;
     }
 
@@ -144,7 +144,7 @@ int ScenarioReader::loadOSCFile(const char *path)
             {
                 if (doc_.child("OpenSCENARIO") && doc_.child("OpenSCENARIO").child("ParameterDeclarations"))
                 {
-                    INFO("Parameter permutation {}/{}", dist.GetIndex() + 1, dist.GetNumPermutations());
+                    LOG_INFO("Parameter permutation {}/{}", dist.GetIndex() + 1, dist.GetNumPermutations());
 
                     for (unsigned int i = 0; i < dist.GetNumParameters(); i++)
                     {
@@ -155,13 +155,13 @@ int ScenarioReader::loadOSCFile(const char *path)
                             if (dist.GetParamName(i) == param_name)
                             {
                                 node.attribute("value").set_value(dist.GetParamValue(i).c_str());
-                                INFO("   {}: {}", dist.GetParamName(i), dist.GetParamValue(i));
+                                LOG_INFO("   {}: {}", dist.GetParamName(i), dist.GetParamValue(i));
                                 break;
                             }
                         }
                         if (!node)
                         {
-                            ERROR("Distribution parameter {} not found in {}", dist.GetParamName(i), path);
+                            LOG_ERROR("Distribution parameter {} not found in {}", dist.GetParamName(i), path);
                             return -1;
                         }
                     }
@@ -177,7 +177,7 @@ int ScenarioReader::loadOSCFile(const char *path)
 
 int ScenarioReader::loadOSCMem(const pugi::xml_document &xml_doc)
 {
-    INFO("Loading XML document from memory");
+    LOG_INFO("Loading XML document from memory");
 
     doc_.reset(xml_doc);
 
@@ -205,7 +205,7 @@ int ScenarioReader::RegisterCatalogDirectory(pugi::xml_node catalogDirChild)
         // Additional subdirectory level. Expect Directory next.
         if (catalogDirChild.child("Directory") == NULL)
         {
-            WARN("Catalog {} sub element Directory not found - skipping", catalogDirChild.name());
+            LOG_WARN("Catalog {} sub element Directory not found - skipping", catalogDirChild.name());
             return -1;
         }
 
@@ -216,7 +216,7 @@ int ScenarioReader::RegisterCatalogDirectory(pugi::xml_node catalogDirChild)
 
     if (dirname == "")
     {
-        WARN("Catalog {} missing filename - ignoring", catalogDirChild.name());
+        LOG_WARN("Catalog {} missing filename - ignoring", catalogDirChild.name());
         return -1;
     }
 
@@ -228,7 +228,7 @@ int ScenarioReader::RegisterCatalogDirectory(pugi::xml_node catalogDirChild)
         catalogs_->catalog_dirs_.push_back(entry);
         if (LoadCatalog(FileNameWithoutExtOf(dirname)) == 0)
         {
-            INFO("Catalog {} loaded", dirname);
+            LOG_INFO("Catalog {} loaded", dirname);
         }
     }
     else
@@ -337,7 +337,7 @@ Catalog *ScenarioReader::LoadCatalog(std::string name)
     }
     else
     {
-        WARN("Warning: Catalog {} seems to be empty!", catalog->name_);
+        LOG_WARN("Warning: Catalog {} seems to be empty!", catalog->name_);
     }
 
     catalogs_->AddCatalog(catalog);
@@ -384,7 +384,7 @@ void ScenarioReader::ParseOSCProperties(OSCProperties &properties, pugi::xml_nod
             }
             else
             {
-                ERROR("Unexpected property element: {}", propertiesChild.name());
+                LOG_ERROR("Unexpected property element: {}", propertiesChild.name());
             }
         }
     }
@@ -417,7 +417,7 @@ roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_no
     {
         if (GetVersionMajor() == 1 && GetVersionMinor() == 0)
         {
-            INFO("coordinateSystem introduced in v1.1. Reading it anyway.");
+            LOG_INFO("coordinateSystem introduced in v1.1. Reading it anyway.");
         }
 
         if (str == "entity")
@@ -438,7 +438,7 @@ roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_no
         }
         else
         {
-            ERROR_AND_QUIT("Unexpected coordinateSytem: {}", str);
+            LOG_ERROR_AND_QUIT("Unexpected coordinateSytem: {}", str);
         }
     }
 
@@ -464,7 +464,7 @@ roadmanager::RelativeDistanceType ScenarioReader::ParseRelativeDistanceType(pugi
         {
             if (GetVersionMajor() == 1 && GetVersionMinor() == 1)
             {
-                INFO("relativeDistanceType::cartesianDistance depricated in v1.1. Reading it anyway.");
+                LOG_INFO("relativeDistanceType::cartesianDistance depricated in v1.1. Reading it anyway.");
             }
 
             rdt = roadmanager::RelativeDistanceType::REL_DIST_CARTESIAN;
@@ -473,14 +473,14 @@ roadmanager::RelativeDistanceType ScenarioReader::ParseRelativeDistanceType(pugi
         {
             if (GetVersionMajor() == 1 && GetVersionMinor() == 0)
             {
-                INFO("relativeDistanceType::euclidianDistance introduced in v1.1. Reading it anyway.");
+                LOG_INFO("relativeDistanceType::euclidianDistance introduced in v1.1. Reading it anyway.");
             }
 
             rdt = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN;
         }
         else
         {
-            ERROR_AND_QUIT("Unexcpected relativeDistanceType: {}", str);
+            LOG_ERROR_AND_QUIT("Unexcpected relativeDistanceType: {}", str);
         }
     }
 
@@ -509,7 +509,7 @@ void ScenarioReader::ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_
             }
             else
             {
-                ERROR("Not valid boudingbox attribute name:{}", boundingboxChildName);
+                LOG_ERROR("Not valid boudingbox attribute name:{}", boundingboxChildName);
             }
         }
     }
@@ -619,7 +619,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         else
         {
             delete vehicle;
-            ERROR_AND_QUIT("Unrecognized entity scale mode: {}", scaleModeStr);
+            LOG_ERROR_AND_QUIT("Unrecognized entity scale mode: {}", scaleModeStr);
         }
     }
 
@@ -633,7 +633,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         }
         else
         {
-            WARN("Info: Missing mandatory Performance maxSpeed for {}, applying default {:.2f}", vehicle->GetTypeName(), vehicle->GetMaxSpeed());
+            LOG_WARN("Info: Missing mandatory Performance maxSpeed for {}, applying default {:.2f}", vehicle->GetTypeName(), vehicle->GetMaxSpeed());
         }
 
         if (!(performance_node.attribute("maxAcceleration").empty()))
@@ -642,9 +642,9 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         }
         else
         {
-            WARN("Info: Missing mandatory Performance maxAcceleration for {}, applying default {:.2f}",
-                 vehicle->GetTypeName(),
-                 vehicle->GetMaxAcceleration());
+            LOG_WARN("Info: Missing mandatory Performance maxAcceleration for {}, applying default {:.2f}",
+                     vehicle->GetTypeName(),
+                     vehicle->GetMaxAcceleration());
         }
 
         if (!(performance_node.attribute("maxDeceleration").empty()))
@@ -653,18 +653,18 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         }
         else
         {
-            WARN("Info: Missing mandatory Performance maxDeceleration for {}, applying default {:.2f}",
-                 vehicle->GetTypeName(),
-                 vehicle->GetMaxDeceleration());
+            LOG_WARN("Info: Missing mandatory Performance maxDeceleration for {}, applying default {:.2f}",
+                     vehicle->GetTypeName(),
+                     vehicle->GetMaxDeceleration());
         }
     }
     else
     {
-        WARN("Info: Missing mandatory Performance element for {}, applying defaults maxspeed {:.2f} maxacc {:.2f} maxdec {:.2f}",
-             vehicle->GetTypeName(),
-             vehicle->GetMaxSpeed(),
-             vehicle->GetMaxAcceleration(),
-             vehicle->GetMaxDeceleration());
+        LOG_WARN("Info: Missing mandatory Performance element for {}, applying defaults maxspeed {:.2f} maxacc {:.2f} maxdec {:.2f}",
+                 vehicle->GetTypeName(),
+                 vehicle->GetMaxSpeed(),
+                 vehicle->GetMaxAcceleration(),
+                 vehicle->GetMaxDeceleration());
     }
 
     pugi::xml_node axles = vehicleNode.child("Axles");
@@ -733,11 +733,11 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                             object = ResolveObjectReference(obj_str);
                             if (object == nullptr)
                             {
-                                ERROR_AND_QUIT("Error: Trailer {} not found", parameters.ReadAttribute(trailer_node, "entityRef"));
+                                LOG_ERROR_AND_QUIT("Error: Trailer {} not found", parameters.ReadAttribute(trailer_node, "entityRef"));
                             }
                             if (object->type_ != Object::Type::VEHICLE)
                             {
-                                ERROR_AND_QUIT("Error: Trailer {} is not of Vehicle type", parameters.ReadAttribute(trailer_node, "entityRef"));
+                                LOG_ERROR_AND_QUIT("Error: Trailer {} is not of Vehicle type", parameters.ReadAttribute(trailer_node, "entityRef"));
                             }
                             trailer = static_cast<Vehicle *>(object);
                         }
@@ -756,7 +756,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                         }
                         else
                         {
-                            ERROR("Unexpected catalog type {} for trailer", entry->GetTypeAsStr());
+                            LOG_ERROR("Unexpected catalog type {} for trailer", entry->GetTypeAsStr());
                         }
                     }
                 }
@@ -766,7 +766,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                 }
                 else
                 {
-                    ERROR("Unexpected Trailer child element {}", trailer_child_node_name);
+                    LOG_ERROR("Unexpected Trailer child element {}", trailer_child_node_name);
                 }
 
                 if (trailer != nullptr)
@@ -774,7 +774,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                     if (trailer->trailer_coupler_ == nullptr)
                     {
                         delete trailer;
-                        ERROR_AND_QUIT("Error: Trailer vehicle {} has no coupler", vehicle->GetName());
+                        LOG_ERROR_AND_QUIT("Error: Trailer vehicle {} has no coupler", vehicle->GetName());
                     }
                     else
                     {
@@ -874,7 +874,7 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
         }
         else
         {
-            ERROR_AND_QUIT("Unrecognized entity scale mode: {}", scaleModeStr);
+            LOG_ERROR_AND_QUIT("Unrecognized entity scale mode: {}", scaleModeStr);
         }
     }
 
@@ -946,7 +946,7 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
         }
         else
         {
-            ERROR_AND_QUIT("Unrecognized entity scale mode: {}", scaleModeStr);
+            LOG_ERROR_AND_QUIT("Unrecognized entity scale mode: {}", scaleModeStr);
         }
     }
 
@@ -973,7 +973,7 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 
     if (controllerNode == 0)
     {
-        WARN("Warning: Empty controller node");
+        LOG_WARN("Warning: Empty controller node");
     }
 
     if (!properties.file_.filepath_.empty())
@@ -987,7 +987,7 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
             if (!FileExists(filename2.c_str()))
             {
                 // Give up
-                ERROR("Failed to localize controller file {}, also tried {}", filename, filename2);
+                LOG_ERROR("Failed to localize controller file {}, also tried {}", filename, filename2);
             }
             else
             {
@@ -1001,7 +1001,7 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
     std::string ctrlType = properties.GetValueStr("esminiController");
     if (ctrlType.empty())
     {
-        WARN("Missing esminiController property, using controller name: {}", name);
+        LOG_WARN("Missing esminiController property, using controller name: {}", name);
         ctrlType = name;
     }
 
@@ -1019,7 +1019,7 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
     }
     else
     {
-        WARN("Unsupported controller type: {}. Falling back to default controller", ctrlType);
+        LOG_WARN("Unsupported controller type: {}. Falling back to default controller", ctrlType);
         controller = 0;
     }
 
@@ -1079,7 +1079,7 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
             }
             else
             {
-                ERROR("Failed to parse waypoint position");
+                LOG_ERROR("Failed to parse waypoint position");
             }
         }
     }
@@ -1118,13 +1118,13 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectoryRef(pugi::xml_node tra
         }
         else
         {
-            ERROR("Catalog entry of type {} expected - found {}", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE), entry->GetTypeAsStr());
+            LOG_ERROR("Catalog entry of type {} expected - found {}", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE), entry->GetTypeAsStr());
             throw std::runtime_error("Failed to resolve catalog reference");
         }
     }
     else
     {
-        ERROR("Missing TrajectoryRef child element (Trajectory or CatalogReference expected)");
+        LOG_ERROR("Missing TrajectoryRef child element (Trajectory or CatalogReference expected)");
         throw std::runtime_error("Missing TrajectoryRef child element (Trajectory or CatalogReference expected)");
     }
 
@@ -1213,15 +1213,15 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                 double startTime = strtod(parameters.ReadAttribute(shapeNode, "startTime"));
                 double stopTime  = strtod(parameters.ReadAttribute(shapeNode, "stopTime"));
 
-                INFO("Adding clothoid(x={:.2f} y={:.2f} h={:.2f} curv={:.2f} curvDot={:.2f} len={:.2f} startTime={:.2f} stopTime={:.2f})",
-                     pos->GetRMPos()->GetX(),
-                     pos->GetRMPos()->GetY(),
-                     pos->GetRMPos()->GetH(),
-                     curvature,
-                     curvaturePrime,
-                     length,
-                     startTime,
-                     stopTime);
+                LOG_INFO("Adding clothoid(x={:.2f} y={:.2f} h={:.2f} curv={:.2f} curvDot={:.2f} len={:.2f} startTime={:.2f} stopTime={:.2f})",
+                         pos->GetRMPos()->GetX(),
+                         pos->GetRMPos()->GetY(),
+                         pos->GetRMPos()->GetH(),
+                         curvature,
+                         curvaturePrime,
+                         length,
+                         startTime,
+                         stopTime);
 
                 roadmanager::ClothoidShape *clothoid =
                     new roadmanager::ClothoidShape(*pos->GetRMPos(), curvature, curvaturePrime, length, startTime, stopTime);
@@ -1312,7 +1312,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                 }
                 if (knots.size() == 0)
                 {
-                    INFO("No knot vector provided. Creating a simple one.");
+                    LOG_INFO("No knot vector provided. Creating a simple one.");
                     for (size_t i = 0; i < nurbs->ctrlPoint_.size() + order; i++)
                     {
                         if (i < order)
@@ -1381,14 +1381,14 @@ Entry *ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
     // Make sure the catalog item is loaded
     if ((catalog = LoadCatalog(catalog_name)) == 0)
     {
-        ERROR("Failed to load catalog {}", catalog_name);
+        LOG_ERROR("Failed to load catalog {}", catalog_name);
         return 0;
     }
 
     Entry *entry = catalog->FindEntryByName(entry_name);
     if (!entry_name.empty() && entry == 0)
     {
-        ERROR_AND_QUIT("Failed to look up entry {} in catalog {}", entry_name, catalog_name);
+        LOG_ERROR_AND_QUIT("Failed to look up entry {} in catalog {}", entry_name, catalog_name);
 
         return 0;
     }
@@ -1401,12 +1401,12 @@ bool scenarioengine::ScenarioReader::CheckModelId(Object *object)
     std::string filename = SE_Env::Inst().GetModelFilenameById(object->model_id_).c_str();
     if (filename != FileNameOf(object->model3d_))
     {
-        WARN("Warning: {} {} model_id {} correponds to {}, not specified 3D model {}",
-             Object::Type2String(object->GetType()),
-             object->GetTypeName(),
-             object->model_id_,
-             filename.empty() ? "Unknown" : filename,
-             FileNameOf(object->model3d_));
+        LOG_WARN("Warning: {} {} model_id {} correponds to {}, not specified 3D model {}",
+                 Object::Type2String(object->GetType()),
+                 object->GetTypeName(),
+                 object->model_id_,
+                 filename.empty() ? "Unknown" : filename,
+                 FileNameOf(object->model3d_));
         return false;
     }
 
@@ -1435,7 +1435,7 @@ int ScenarioReader::parseEntities()
                 if (entry == 0)
                 {
                     // Invalid catalog reference - create random vehicle as fall-back
-                    WARN("Could not find catalog vehicle, creating a random car as fall-back");
+                    LOG_WARN("Could not find catalog vehicle, creating a random car as fall-back");
                     std::string entry_name = parameters.ReadAttribute(objectChild, "entryName");
                     Vehicle    *vehicle    = createRandomOSCVehicle(entry_name);
                     obj                    = vehicle;
@@ -1462,7 +1462,7 @@ int ScenarioReader::parseEntities()
                     }
                     else
                     {
-                        ERROR("Unexpected catalog type {}", entry->GetTypeAsStr());
+                        LOG_ERROR("Unexpected catalog type {}", entry->GetTypeAsStr());
                     }
                 }
 
@@ -1485,18 +1485,18 @@ int ScenarioReader::parseEntities()
             }
             else if (!(objectChild = entitiesChild.child("ExternalObjectReference")).empty())
             {
-                ERROR("ExternalObjectReference not supported yet");
+                LOG_ERROR("ExternalObjectReference not supported yet");
                 return -1;
             }
             else
             {
-                ERROR("Missing EntityObject");
+                LOG_ERROR("Missing EntityObject");
                 return -1;
             }
 
             if (obj == nullptr)
             {
-                ERROR("Error: Failed to resolve entity object");
+                LOG_ERROR("Error: Failed to resolve entity object");
                 return -1;
             }
 
@@ -1514,7 +1514,7 @@ int ScenarioReader::parseEntities()
 
                         if (entry == 0)
                         {
-                            ERROR("No entry found");
+                            LOG_ERROR("No entry found");
                         }
                         else
                         {
@@ -1524,7 +1524,7 @@ int ScenarioReader::parseEntities()
                             }
                             else
                             {
-                                ERROR("Unexpected catalog type {}", entry->GetTypeAsStr());
+                                LOG_ERROR("Unexpected catalog type {}", entry->GetTypeAsStr());
                             }
                         }
                     }
@@ -1580,11 +1580,11 @@ int ScenarioReader::parseEntities()
         }
         else if (entitiesChildName == "EntitySelection")
         {
-            INFO("INFO: {} is not implemented yet", entitiesChildName);
+            LOG_INFO("INFO: {} is not implemented yet", entitiesChildName);
         }
         else
         {
-            ERROR("Unexpected XML element: {}", entitiesChildName);
+            LOG_ERROR("Unexpected XML element: {}", entitiesChildName);
         }
     }
     return 0;
@@ -1617,12 +1617,12 @@ void ScenarioReader::parseOSCOrientation(OSCOrientation &orientation, pugi::xml_
     }
     else if (type_str == "")
     {
-        WARN("No orientation type specified - using absolute");
+        LOG_WARN("No orientation type specified - using absolute");
         orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE;
     }
     else
     {
-        WARN("Invalid orientation type: {} - using absolute", type_str);
+        LOG_WARN("Invalid orientation type: {} - using absolute", type_str);
         orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE;
     }
 }
@@ -1671,7 +1671,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
         if (std::isnan(x) || std::isnan(y))
         {
-            ERROR_AND_QUIT("Missing x or y attributes!\n");
+            LOG_ERROR_AND_QUIT("Missing x or y attributes!\n");
         }
 
         OSCPositionWorld *pos = new OSCPositionWorld(x, y, z, h, p, r, base_on_pos);
@@ -1859,7 +1859,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
                         route.reset(parseOSCRoute(routeRefChild));
                         if (route.get() == nullptr)
                         {
-                            ERROR_AND_QUIT("Failed to resolve inline route");
+                            LOG_ERROR_AND_QUIT("Failed to resolve inline route");
                         }
                     }
                     else if (routeRefChildName == "CatalogReference")
@@ -1879,7 +1879,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
                             route.reset(parseOSCRoute(entry->GetNode()));
                             if (route.get() == nullptr)
                             {
-                                ERROR_AND_QUIT("Failed to resolve catalog route");
+                                LOG_ERROR_AND_QUIT("Failed to resolve catalog route");
                             }
                         }
                         else
@@ -1890,7 +1890,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
                         parameters.RestoreParameterDeclarations();
                         if (route == nullptr)
-                            ERROR_AND_QUIT("Failed to resolve route");
+                            LOG_ERROR_AND_QUIT("Failed to resolve route");
                     }
                 }
             }
@@ -1912,11 +1912,11 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
                     if (rPositionChildName == "FromCurrentEntity")
                     {
-                        ERROR("{} is not implemented", rPositionChildName);
+                        LOG_ERROR("{} is not implemented", rPositionChildName);
                     }
                     else if (rPositionChildName == "FromRoadCoordinates")
                     {
-                        ERROR("{} is not implemented", rPositionChildName);
+                        LOG_ERROR("{} is not implemented", rPositionChildName);
                     }
                     else if (rPositionChildName == "FromLaneCoordinates")
                     {
@@ -1959,7 +1959,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
         if (trajectoryRef.empty())
         {
-            ERROR("Missing expected TrajectoryRef element");
+            LOG_ERROR("Missing expected TrajectoryRef element");
             throw std::runtime_error("Missing expected TrajectoryRef element");
         }
 
@@ -1968,7 +1968,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
         double s = strtod(parameters.ReadAttribute(positionChild, "s"));
         if (!positionChild.attribute("t").empty())
         {
-            ERROR("TrajectoryPosition -> t not supported yet, set to zero");
+            LOG_ERROR("TrajectoryPosition -> t not supported yet, set to zero");
         }
         double t = 0;
 
@@ -2024,7 +2024,7 @@ OSCPrivateAction::DynamicsDimension ParseDynamicsDimension(std::string dimension
 {
     if (dimension.empty())
     {
-        WARN("Dynamics dimension missing - fall back to TIME");
+        LOG_WARN("Dynamics dimension missing - fall back to TIME");
         return OSCPrivateAction::DynamicsDimension::TIME;
     }
     else if (dimension == "rate")
@@ -2041,7 +2041,7 @@ OSCPrivateAction::DynamicsDimension ParseDynamicsDimension(std::string dimension
     }
     else
     {
-        WARN("Dynamics dimension {} not supported - fall back to TIME", dimension.c_str());
+        LOG_WARN("Dynamics dimension {} not supported - fall back to TIME", dimension.c_str());
         return OSCPrivateAction::DynamicsDimension::TIME;
     }
 }
@@ -2086,7 +2086,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                     ParameterSetAction *paramSetAction = new ParameterSetAction(action);
 
                     // give user a message about depricated action.. use variable instead...
-                    WARN("Parameter SetAction depricated from OSC 1.2. Please use Variable SetAction instead. Accepting for this time.");
+                    LOG_WARN("Parameter SetAction depricated from OSC 1.2. Please use Variable SetAction instead. Accepting for this time.");
 
                     paramSetAction->name_       = parameters.ReadAttribute(actionChild, "parameterRef");
                     paramSetAction->value_      = parameters.ReadAttribute(paramChild, "value");
@@ -2096,7 +2096,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 }
                 else
                 {
-                    ERROR("ParameterAction {} not supported yet", paramChild.name());
+                    LOG_ERROR("ParameterAction {} not supported yet", paramChild.name());
                 }
             }
         }
@@ -2116,7 +2116,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 }
                 else
                 {
-                    WARN("VariableAction {} not supported yet", varChild.name());
+                    LOG_WARN("VariableAction {} not supported yet", varChild.name());
                 }
             }
         }
@@ -2133,12 +2133,12 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                     childNode = trafficChild.child("CentralSwarmObject");
                     if (!childNode.empty())
                     {
-                        WARN("Expected \"CentralObject\", found \"CentralSwarmObject\". Accepted.");
+                        LOG_WARN("Expected \"CentralObject\", found \"CentralSwarmObject\". Accepted.");
                     }
                 }
                 if (childNode.empty())
                 {
-                    WARN("Warning: Missing swarm CentralObject!");
+                    LOG_WARN("Warning: Missing swarm CentralObject!");
                 }
 
                 trafficSwarmAction->SetCentralObject(entities_->GetObjectByName(parameters.ReadAttribute(childNode, "entityRef")));
@@ -2180,7 +2180,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
             entity = ResolveObjectReference(parameters.ReadAttribute(actionChild, "entityRef"));
             if (entity == NULL)
             {
-                ERROR_AND_QUIT("AddEntityAction: Failed to resolve entityRef {}", parameters.ReadAttribute(actionChild, "entityRef"));
+                LOG_ERROR_AND_QUIT("AddEntityAction: Failed to resolve entityRef {}", parameters.ReadAttribute(actionChild, "entityRef"));
             }
 
             for (pugi::xml_node eaChild = actionChild.first_child(); eaChild; eaChild = eaChild.next_sibling())
@@ -2205,13 +2205,13 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 }
                 else
                 {
-                    WARN("EntityAction {} not supported yet", eaChild.name());
+                    LOG_WARN("EntityAction {} not supported yet", eaChild.name());
                 }
             }
         }
         else
         {
-            WARN("Unsupported global action: {}", actionChild.name());
+            LOG_WARN("Unsupported global action: {}", actionChild.name());
         }
     }
 
@@ -2300,7 +2300,7 @@ ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xm
     }
     else if (anim_str == "true")
     {
-        WARN("Animation activation is not supported yet");
+        LOG_WARN("Animation activation is not supported yet");
         anim_mode = ControlActivationMode::ON;
     }
 
@@ -2339,19 +2339,19 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
 
             if (*values[i].variable < SMALL_NUMBER)
             {
-                WARN("parseDynamicConstraints: Unexpected small {} value: {:.5f}, replacing with {} value {:.2f}",
-                     values[i].label,
-                     *values[i].variable,
-                     values[i].default_value < values[i].performance_value ? "default" : "performance",
-                     values[i].default_value < values[i].performance_value ? values[i].default_value : values[i].performance_value);
+                LOG_WARN("parseDynamicConstraints: Unexpected small {} value: {:.5f}, replacing with {} value {:.2f}",
+                         values[i].label,
+                         *values[i].variable,
+                         values[i].default_value < values[i].performance_value ? "default" : "performance",
+                         values[i].default_value < values[i].performance_value ? values[i].default_value : values[i].performance_value);
                 *values[i].variable = values[i].default_value < values[i].performance_value ? values[i].default_value : values[i].performance_value;
             }
             else if (*values[i].variable > values[i].performance_value)
             {
-                WARN("parseDynamicConstraints: {} value {:.2f} exceeds object performance value: {:.2f}, truncating",
-                     values[i].label,
-                     *values[i].variable,
-                     values[i].performance_value);
+                LOG_WARN("parseDynamicConstraints: {} value {:.2f} exceeds object performance value: {:.2f}, truncating",
+                         values[i].label,
+                         *values[i].variable,
+                         values[i].performance_value);
                 *values[i].variable = values[i].performance_value;
             }
         }
@@ -2407,12 +2407,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                     }
                                     else if (value_type == "")
                                     {
-                                        WARN("Value type missing - falling back to delta");
+                                        LOG_WARN("Value type missing - falling back to delta");
                                         target_rel->value_type_ = LongSpeedAction::TargetRelative::DELTA;
                                     }
                                     else
                                     {
-                                        ERROR("Value type {} not valid", value_type);
+                                        LOG_ERROR("Value type {} not valid", value_type);
                                     }
                                     action_speed->target_.reset(target_rel);
                                 }
@@ -2425,7 +2425,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 }
                                 else
                                 {
-                                    ERROR("Unsupported Target type: {}", targetChild.name());
+                                    LOG_ERROR("Unsupported Target type: {}", targetChild.name());
                                 }
                             }
                         }
@@ -2438,7 +2438,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                     if (longitudinalChild.attribute("followingMode").empty())
                     {
-                        WARN("Missing mandatory SpeedProfileAction attribute followingMode, set to position");
+                        LOG_WARN("Missing mandatory SpeedProfileAction attribute followingMode, set to position");
                         action_speed_profile->following_mode_ = FollowingMode::POSITION;  // set as default
                     }
                     else
@@ -2454,7 +2454,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                         else
                         {
-                            WARN("Unsupported SpeedProfileAction followingMode value: {}, set to position", str);
+                            LOG_WARN("Unsupported SpeedProfileAction followingMode value: {}, set to position", str);
                             action_speed_profile->following_mode_ = FollowingMode::POSITION;  // set as default
                         }
                     }
@@ -2475,7 +2475,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                             if (child.attribute("speed").empty())
                             {
-                                WARN("Missing mandatory SpeedProfileAction Entry attribute speed, set to 0");
+                                LOG_WARN("Missing mandatory SpeedProfileAction Entry attribute speed, set to 0");
                                 entry.speed_ = 0.0;  // set as default
                             }
                             else
@@ -2521,7 +2521,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     }
                     else
                     {
-                        INFO("Need distance or timeGap");
+                        LOG_INFO("Need distance or timeGap");
                     }
 
                     std::string continuous   = parameters.ReadAttribute(longitudinalChild, "continuous");
@@ -2538,7 +2538,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     {
                         if (displacement.empty())
                         {
-                            WARN("displacement attribute missing, setting default trailingReferencedEntity");
+                            LOG_WARN("displacement attribute missing, setting default trailingReferencedEntity");
                             action_dist->displacement_ = LongDistanceAction::DisplacementType::TRAILING;
                         }
                         else if (displacement == "any")
@@ -2555,20 +2555,20 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                         else
                         {
-                            ERROR_AND_QUIT("Unsupported displacement type: {}", displacement);
+                            LOG_ERROR_AND_QUIT("Unsupported displacement type: {}", displacement);
                         }
 
                         if (action_dist->distance_ < 0.0)
                         {
                             // action_dist->displacement_ != LongDistanceAction::DisplacementType::NONE &&
-                            WARN(
+                            LOG_WARN(
                                 "Negative distance or timeGap not supported in OSC version >= 1.1. Using absolute value. Use displacement to specify leading or trailing behavior.");
                             action_dist->distance_ = abs(action_dist->distance_);
                         }
                     }
                     else if (!displacement.empty())
                     {
-                        WARN("LongitudinalDistanceAction displacement not supported in OSC version {}.{}", GetVersionMajor(), GetVersionMinor());
+                        LOG_WARN("LongitudinalDistanceAction displacement not supported in OSC version {}.{}", GetVersionMajor(), GetVersionMinor());
                     }
 
                     action_dist->cs_ = ParseCoordinateSystem(longitudinalChild, roadmanager::CoordinateSystem::CS_ENTITY);
@@ -2609,7 +2609,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                                     if ((target_rel->object_ = ResolveObjectReference(parameters.ReadAttribute(targetChild, "entityRef"))) == 0)
                                     {
-                                        ERROR("Failed to find object {}", parameters.ReadAttribute(targetChild, "entityRef"));
+                                        LOG_ERROR("Failed to find object {}", parameters.ReadAttribute(targetChild, "entityRef"));
                                         return 0;
                                     }
                                     target_rel->value_ = strtoi(parameters.ReadAttribute(targetChild, "value"));
@@ -2655,8 +2655,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             else
                             {
                                 action_lane->max_lateral_acc_ = 0.5;  // Just set some reasonable default value
-                                WARN("Missing optional LaneOffsetAction maxLateralAcc attribute. Using default: {:.2f}",
-                                     action_lane->max_lateral_acc_);
+                                LOG_WARN("Missing optional LaneOffsetAction maxLateralAcc attribute. Using default: {:.2f}",
+                                         action_lane->max_lateral_acc_);
                             }
 
                             action_lane->transition_.shape_ = ParseDynamicsShape(parameters.ReadAttribute(laneOffsetChild, "dynamicsShape"));
@@ -2692,7 +2692,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
                 else
                 {
-                    WARN("Unsupported element type: {}", lateralChild.name());
+                    LOG_WARN("Unsupported element type: {}", lateralChild.name());
                 }
             }
         }
@@ -2706,7 +2706,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             pugi::xml_node target_position_master_node = actionChild.child("TargetPositionMaster");
             if (!target_position_master_node)
             {
-                ERROR("Missing required element \"TargetPositionMaster\"");
+                LOG_ERROR("Missing required element \"TargetPositionMaster\"");
                 return 0;
             }
             action_synch->target_position_master_OSCPosition_.reset(parseOSCPosition(target_position_master_node));
@@ -2719,7 +2719,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             pugi::xml_node target_position_node = actionChild.child("TargetPosition");
             if (!target_position_node)
             {
-                ERROR("Missing required element \"TargetPosition\"");
+                LOG_ERROR("Missing required element \"TargetPosition\"");
                 return 0;
             }
             action_synch->target_position_OSCPosition_.reset(parseOSCPosition(target_position_node));
@@ -2765,18 +2765,18 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     }
                     else if (value_type == "")
                     {
-                        WARN("Value type missing - falling back to delta");
+                        LOG_WARN("Value type missing - falling back to delta");
                         targetSpeedRel->value_type_ = LongSpeedAction::TargetRelative::DELTA;
                     }
                     else
                     {
-                        WARN("Value type {} not valid", value_type);
+                        LOG_WARN("Value type {} not valid", value_type);
                     }
                     action_synch->final_speed_.reset(targetSpeedRel);
                 }
                 else
                 {
-                    ERROR("Unexpected FinalSpeed element: {}", final_speed_element.name());
+                    LOG_ERROR("Unexpected FinalSpeed element: {}", final_speed_element.name());
                     throw std::runtime_error("Unexpected FinalSpeed element");
                 }
 
@@ -2786,13 +2786,13 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 {
                     if (GetVersionMajor() <= 1 && GetVersionMinor() < 1)
                     {
-                        INFO("SynchronizeAction::SteadyState introduced in v1.1. Reading anyway.");
+                        LOG_INFO("SynchronizeAction::SteadyState introduced in v1.1. Reading anyway.");
                     }
                     if (action_synch->final_speed_->type_ == scenarioengine::LongSpeedAction::Target::TargetType::ABSOLUTE_SPEED &&
                         action_synch->final_speed_->GetValue() < SMALL_NUMBER)
                     {
-                        ERROR("SynchronizeAction steady state with 0 or negative final speed ({:.2f}) is not supported",
-                              action_synch->final_speed_->GetValue());
+                        LOG_ERROR("SynchronizeAction steady state with 0 or negative final speed ({:.2f}) is not supported",
+                                  action_synch->final_speed_->GetValue());
                         throw std::runtime_error("SynchronizeAction steady state with 0 or negative final speed is not supported");
                     }
                     if (!strcmp(steady_state_node.name(), "TargetDistanceSteadyState"))
@@ -2813,7 +2813,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     }
                     else
                     {
-                        ERROR("Unexpected child element: {}", steady_state_node.name());
+                        LOG_ERROR("Unexpected child element: {}", steady_state_node.name());
                         throw std::runtime_error("Unexpected child element: " + std::string(steady_state_node.name()));
                     }
                 }
@@ -2832,7 +2832,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             pugi::xml_node trailer_action_node = actionChild.first_child();
             if (trailer_action_node.empty())
             {
-                ERROR("TrailerAction: missing child element");
+                LOG_ERROR("TrailerAction: missing child element");
                 return nullptr;
             }
 
@@ -2846,7 +2846,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     trailer_ref = parameters.ReadAttribute(trailer_action_node, "trailer");
                     if (!trailer_ref.empty())
                     {
-                        WARN("Warning: Accepting trailer ref attribute 'trailer'. Consider use correct 'trailerRef' instead.");
+                        LOG_WARN("Warning: Accepting trailer ref attribute 'trailer'. Consider use correct 'trailerRef' instead.");
                     }
                 }
 
@@ -2856,7 +2856,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
                 else
                 {
-                    ERROR("TrailerAction: Missing mandatory trailer reference, ignoring action");
+                    LOG_ERROR("TrailerAction: Missing mandatory trailer reference, ignoring action");
                     return nullptr;
                 }
 
@@ -2869,7 +2869,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             }
             else
             {
-                ERROR("TrailerAction: Unexpected child element name: {}", trailer_action_node.name());
+                LOG_ERROR("TrailerAction: Unexpected child element name: {}", trailer_action_node.name());
             }
         }
         else if (actionChild.name() == std::string("RoutingAction"))
@@ -2935,7 +2935,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         std::string followingMode = parameters.ReadAttribute(followingModeNode, "followingMode");
                         if (followingMode.empty())
                         {
-                            WARN("trajectoryFollowingMode followingMode attribute missing, applying \"follow\"");
+                            LOG_WARN("trajectoryFollowingMode followingMode attribute missing, applying \"follow\"");
                         }
                         else if (followingMode == "position")
                         {
@@ -2943,12 +2943,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                         else if (followingMode != "follow")
                         {
-                            WARN("trajectoryFollowingMode {} not supported yet, applying \"follow\"", followingMode);
+                            LOG_WARN("trajectoryFollowingMode {} not supported yet, applying \"follow\"", followingMode);
                         }
                     }
                     else
                     {
-                        WARN("trajectoryFollowingMode missing, applying \"following\"");
+                        LOG_WARN("trajectoryFollowingMode missing, applying \"following\"");
                     }
 
                     for (pugi::xml_node followTrajectoryChild = routingChild.first_child(); followTrajectoryChild;
@@ -3012,7 +3012,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             }
                             else
                             {
-                                WARN("Missing TimeReference child element, set to None");
+                                LOG_WARN("Missing TimeReference child element, set to None");
                                 action_follow_trajectory->timing_domain_ = FollowTrajectoryAction::TimingDomain::NONE;
                             }
                         }
@@ -3022,8 +3022,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     if (action_follow_trajectory->timing_domain_ != FollowTrajectoryAction::TimingDomain::NONE &&
                         action_follow_trajectory->traj_->GetDuration() < SMALL_NUMBER)
                     {
-                        WARN("Warning: FollowTrajectoryAction {} timeref is != NONE but trajectory duration is 0. Applying timeref=NONE.",
-                             action_follow_trajectory->GetName());
+                        LOG_WARN("Warning: FollowTrajectoryAction {} timeref is != NONE but trajectory duration is 0. Applying timeref=NONE.",
+                                 action_follow_trajectory->GetName());
                         action_follow_trajectory->timing_domain_ = FollowTrajectoryAction::TimingDomain::NONE;
                     }
 
@@ -3061,7 +3061,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             }
             if (GetVersionMajor() == 1 && GetVersionMinor() == 1)
             {
-                WARN("In OSC 1.1 ActivateControllerAction should be placed under ControllerAction. Accepting anyway.");
+                LOG_WARN("In OSC 1.1 ActivateControllerAction should be placed under ControllerAction. Accepting anyway.");
             }
 
             ActivateControllerAction *activateControllerAction = parseActivateControllerAction(actionChild, parent);
@@ -3104,7 +3104,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                             if (entry == 0)
                             {
-                                ERROR("No entry found");
+                                LOG_ERROR("No entry found");
                             }
                             else
                             {
@@ -3114,13 +3114,13 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 }
                                 else
                                 {
-                                    ERROR("Unexpected catalog type {}", entry->GetTypeAsStr());
+                                    LOG_ERROR("Unexpected catalog type {}", entry->GetTypeAsStr());
                                 }
                             }
                         }
                         else
                         {
-                            ERROR("Unexpected AssignControllerAction subelement: {}", controllerDefNode.name());
+                            LOG_ERROR("Unexpected AssignControllerAction subelement: {}", controllerDefNode.name());
                             return 0;
                         }
 
@@ -3174,7 +3174,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                         else if (anim_str == "true")
                         {
-                            WARN("Animation activation is not supported yet");
+                            LOG_WARN("Animation activation is not supported yet");
                             anim_mode = ControlActivationMode::ON;
                         }
 
@@ -3221,7 +3221,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 overrideStatus.value = override_action->RangeCheckAndErrorLog(Object::OverrideType::OVERRIDE_BRAKE, value);
                                 if (verFromMinor2)
                                 {
-                                    WARN("From version 1.2 BrakeInput element should be used instead of value attribute, Accepting anyway");
+                                    LOG_WARN("From version 1.2 BrakeInput element should be used instead of value attribute, Accepting anyway");
                                 }
                             }
                             else
@@ -3234,7 +3234,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                     // No upper limit
                                     if (value < 0.0)
                                     {
-                                        WARN("Unexpected negative brake force {:.2f} - ignoring, set to 0", value);
+                                        LOG_WARN("Unexpected negative brake force {:.2f} - ignoring, set to 0", value);
                                         overrideStatus.value = 0.0;
                                     }
                                     else
@@ -3249,7 +3249,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 }
                                 else
                                 {
-                                    ERROR("Unexpected Brake child element: {}", brake_input_node.name());
+                                    LOG_ERROR("Unexpected Brake child element: {}", brake_input_node.name());
                                     delete override_action;
                                     return 0;
                                 }
@@ -3262,9 +3262,9 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                                 if (!verFromMinor2)
                                 {
-                                    ERROR("Unexpected BrakeInput element in version {}.{}, introduced in OSC 1.2",
-                                          GetVersionMajor(),
-                                          GetVersionMinor());
+                                    LOG_ERROR("Unexpected BrakeInput element in version {}.{}, introduced in OSC 1.2",
+                                              GetVersionMajor(),
+                                              GetVersionMinor());
                                 }
                             }
                         }
@@ -3293,7 +3293,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 overrideStatus.value = override_action->RangeCheckAndErrorLog(Object::OverrideType::OVERRIDE_PARKING_BRAKE, value);
                                 if (verFromMinor2)
                                 {
-                                    WARN("From version 1.2 BrakeInput element should be used instead of value attribute, Accepting anyway");
+                                    LOG_WARN("From version 1.2 BrakeInput element should be used instead of value attribute, Accepting anyway");
                                 }
                             }
                             else
@@ -3306,7 +3306,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                     // No upper limit
                                     if (value < 0.0)
                                     {
-                                        WARN("Unexpected negative brake force %.2f - ignoring, set to 0", value);
+                                        LOG_WARN("Unexpected negative brake force %.2f - ignoring, set to 0", value);
                                         overrideStatus.value = 0.0;
                                     }
                                     else
@@ -3322,7 +3322,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 }
                                 else
                                 {
-                                    ERROR("Unexpected Parking Brake child element: {}", parking_brake_input_node.name());
+                                    LOG_ERROR("Unexpected Parking Brake child element: {}", parking_brake_input_node.name());
                                     delete override_action;
                                     return 0;
                                 }
@@ -3335,9 +3335,9 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                                 if (!verFromMinor2)
                                 {
-                                    ERROR("Unexpected BrakeInput element in version {}.{}, introduced in OSC 1.2",
-                                          GetVersionMajor(),
-                                          GetVersionMinor());
+                                    LOG_ERROR("Unexpected BrakeInput element in version {}.{}, introduced in OSC 1.2",
+                                              GetVersionMajor(),
+                                              GetVersionMinor());
                                 }
                             }
                         }
@@ -3377,11 +3377,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 {
                                     // Skip range check since valid range is [-inf, inf]
                                     overrideStatus.number = static_cast<int>(strtod(parameters.ReadAttribute(controllerDefNode, "value")));
-                                    WARN("Unexpected Gear attribute name, change value to number, Accepting this time");
+                                    LOG_WARN("Unexpected Gear attribute name, change value to number, Accepting this time");
                                 }
                                 else
                                 {
-                                    ERROR("Unexpected OverrideControllerValueAction subelement: %s", controllerDefNode.name());
+                                    LOG_ERROR("Unexpected OverrideControllerValueAction subelement: %s", controllerDefNode.name());
                                     delete override_action;
                                     return 0;
                                 }
@@ -3412,7 +3412,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                     }
                                     else
                                     {
-                                        ERROR("Unexpected AutomaticGear number: {}", number_str);
+                                        LOG_ERROR("Unexpected AutomaticGear number: {}", number_str);
                                         delete override_action;
                                         return 0;
                                     }
@@ -3429,19 +3429,21 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 }
                                 else
                                 {
-                                    ERROR("Unexpected Gear child element: {}", controllerDefNode.first_child().name());
+                                    LOG_ERROR("Unexpected Gear child element: {}", controllerDefNode.first_child().name());
                                     delete override_action;
                                     return 0;
                                 }
                                 if (!verFromMinor2)
                                 {
-                                    ERROR("Unexpected Gear element in version {}.{}, introduced in OSC 1.2", GetVersionMajor(), GetVersionMinor());
+                                    LOG_ERROR("Unexpected Gear element in version {}.{}, introduced in OSC 1.2",
+                                              GetVersionMajor(),
+                                              GetVersionMinor());
                                 }
                             }
                         }
                         else
                         {
-                            ERROR("Unexpected OverrideControllerValueAction subelement: {}", controllerDefNode.name());
+                            LOG_ERROR("Unexpected OverrideControllerValueAction subelement: {}", controllerDefNode.name());
                             delete override_action;
                             return 0;
                         }
@@ -3455,7 +3457,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 {
                     if (GetVersionMajor() == 1 && GetVersionMinor() == 0)
                     {
-                        WARN("In OSC 1.0 ActivateControllerAction should be placed under PrivateAction. Accepting anyway.");
+                        LOG_WARN("In OSC 1.0 ActivateControllerAction should be placed under PrivateAction. Accepting anyway.");
                     }
 
                     std::string ctrl_name;
@@ -3471,7 +3473,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
                 else
                 {
-                    ERROR("Unexpected ControllerAction subelement: %s", controllerChild.name());
+                    LOG_ERROR("Unexpected ControllerAction subelement: %s", controllerChild.name());
                 }
             }
         }
@@ -3541,7 +3543,7 @@ void ScenarioReader::parseInit(Init &init)
 
         if (actionsChildName == "GlobalAction")
         {
-            INFO("Parsing global action {}", actionsChild.first_child().name());
+            LOG_INFO("Parsing global action {}", actionsChild.first_child().name());
             OSCGlobalAction *action = parseOSCGlobalAction(actionsChild, nullptr);
             if (action != 0)
             {
@@ -3551,7 +3553,7 @@ void ScenarioReader::parseInit(Init &init)
         }
         else if (actionsChildName == "UserDefined")
         {
-            ERROR("Init {} is not implemented", actionsChildName);
+            LOG_ERROR("Init {} is not implemented", actionsChildName);
         }
         else if (actionsChildName == "Private")
         {
@@ -3575,7 +3577,7 @@ void ScenarioReader::parseInit(Init &init)
                         }
                         else if (teleport == false && action->action_type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
                         {
-                            WARN("WARNING: Controller activated before positioning (TeleportAction) the entity {}", entityRef->GetName());
+                            LOG_WARN("WARNING: Controller activated before positioning (TeleportAction) the entity {}", entityRef->GetName());
                         }
 
                         init.private_action_.push_back(action);
@@ -3640,7 +3642,7 @@ static OSCCondition::ConditionEdge ParseConditionEdge(std::string edge)
     }
     else
     {
-        ERROR("Unsupported edge: {}", edge);
+        LOG_ERROR("Unsupported edge: {}", edge);
     }
 
     return OSCCondition::ConditionEdge::UNDEFINED;
@@ -3674,7 +3676,7 @@ static Rule ParseRule(std::string rule)
     }
     else
     {
-        ERROR("Invalid or missing rule {}", rule);
+        LOG_ERROR("Invalid or missing rule {}", rule);
     }
 
     return Rule::UNDEFINED_RULE;
@@ -3696,7 +3698,7 @@ static Direction ParseDirection(std::string direction)
     }
     else
     {
-        ERROR("Invalid or missing direction {}", direction);
+        LOG_ERROR("Invalid or missing direction {}", direction);
         return Direction::UNDEFINED_DIRECTION;
     }
 
@@ -3735,7 +3737,7 @@ static TrigByState::CondElementState ParseState(std::string state)
     }
     else
     {
-        ERROR("Invalid state {}", state);
+        LOG_ERROR("Invalid state {}", state);
     }
 
     return TrigByState::CondElementState::UNDEFINED_ELEMENT_STATE;
@@ -3769,7 +3771,7 @@ static StoryBoardElement::ElementType ParseElementType(std::string element_type)
     }
     else
     {
-        ERROR("Invalid or unsupported element type {}", element_type);
+        LOG_ERROR("Invalid or unsupported element type {}", element_type);
     }
 
     return StoryBoardElement::ElementType::UNDEFINED_ELEMENT_TYPE;
@@ -3823,7 +3825,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             {
                                 if (GetVersionMajor() == 1 && GetVersionMinor() == 1)
                                 {
-                                    WARN("alongRoute attribute is depricated from v1.1. Reading it anyway.");
+                                    LOG_WARN("alongRoute attribute is depricated from v1.1. Reading it anyway.");
                                 }
                                 if ((along_route_str == "true") || (along_route_str == "1"))
                                 {
@@ -3866,7 +3868,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                         }
                         else
                         {
-                            ERROR("Unexpected target type: {}", targetChildName);
+                            LOG_ERROR("Unexpected target type: {}", targetChildName);
                             return 0;
                         }
 
@@ -3892,7 +3894,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             {
                                 if (GetVersionMajor() == 1 && GetVersionMinor() == 1)
                                 {
-                                    WARN("alongRoute attribute is depricated from v1.1. Reading it anyway.");
+                                    LOG_WARN("alongRoute attribute is depricated from v1.1. Reading it anyway.");
                                 }
                                 if ((along_route_str == "true") || (along_route_str == "1"))
                                 {
@@ -4022,7 +4024,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             {
                                 if (GetVersionMajor() == 1 && GetVersionMinor() == 1)
                                 {
-                                    WARN("alongRoute attribute is depricated from v1.1. Reading it anyway.");
+                                    LOG_WARN("alongRoute attribute is depricated from v1.1. Reading it anyway.");
                                 }
                                 if ((along_route_str == "true") || (along_route_str == "1"))
                                 {
@@ -4132,7 +4134,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             if (trigger->distanceForward_ < 0)
                             {
                                 trigger->distanceForward_ = abs(trigger->distanceForward_);
-                                WARN("Negative value not allowed as distanceForward in RelativeClearanceCondition. Converted as positive value");
+                                LOG_WARN("Negative value not allowed as distanceForward in RelativeClearanceCondition. Converted as positive value");
                             }
                         }
 
@@ -4142,7 +4144,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             if (trigger->distanceBackward_ < 0)
                             {
                                 trigger->distanceBackward_ = abs(trigger->distanceBackward_);
-                                WARN("Negative value not allowed as distanceBackward in RelativeClearanceCondition. Converted as positive value");
+                                LOG_WARN("Negative value not allowed as distanceBackward in RelativeClearanceCondition. Converted as positive value");
                             }
                         }
 
@@ -4158,7 +4160,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                         }
                         else
                         {  // Provide warring and use default value
-                            WARN("FreeSpace is mandatory attribute in RelativeClearanceCondition. Anyway setting it false");
+                            LOG_WARN("FreeSpace is mandatory attribute in RelativeClearanceCondition. Anyway setting it false");
                         }
 
                         if (!parameters.ReadAttribute(condition_node, "oppositeLanes").empty())
@@ -4168,7 +4170,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                         }
                         else
                         {  // Provide warring and use default value
-                            WARN("OppositeLanes is mandatory attribute in RelativeClearanceCondition. Anyway setting it false");
+                            LOG_WARN("OppositeLanes is mandatory attribute in RelativeClearanceCondition. Anyway setting it false");
                         }
 
                         Object *object_;
@@ -4194,7 +4196,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             }
                             else
                             {
-                                ERROR("Unexpected element {} in RelativeClearanceCondition ", relClearanceChild.name());
+                                LOG_ERROR("Unexpected element {} in RelativeClearanceCondition ", relClearanceChild.name());
                             }
                         }
 
@@ -4204,7 +4206,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                     }
                     else
                     {
-                        ERROR_AND_QUIT("Entity condition {} not supported", condition_type);
+                        LOG_ERROR_AND_QUIT("Entity condition {} not supported", condition_type);
                     }
                 }
             }
@@ -4225,7 +4227,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                 }
                 else
                 {
-                    ERROR("Invalid triggering entity type: {}", trig_ent_rule);
+                    LOG_ERROR("Invalid triggering entity type: {}", trig_ent_rule);
                 }
 
                 for (pugi::xml_node triggeringEntitiesChild = triggering_entities.first_child(); triggeringEntitiesChild;
@@ -4298,7 +4300,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                 }
                 else
                 {
-                    WARN("WARNING: ByValueCondition {} not supported yet. Ignoring.", condition_type);
+                    LOG_WARN("WARNING: ByValueCondition {} not supported yet. Ignoring.", condition_type);
                 }
             }
         }
@@ -4326,7 +4328,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
     }
     else
     {
-        ERROR("Attribute \"delay\" missing");
+        LOG_ERROR("Attribute \"delay\" missing");
     }
 
     std::string edge_str = parameters.ReadAttribute(conditionNode, "conditionEdge");
@@ -4388,7 +4390,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
             {
                 if (GetVersionMajor() == 1 && GetVersionMinor() > 1)
                 {
-                    WARN("Info: \"overwrite\" priority deprecated in v1.2. Use \"override\" instead. Accepting it anyway.");
+                    LOG_WARN("Info: \"overwrite\" priority deprecated in v1.2. Use \"override\" instead. Accepting it anyway.");
                 }
                 event->priority_ = Event::Priority::OVERWRITE;
             }
@@ -4396,7 +4398,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
             {
                 if (GetVersionMajor() == 1 && GetVersionMinor() < 2)
                 {
-                    WARN("Info: \"override\" priority was introduced in v1.2. Use \"overwrite\" for earlier versions. Accepting it anyway.");
+                    LOG_WARN("Info: \"override\" priority was introduced in v1.2. Use \"overwrite\" for earlier versions. Accepting it anyway.");
                 }
                 event->priority_ = Event::Priority::OVERWRITE;
             }
@@ -4410,7 +4412,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
             }
             else
             {
-                ERROR("Invalid priority: {}", prio);
+                LOG_ERROR("Invalid priority: {}", prio);
             }
 
             if (parameters.ReadAttribute(maneuverChild, "maximumExecutionCount") != "")
@@ -4454,7 +4456,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
                         {
                             if (mGroup->actor_.size() == 0)
                             {
-                                ERROR_AND_QUIT(
+                                LOG_ERROR_AND_QUIT(
                                     "PrivateAction {} missing actor(s). SelectTriggeringEntities feature not supported yet. Add actor(s) to ManeuverGroup.",
                                     parameters.ReadAttribute(eventChild, "name"));
                             }
@@ -4472,7 +4474,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
                                 }
                                 else
                                 {
-                                    ERROR("Failed to parse event {} - continue regardless", event->GetName());
+                                    LOG_ERROR("Failed to parse event {} - continue regardless", event->GetName());
                                 }
                             }
 
@@ -4496,7 +4498,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
                                 if (trig->type_ == TrigByValue::Type::SIMULATION_TIME && trig->edge_ != OSCCondition::NONE &&
                                     fabs((static_cast<TrigBySimulationTime *>((trig)))->value_) < SMALL_NUMBER)
                                 {
-                                    WARN(
+                                    LOG_WARN(
                                         "Warning: simulationTime = 0 condition used with edge \"{}\" which could be missed. Edge \"none\" is recommended.",
                                         trig->Edge2Str());
                                 }
@@ -4506,7 +4508,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
                 }
                 else
                 {
-                    ERROR("{} not supported", childName);
+                    LOG_ERROR("{} not supported", childName);
                 }
             }
 
@@ -4592,7 +4594,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
                                     }
                                     else if (actorsChildName == "ByCondition")
                                     {
-                                        WARN("Actor by condition - not implemented");
+                                        LOG_WARN("Actor by condition - not implemented");
                                     }
                                     mGroup->actor_.push_back(actor);
                                 }
@@ -4673,7 +4675,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
         {
             if (elements.size() > 1)
             {
-                WARN("Warning: Non unique element name: {}, picking first occurrence", trigger_info.element_name);
+                LOG_WARN("Warning: Non unique element name: {}, picking first occurrence", trigger_info.element_name);
             }
             trigger_info.element                          = elements[0];
             trigger_info.condition->element_              = trigger_info.element;
@@ -4682,7 +4684,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
         }
         else
         {
-            ERROR_AND_QUIT("Error: StoryboardElement {} not found. Quit.", trigger_info.element_name);
+            LOG_ERROR_AND_QUIT("Error: StoryboardElement {} not found. Quit.", trigger_info.element_name);
         }
     }
 

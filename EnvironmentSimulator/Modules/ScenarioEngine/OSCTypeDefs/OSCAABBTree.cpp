@@ -362,7 +362,7 @@ void aabbTree::findPoints(vector<ptTriangle> const &triangles, EllipseInfo &eInf
             geometryIntersect(*tr, eInfo, points);
         }
         else
-            WARN("Warning: triangle without a geometry found");
+            LOG_WARN("Warning: triangle without a geometry found");
     }
 }
 

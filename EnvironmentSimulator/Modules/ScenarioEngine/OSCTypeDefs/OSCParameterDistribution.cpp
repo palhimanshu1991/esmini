@@ -50,7 +50,7 @@ int OSCParameterDistribution::Load(std::string filename)
             result = doc_.load_file(file_name_candidates[i].c_str());
             if (!result)
             {
-                INFO("{}: {} at offset (character position): {}", file_name_candidates[i], result.description(), result.offset);
+                LOG_INFO("{}: {} at offset (character position): {}", file_name_candidates[i], result.description(), result.offset);
                 return -1;
             }
             else
@@ -62,17 +62,17 @@ int OSCParameterDistribution::Load(std::string filename)
 
     if (i == file_name_candidates.size())
     {
-        ERROR("Failed to load parameter distribution file {}. Tried:", filename);
+        LOG_ERROR("Failed to load parameter distribution file {}. Tried:", filename);
         for (unsigned int j = 0; j < file_name_candidates.size(); j++)
         {
-            INFO("   {}\n", file_name_candidates[j]);
+            LOG_INFO("   {}\n", file_name_candidates[j]);
         }
-        WARN("continue without road description\n");
+        LOG_WARN("continue without road description\n");
     }
     else
     {
         filename_ = file_name_candidates[i];
-        INFO("Loaded {}", filename_);
+        LOG_INFO("Loaded {}", filename_);
     }
 
     // Parse
@@ -91,20 +91,20 @@ int OSCParameterDistribution::Load(std::string filename)
     node = node.child("ParameterValueDistribution");
     if (node.empty())
     {
-        WARN("No or empty ParameterValueDistribution element");
+        LOG_WARN("No or empty ParameterValueDistribution element");
     }
 
     pugi::xml_node scenario_filename_node = node.child("ScenarioFile");
     if (scenario_filename_node.empty())
     {
-        ERROR("ScenarioFile missing");
+        LOG_ERROR("ScenarioFile missing");
     }
     else
     {
         scenario_filename_ = scenario_filename_node.attribute("filepath").value();
         if (scenario_filename_.empty())
         {
-            ERROR("Scenario filepath attribute missing");
+            LOG_ERROR("Scenario filepath attribute missing");
         }
     }
 
@@ -120,7 +120,7 @@ int OSCParameterDistribution::Load(std::string filename)
                 pugi::xml_node value_set_dist = child_node.child("ValueSetDistribution");
                 if (value_set_dist.empty())
                 {
-                    ERROR("ValueSetDistribution missing");
+                    LOG_ERROR("ValueSetDistribution missing");
                     return -1;
                 }
 
@@ -144,14 +144,14 @@ int OSCParameterDistribution::Load(std::string filename)
                 std::string param_name = child_node.attribute("parameterName").value();
                 if (param_name.empty() || param_name == "")
                 {
-                    ERROR("Missing single distribution parameter name");
+                    LOG_ERROR("Missing single distribution parameter name");
                     return -1;
                 }
 
                 pugi::xml_node dist = child_node.first_child();
                 if (dist.empty())
                 {
-                    ERROR("Missing single distribution definition");
+                    LOG_ERROR("Missing single distribution definition");
                     return -1;
                 }
 
@@ -180,7 +180,7 @@ int OSCParameterDistribution::Load(std::string filename)
                     pugi::xml_node range = dist.child("Range");
                     if (range.empty())
                     {
-                        ERROR("Distribution range missing");
+                        LOG_ERROR("Distribution range missing");
                         return -1;
                     }
 
@@ -189,7 +189,7 @@ int OSCParameterDistribution::Load(std::string filename)
 
                     if (upper_limit < lower_limit)
                     {
-                        ERROR("Distribution range invalid range {:.2f}..{:.2f}", lower_limit, upper_limit);
+                        LOG_ERROR("Distribution range invalid range {:.2f}..{:.2f}", lower_limit, upper_limit);
                         return -1;
                     }
                     for (double v = lower_limit; v < upper_limit + SMALL_NUMBER; v += step_width)
@@ -202,18 +202,18 @@ int OSCParameterDistribution::Load(std::string filename)
                 }
                 else if (!strcmp(dist.name(), "UserDefinedDistribution"))
                 {
-                    ERROR("UserDefinedDistribution not yet supported");
+                    LOG_ERROR("UserDefinedDistribution not yet supported");
                     return -1;
                 }
                 else
                 {
-                    ERROR("Unexpected distribution definition");
+                    LOG_ERROR("Unexpected distribution definition");
                     return -1;
                 }
             }
             else
             {
-                ERROR("Unexpected deterministic distribution type {}", child_node_name);
+                LOG_ERROR("Unexpected deterministic distribution type {}", child_node_name);
             }
         }
     }
@@ -223,16 +223,16 @@ int OSCParameterDistribution::Load(std::string filename)
     {
         if (!deterministic.empty())
         {
-            WARN("Found BOTH Deterministic and Stochastic distribution elements. Only one expected. Using Deterministic.");
+            LOG_WARN("Found BOTH Deterministic and Stochastic distribution elements. Only one expected. Using Deterministic.");
         }
         else
         {
-            WARN("Stochastic distributions not supported yet");
+            LOG_WARN("Stochastic distributions not supported yet");
         }
     }
     else if (deterministic.empty())
     {
-        ERROR("No distribution defined. Expected Determinstic or Stochastic");
+        LOG_ERROR("No distribution defined. Expected Determinstic or Stochastic");
     }
 
     return 0;
@@ -398,7 +398,7 @@ int OSCParameterDistribution::SetIndex(unsigned int index)
 {
     if (index >= GetNumPermutations())
     {
-        ERROR("Permutation index {} out of range (0..{})", index, GetNumPermutations() - 1);
+        LOG_ERROR("Permutation index {} out of range (0..{})", index, GetNumPermutations() - 1);
         return -1;
     }
 
@@ -412,7 +412,7 @@ int OSCParameterDistribution::IncrementIndex()
 {
     if (index_ < -1 || index_ >= static_cast<int>(GetNumPermutations() - 1))
     {
-        ERROR("Can't increment index {}, would end up out of range (0..{})\n", index_, GetNumPermutations() - 1);
+        LOG_ERROR("Can't increment index {}, would end up out of range (0..{})\n", index_, GetNumPermutations() - 1);
         return -1;
     }
 
@@ -426,7 +426,7 @@ int OSCParameterDistribution::SetRequestedIndex(unsigned int index)
 {
     if (index >= GetNumPermutations())
     {
-        ERROR("requested permutation index {} out of range (0..{})", index, GetNumPermutations() - 1);
+        LOG_ERROR("requested permutation index {} out of range (0..{})", index, GetNumPermutations() - 1);
         return 0;
     }
 

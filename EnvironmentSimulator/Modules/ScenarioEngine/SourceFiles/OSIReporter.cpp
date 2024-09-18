@@ -229,10 +229,10 @@ bool OSIReporter::OpenOSIFile(const char *filename)
     osi_file.open(filename, std::ios_base::binary);
     if (!osi_file.good())
     {
-        ERROR("Failed open OSI tracefile {}", filename);
+        LOG_ERROR("Failed open OSI tracefile {}", filename);
         return false;
     }
-    INFO("OSI tracefile {} opened", filename);
+    LOG_INFO("OSI tracefile {} opened", filename);
     return true;
 }
 
@@ -262,7 +262,7 @@ bool OSIReporter::WriteOSIFile()
 
     if (!osi_file.good())
     {
-        ERROR("Failed write osi file");
+        LOG_ERROR("Failed write osi file");
         return false;
     }
     return true;
@@ -336,7 +336,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
 
             if (sendResult != packSize)
             {
-                ERROR("Failed send osi package over UDP");
+                LOG_ERROR("Failed send osi package over UDP");
 #ifdef _WIN32
                 wprintf(L"send failed with error: %d\n", WSAGetLastError());
 #endif
@@ -395,8 +395,8 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
         }
         else
         {
-            WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object",
-                 objectState[i]->state_.info.obj_type);
+            LOG_WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object",
+                     objectState[i]->state_.info.obj_type);
         }
     }
 
@@ -468,8 +468,8 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
         }
         else
         {
-            WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object",
-                 objectState[i]->state_.info.obj_type);
+            LOG_WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object",
+                     objectState[i]->state_.info.obj_type);
         }
     }
 
@@ -566,7 +566,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_UNKNOWN);
-        ERROR("OSIReporter::UpdateOSIStationaryObjectODR -> Unsupported stationary object category");
+        LOG_ERROR("OSIReporter::UpdateOSIStationaryObjectODR -> Unsupported stationary object category");
     }
 
     // Set OSI Stationary Object Position
@@ -674,12 +674,12 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
         {
             obj_osi_internal.sobj->mutable_classification()->set_type(
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_UNKNOWN);
-            ERROR("OSIReporter::UpdateOSIStationaryObject -> Unsupported stationary object category");
+            LOG_ERROR("OSIReporter::UpdateOSIStationaryObject -> Unsupported stationary object category");
         }
     }
     else
     {
-        ERROR("OSIReporter::UpdateOSIStationaryObject -> Unsupported stationary object type");
+        LOG_ERROR("OSIReporter::UpdateOSIStationaryObject -> Unsupported stationary object type");
     }
 
     // Set OSI Stationary Object Boundingbox
@@ -757,14 +757,14 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
         }
         else
         {
-            ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle category: {} ({}). Set to UNKNOWN.",
-                  objectState->state_.info.obj_category,
-                  Vehicle::Category2String(objectState->state_.info.obj_category));
+            LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle category: {} ({}). Set to UNKNOWN.",
+                      objectState->state_.info.obj_category,
+                      Vehicle::Category2String(objectState->state_.info.obj_category));
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN);
         }
 
 #ifdef _OSI_VERSION_3_3_1
-        WARN_ONCE("using OSI 3.3.1, skipping vehicle role attribute");
+        LOG_WARN_ONCE("using OSI 3.3.1, skipping vehicle role attribute");
 #else
         if (objectState->state_.info.obj_role == Vehicle::Role::AMBULANCE)
         {
@@ -800,9 +800,9 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
         }
         else
         {
-            ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle role: {} ({}). Set classification UNKNOWN.",
-                  objectState->state_.info.obj_role,
-                  Vehicle::Role2String(objectState->state_.info.obj_role).c_str());
+            LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle role: {} ({}). Set classification UNKNOWN.",
+                      objectState->state_.info.obj_role,
+                      Vehicle::Role2String(objectState->state_.info.obj_role).c_str());
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
         }
 #endif
@@ -823,17 +823,17 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
         }
         else
         {
-            ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object pedestrian category: {} ({}). Set type UNKNOWN.",
-                  objectState->state_.info.obj_category,
-                  Pedestrian::Category2String(objectState->state_.info.obj_category));
+            LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object pedestrian category: {} ({}). Set type UNKNOWN.",
+                      objectState->state_.info.obj_category,
+                      Pedestrian::Category2String(objectState->state_.info.obj_category));
             obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
         }
     }
     else
     {
-        ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object type: {} ({}). Set UNKNOWN.",
-              objectState->state_.info.obj_type,
-              Object::Type2String(objectState->state_.info.obj_type));
+        LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object type: {} ({}). Set UNKNOWN.",
+                  objectState->state_.info.obj_type,
+                  Object::Type2String(objectState->state_.info.obj_type));
         obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
     }
 
@@ -1060,14 +1060,14 @@ int OSIReporter::UpdateOSIIntersection()
                 }
                 else
                 {
-                    WARN("WARNING: Unknow connection detected, can't establish outgoing connection in OSI junction");
+                    LOG_WARN("WARNING: Unknow connection detected, can't establish outgoing connection in OSI junction");
                     return -1;
                 }
                 if (roadlink == nullptr)
                 {
-                    ERROR("Failed to resolve {} link of incoming road id {}",
-                          roadmanager::OpenDrive::LinkType2Str(connecting_road_link_type),
-                          incomming_road->GetId());
+                    LOG_ERROR("Failed to resolve {} link of incoming road id {}",
+                              roadmanager::OpenDrive::LinkType2Str(connecting_road_link_type),
+                              incomming_road->GetId());
                     return -1;
                 }
                 outgoing_road = opendrive->GetRoadById(roadlink->GetElementId());
@@ -1226,10 +1226,10 @@ int OSIReporter::UpdateOSIIntersection()
                         }
                         else
                         {
-                            ERROR("Connecting road {} incoming road {} failed get lane by id {}",
-                                  connecting_road->GetId(),
-                                  connection->GetIncomingRoad()->GetId(),
-                                  junctionlanelink->to_);
+                            LOG_ERROR("Connecting road {} incoming road {} failed get lane by id {}",
+                                      connecting_road->GetId(),
+                                      connection->GetIncomingRoad()->GetId(),
+                                      junctionlanelink->to_);
                         }
                     }
                 }
@@ -1314,7 +1314,7 @@ int OSIReporter::UpdateOSIIntersection()
                         free_lane_id->set_value(static_cast<unsigned int>(lane_lengths[j].global_id));
                     }
                 }
-                WARN("Issues with the Intersection {} for the osi free lane boundary, none will be added.", junction->GetId());
+                LOG_WARN("Issues with the Intersection {} for the osi free lane boundary, none will be added.", junction->GetId());
             }
         }
     }
@@ -1421,7 +1421,7 @@ int OSIReporter::UpdateOSILaneBoundary()
                             {
                                 if (laneroadmarktype->GetNumberOfRoadMarkTypeLines() < 2)
                                 {
-                                    ERROR_AND_QUIT("You need to specify at least 2 line for broken solid or solid broken roadmark type");
+                                    LOG_ERROR_AND_QUIT("You need to specify at least 2 line for broken solid or solid broken roadmark type");
                                     break;
                                 }
                                 std::vector<double> sort_solidbroken_brokensolid;
@@ -2002,15 +2002,15 @@ int OSIReporter::UpdateOSIRoadLane()
                                     predecessorRoad->GetDrivingLaneById(predecessor_lane_section->GetS(), link_predecessor->GetId());
                                 if (driving_lane_predecessor)
                                 {
-                                    WARN("Lane {} on predecessor road {} s {:.2f} is not a driving lane",
-                                         lane->GetId(),
-                                         predecessorRoad->GetId(),
-                                         predecessor_lane_section->GetS());
+                                    LOG_WARN("Lane {} on predecessor road {} s {:.2f} is not a driving lane",
+                                             lane->GetId(),
+                                             predecessorRoad->GetId(),
+                                             predecessor_lane_section->GetS());
                                 }
                             }
                             else
                             {
-                                WARN("Failed to resolve Predecessor link of lane {} of road {}", lane->GetId(), road->GetId());
+                                LOG_WARN("Failed to resolve Predecessor link of lane {} of road {}", lane->GetId(), road->GetId());
                             }
 
                             if (link_successor)
@@ -2018,15 +2018,15 @@ int OSIReporter::UpdateOSIRoadLane()
                                 driving_lane_successor = successorRoad->GetDrivingLaneById(successor_lane_section->GetS(), link_successor->GetId());
                                 if (driving_lane_successor)
                                 {
-                                    WARN("Lane {} on successor road {} s {:.2f} is not a driving lane",
-                                         lane->GetId(),
-                                         successorRoad->GetId(),
-                                         successor_lane_section->GetS());
+                                    LOG_WARN("Lane {} on successor road {} s {:.2f} is not a driving lane",
+                                             lane->GetId(),
+                                             successorRoad->GetId(),
+                                             successor_lane_section->GetS());
                                 }
                             }
                             else
                             {
-                                ERROR("Failed to resolve Successor link of lane {} of road {}", lane->GetId(), road->GetId());
+                                LOG_ERROR("Failed to resolve Successor link of lane {} of road {}", lane->GetId(), road->GetId());
                             }
 
                             for (int l = 0; l < obj_osi_internal.gt->lane_size(); ++l)
@@ -2490,7 +2490,7 @@ const char *OSIReporter::GetOSIRoadLane(const std::vector<std::unique_ptr<Object
     // Check if object_id exists
     if (static_cast<unsigned int>(object_id) >= objectState.size())
     {
-        ERROR("Object {} not available, only {} registered", object_id, objectState.size());
+        LOG_ERROR("Object {} not available, only {} registered", object_id, objectState.size());
         *size = 0;
         return 0;
     }
@@ -2521,7 +2521,7 @@ const char *OSIReporter::GetOSIRoadLane(const std::vector<std::unique_ptr<Object
     }
     if (idx < 0)
     {
-        ERROR("Failed to locate vehicle lane id!");
+        LOG_ERROR("Failed to locate vehicle lane id!");
         return 0;
     }
     // serialize to string the single lane
@@ -2603,7 +2603,7 @@ void OSIReporter::GetOSILaneBoundaryIds(const std::vector<std::unique_ptr<Object
     // Check if object_id exists
     if (static_cast<unsigned int>(object_id) >= objectState.size())
     {
-        ERROR("Object {} not available, only {} registered", object_id, objectState.size());
+        LOG_ERROR("Object {} not available, only {} registered", object_id, objectState.size());
         ids = {-1, -1, -1, -1};
         return;
     }

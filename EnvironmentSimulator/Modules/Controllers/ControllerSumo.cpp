@@ -36,19 +36,19 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
     // SUMO controller forced into override mode - will not perform any scenario actions
     if (mode_ != ControlOperationMode::MODE_OVERRIDE)
     {
-        WARN("SUMO controller mode \"{}\" not applicable. Using override mode instead.", Mode2Str(mode_));
+        LOG_WARN("SUMO controller mode \"{}\" not applicable. Using override mode instead.", Mode2Str(mode_));
         mode_ = ControlOperationMode::MODE_OVERRIDE;
     }
 
     if (args->properties->file_.filepath_.empty())
     {
-        ERROR("No filename!");
+        LOG_ERROR("No filename!");
         return;
     }
 
     if (docsumo_.load_file(args->properties->file_.filepath_.c_str()).status == pugi::status_file_not_found)
     {
-        ERROR("Failed to load SUMO config file {}", args->properties->file_.filepath_);
+        LOG_ERROR("Failed to load SUMO config file {}", args->properties->file_.filepath_);
         throw std::invalid_argument(std::string("Cannot open file: ") + args->properties->file_.filepath_);
         return;
     }
@@ -69,7 +69,7 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
     if (sumonet.status != pugi::status_ok)
     {
         // Give up
-        ERROR("Failed to load SUMO net file {}", file_name_candidates[0]);
+        LOG_ERROR("Failed to load SUMO net file {}", file_name_candidates[0]);
         throw std::invalid_argument(std::string("Cannot open file: ") + file_name_candidates[0]);
         return;
     }
@@ -111,7 +111,7 @@ void ControllerSumo::Step(double timeStep)
             {
                 Vehicle* vehicle = new Vehicle();
                 // copy the default vehicle stuff here (add bounding box and so on)
-                INFO("SUMO controller: Add vehicle to scenario: {}", deplist[i]);
+                LOG_INFO("SUMO controller: Add vehicle to scenario: {}", deplist[i]);
                 vehicle->name_ = deplist[i];
                 vehicle->AssignController(this);
                 vehicle->model3d_     = template_vehicle_->model3d_;
@@ -138,7 +138,7 @@ void ControllerSumo::Step(double timeStep)
                     Object* obj = entities_->GetObjectByName(arrivelist[i]);
                     if (obj != nullptr)
                     {
-                        INFO("SUMO controller: Remove vehicle from scenario: {}", arrivelist[i]);
+                        LOG_INFO("SUMO controller: Remove vehicle from scenario: {}", arrivelist[i]);
                         gateway_->removeObject(arrivelist[i]);
                         if (obj->objectEvents_.size() > 0 || obj->initActions_.size() > 0)
                         {
@@ -151,7 +151,7 @@ void ControllerSumo::Step(double timeStep)
                     }
                     else
                     {
-                        ERROR("Failed to remove vehicle: {} - not found", arrivelist[i]);
+                        LOG_ERROR("Failed to remove vehicle: {} - not found", arrivelist[i]);
                     }
                 }
             }
@@ -166,7 +166,7 @@ void ControllerSumo::Step(double timeStep)
             std::find(idlist.begin(), idlist.end(), entities_->object_[i]->GetName()) == idlist.end())  // not already in sumo list
         {
             std::string id = entities_->object_[i]->name_;
-            INFO("SUMO controller: Add vehicle to SUMO: {}", id);
+            LOG_INFO("SUMO controller: Add vehicle to SUMO: {}", id);
             libsumo::Vehicle::add(id, "", "DEFAULT_VEHTYPE");
             libsumo::Vehicle::moveToXY(id,
                                        "random",
@@ -252,7 +252,7 @@ int ControllerSumo::Activate(ControlActivationMode lat_activation_mode,
     // SUMO controller forced into both domains
     if (lat_activation_mode != ControlActivationMode::ON || long_activation_mode != ControlActivationMode::ON)
     {
-        INFO("SUMO controller forced into operation of both domains (lat/long)");
+        LOG_INFO("SUMO controller forced into operation of both domains (lat/long)");
         lat_activation_mode = long_activation_mode = ControlActivationMode::ON;
     }
 

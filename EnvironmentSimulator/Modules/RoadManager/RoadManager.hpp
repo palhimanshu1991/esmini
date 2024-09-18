@@ -3897,7 +3897,7 @@ namespace roadmanager
             }
             else
             {
-                ERROR("Unexpected position mode type: {}", type);
+                LOG_ERROR("Unexpected position mode type: {}", type);
                 return 0;
             }
         }

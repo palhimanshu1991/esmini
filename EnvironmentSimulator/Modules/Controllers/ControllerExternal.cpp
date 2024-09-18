@@ -45,9 +45,9 @@ void ControllerExternal::Init()
     }
     else if (useGhost_)
     {
-        INFO("External controller with ghost needs to be assigned by ObjectController");
-        INFO("  in the Init section, in order for the headstart time to be correctly registered.");
-        INFO("  -> ignoring the headstartTime attribute.");
+        LOG_INFO("External controller with ghost needs to be assigned by ObjectController");
+        LOG_INFO("  in the Init section, in order for the headstart time to be correctly registered.");
+        LOG_INFO("  -> ignoring the headstartTime attribute.");
     }
 
     Controller::Init();

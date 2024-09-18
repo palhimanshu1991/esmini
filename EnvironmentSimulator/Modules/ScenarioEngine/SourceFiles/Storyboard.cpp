@@ -61,12 +61,12 @@ std::vector<StoryBoardElement*> StoryBoardElement::FindChildByTypeAndName(Elemen
 
 void Story::Print()
 {
-    INFO("Story: %s", GetName().c_str());
+    LOG_INFO("Story: %s", GetName().c_str());
 }
 
 void StoryBoard::Print()
 {
-    INFO("Storyboard:");
+    LOG_INFO("Storyboard:");
     for (size_t i = 0; i < story_.size(); i++)
     {
         story_[i]->Print();
@@ -125,7 +125,7 @@ void Event::Start(double simTime)
         // Activate trigged event
         if (GetCurrentState() == StoryBoardElement::State::RUNNING)
         {
-            WARN("Event already running, can't overwrite itself ({}) - skip trig", GetName());
+            LOG_WARN("Event already running, can't overwrite itself ({}) - skip trig", GetName());
         }
         else
         {
@@ -134,7 +134,7 @@ void Event::Start(double simTime)
                 if (tmp_event != this && tmp_event->GetCurrentState() == StoryBoardElement::State::RUNNING)
                 {
                     tmp_event->End();
-                    INFO("Event {} ended, overwritten by event {}", tmp_event->GetName(), GetName());
+                    LOG_INFO("Event {} ended, overwritten by event {}", tmp_event->GetName(), GetName());
                 }
             }
             start_event = true;
@@ -144,7 +144,7 @@ void Event::Start(double simTime)
     {
         if (maneuver->AnyChildRunning())
         {
-            WARN("Some event is already running within the maneuver {}, skipping trigged {}", maneuver->GetName(), GetName());
+            LOG_WARN("Some event is already running within the maneuver {}, skipping trigged {}", maneuver->GetName(), GetName());
         }
         else
         {
@@ -158,17 +158,17 @@ void Event::Start(double simTime)
         // Don't care if any other action is ongoing, launch anyway
         if (GetCurrentState() == StoryBoardElement::State::RUNNING)
         {
-            WARN("Event {} already running, trigger ignored", GetName());
+            LOG_WARN("Event {} already running, trigger ignored", GetName());
             start_event = false;
         }
         else if (maneuver->AnyChildRunning())
         {
-            INFO("Other events ongoing, {} will run in parallel", GetName());
+            LOG_INFO("Other events ongoing, {} will run in parallel", GetName());
         }
     }
     else
     {
-        WARN("Unknown event priority: {}", priority_);
+        LOG_WARN("Unknown event priority: {}", priority_);
     }
 
     if (!start_event)
@@ -207,9 +207,9 @@ void Event::Start(double simTime)
                         if (static_cast<int>(obj->initActions_[j]->GetDomains()) & static_cast<int>(pa->GetDomains()))
                         {
                             // Domains overlap, at least one domain in common. Terminate old action.
-                            WARN("Stopping {} on conflicting {} domain(s)",
-                                 obj->initActions_[j]->GetName(),
-                                 ControlDomain2Str(obj->initActions_[j]->GetDomains()));
+                            LOG_WARN("Stopping {} on conflicting {} domain(s)",
+                                     obj->initActions_[j]->GetName(),
+                                     ControlDomain2Str(obj->initActions_[j]->GetDomains()));
                             obj->initActions_[j]->End();
                         }
                     }
@@ -230,10 +230,10 @@ void Event::Start(double simTime)
                                 if (static_cast<int>(pa2->GetDomains()) & static_cast<int>(pa->GetDomains()))
                                 {
                                     // Domains overlap, at least one domain in common. Terminate old action.
-                                    WARN("Stopping object {} {} on conflicting {} domain(s)",
-                                         obj->GetName(),
-                                         pa2->GetName(),
-                                         ControlDomain2Str(pa2->GetDomains()));
+                                    LOG_WARN("Stopping object {} {} on conflicting {} domain(s)",
+                                             obj->GetName(),
+                                             pa2->GetName(),
+                                             ControlDomain2Str(pa2->GetDomains()));
                                     pa2->End();
                                 }
                             }

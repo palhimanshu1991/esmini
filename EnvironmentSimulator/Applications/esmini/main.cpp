@@ -26,7 +26,7 @@ static void signal_handler(int s)
 {
     if (s == SIGINT)
     {
-        INFO("Quit request from user");
+        LOG_INFO("Quit request from user");
         quit = true;
     }
 }
@@ -58,7 +58,7 @@ static int execute_scenario(int argc, char* argv[])
     }
     catch (const std::exception& e)
     {
-        ERROR("Exception: {}", e.what());
+        LOG_ERROR("Exception: {}", e.what());
         return -1;
     }
 

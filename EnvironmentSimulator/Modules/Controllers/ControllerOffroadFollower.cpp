@@ -43,7 +43,7 @@ ControllerOffroadFollower::ControllerOffroadFollower(InitArgs* args)
             follow_entity_ = entities_->GetObjectByName(follow_entity_str.c_str());
             if (follow_entity_ == nullptr)
             {
-                ERROR("Failed to find followEntity {}", follow_entity_str);
+                LOG_ERROR("Failed to find followEntity {}", follow_entity_str);
             }
         }
 

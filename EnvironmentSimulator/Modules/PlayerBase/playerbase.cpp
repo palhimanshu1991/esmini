@@ -225,7 +225,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
 
         if (scenarioEngine->getSimulationTime() > 3600 && !messageShown)
         {
-            INFO("Info: Simulation time > 1 hour. Put a stopTrigger for automatic ending");
+            LOG_INFO("Info: Simulation time > 1 hour. Put a stopTrigger for automatic ending");
             messageShown = true;
         }
 
@@ -559,7 +559,7 @@ OffScreenImage* ScenarioPlayer::FetchCapturedImagePtr()
 
         if (viewer_->capturedImage_.data == nullptr)
         {
-            ERROR("FetchCapturedImagePtr Error: No image data");
+            LOG_ERROR("FetchCapturedImagePtr Error: No image data");
             return nullptr;
         }
 
@@ -707,7 +707,7 @@ int ScenarioPlayer::InitViewer()
         int mask = strtoi(arg_str);
         if (mask < 0 || mask > 3)
         {
-            ERROR_AND_QUIT("Invalid on-screen info mode {}. Valid range is 0-3", mask);
+            LOG_ERROR_AND_QUIT("Invalid on-screen info mode {}. Valid range is 0-3", mask);
         }
         viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO | viewer::NodeMask::NODE_MASK_INFO_PER_OBJ,
                                  mask * viewer::NodeMask::NODE_MASK_INFO);
@@ -717,7 +717,7 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("capture_screen"))
     {
-        INFO("Activate continuous screen capture");
+        LOG_INFO("Activate continuous screen capture");
         viewer_->SaveImagesToFile(-1);
     }
 
@@ -726,7 +726,7 @@ int ScenarioPlayer::InitViewer()
         int mask = strtoi(arg_str);
         if (mask < 0 || mask > 3)
         {
-            ERROR_AND_QUIT("Invalid trail_mode {}. Valid range is 0-3", mask);
+            LOG_ERROR_AND_QUIT("Invalid trail_mode {}. Valid range is 0-3", mask);
         }
         viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAIL_LINES | viewer::NodeMask::NODE_MASK_TRAIL_DOTS,
                                  mask * viewer::NodeMask::NODE_MASK_TRAIL_LINES);
@@ -734,7 +734,7 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("hide_trajectories"))
     {
-        INFO("Hide trajectories");
+        LOG_INFO("Hide trajectories");
         viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAJECTORY_LINES);
     }
 
@@ -749,7 +749,7 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("hide_route_waypoints"))
     {
-        INFO("Disable route waypoint visualization");
+        LOG_INFO("Disable route waypoint visualization");
         viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
     }
 
@@ -779,16 +779,22 @@ int ScenarioPlayer::InitViewer()
             if (splitted.size() == 3)
             {
                 AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), false);
-                INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
+                LOG_INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
             }
             else if (splitted.size() == 5)
             {
                 AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]), strtod(splitted[4]), false);
-                INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3], splitted[4]);
+                LOG_INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})",
+                         counter,
+                         splitted[0],
+                         splitted[1],
+                         splitted[2],
+                         splitted[3],
+                         splitted[4]);
             }
             else
             {
-                ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
+                LOG_ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
             }
 
             counter++;
@@ -806,16 +812,22 @@ int ScenarioPlayer::InitViewer()
             if (splitted.size() == 3)
             {
                 AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), true);
-                INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
+                LOG_INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
             }
             else if (splitted.size() == 5)
             {
                 AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]), strtod(splitted[4]), true);
-                INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3], splitted[4]);
+                LOG_INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})",
+                         counter,
+                         splitted[0],
+                         splitted[1],
+                         splitted[2],
+                         splitted[3],
+                         splitted[4]);
             }
             else
             {
-                ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
+                LOG_ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
             }
             counter++;
         }
@@ -830,11 +842,11 @@ int ScenarioPlayer::InitViewer()
             const auto splitted = utils::SplitString(arg_str, ',');
             if (splitted.size() != 4)
             {
-                ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
+                LOG_ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
             }
             AddCustomFixedTopCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]));
 
-            INFO("Created custom fixed top camera {} ({}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3]);
+            LOG_INFO("Created custom fixed top camera {} ({}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3]);
             counter++;
         }
     }
@@ -849,21 +861,21 @@ int ScenarioPlayer::InitViewer()
             const auto splitted = utils::SplitString(arg_str, ',');
             if (splitted.size() != 4)
             {
-                ERROR_AND_QUIT("Expected custom_light <x,y,z,intensity>. Got {} values instead of 4", splitted.size());
+                LOG_ERROR_AND_QUIT("Expected custom_light <x,y,z,intensity>. Got {} values instead of 4", splitted.size());
             }
             if (AddCustomLightSource(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3])) == 0)
             {
-                INFO("Created custom light source {} ({}, {}, {}, {})", lightCounter, splitted[0], splitted[1], splitted[2], splitted[3]);
+                LOG_INFO("Created custom light source {} ({}, {}, {}, {})", lightCounter, splitted[0], splitted[1], splitted[2], splitted[3]);
                 lightCounter++;
             }
             else
             {
-                INFO("Max nr custom lights ({}) reached. Ignoring ({:.2f}, {:.2f}, {:.2f}, {:.2f})",
-                     lightCounter,
-                     splitted[0],
-                     splitted[1],
-                     splitted[2],
-                     splitted[3]);
+                LOG_INFO("Max nr custom lights ({}) reached. Ignoring ({:.2f}, {:.2f}, {:.2f}, {:.2f})",
+                         lightCounter,
+                         splitted[0],
+                         splitted[1],
+                         splitted[2],
+                         splitted[3]);
             }
             counter++;
         }
@@ -901,7 +913,7 @@ int ScenarioPlayer::InitViewer()
         }
         else
         {
-            INFO("Unsupported camera mode: {} - using default (orbit)", arg_str);
+            LOG_INFO("Unsupported camera mode: {} - using default (orbit)", arg_str);
         }
     }
 
@@ -969,7 +981,7 @@ int ScenarioPlayer::InitViewer()
     // Choose vehicle to look at initially (switch with 'Tab')
     if (opt.GetOptionSet("follow_object"))
     {
-        INFO("Follow object {}", strtoi(opt.GetOptionArg("follow_object")));
+        LOG_INFO("Follow object {}", strtoi(opt.GetOptionArg("follow_object")));
         viewer_->SetVehicleInFocus(strtoi(opt.GetOptionArg("follow_object")));
     }
     else
@@ -1339,9 +1351,9 @@ int ScenarioPlayer::Init(bool logTime)
             logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
-    if (opt.IsOptionArgumentSet("log_Skip_Modules"))
+    if (opt.IsOptionArgumentSet("log_skip_modules"))
     {
-        arg_str             = opt.GetOptionArg("log_Skip_Modules");
+        arg_str             = opt.GetOptionArg("log_skip_modules");
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
@@ -1360,14 +1372,14 @@ int ScenarioPlayer::Init(bool logTime)
 
     if (opt.GetOptionSet("use_signs_in_external_model"))
     {
-        INFO("Use sign models in external scene graph model, skip creating sign models");
+        LOG_INFO("Use sign models in external scene graph model, skip creating sign models");
     }
 
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
 
     if (dist.GetNumPermutations() > 0)
     {
-        INFO("Re-using parameter distribution {}", dist.GetFilename());
+        LOG_INFO("Re-using parameter distribution {}", dist.GetFilename());
     }
     else if (opt.IsOptionArgumentSet("param_dist"))
     {
@@ -1382,7 +1394,7 @@ int ScenarioPlayer::Init(bool logTime)
 
     if (opt.GetOptionSet("return_nr_permutations"))
     {
-        INFO("Nr permutations: {}", dist.GetNumPermutations());
+        LOG_INFO("Nr permutations: {}", dist.GetNumPermutations());
         // The distribution is loadad and we can abort the initialization here
         // the outer scope will deliver the number of permutations as return value
         return 0;
@@ -1396,7 +1408,7 @@ int ScenarioPlayer::Init(bool logTime)
         {
             if (permutation_index >= static_cast<int>(dist.GetNumPermutations()) || permutation_index < 0)
             {
-                INFO("Requested permutation {} out of range [{} .. {}]", permutation_index, 0, dist.GetNumPermutations() - 1);
+                LOG_INFO("Requested permutation {} out of range [{} .. {}]", permutation_index, 0, dist.GetNumPermutations() - 1);
                 return -1;
             }
             else
@@ -1406,7 +1418,7 @@ int ScenarioPlayer::Init(bool logTime)
         }
         else if (permutation_index > 0)
         {
-            ERROR("No permutations available, requested permutation {} ignored", permutation_index);
+            LOG_ERROR("No permutations available, requested permutation {} ignored", permutation_index);
             return -1;
         }
     }
@@ -1416,7 +1428,7 @@ int ScenarioPlayer::Init(bool logTime)
         {
             if (dist.SetIndex(static_cast<unsigned int>(dist.GetRequestedIndex())) != 0)
             {
-                ERROR_AND_QUIT("Failed to set requested index %d", dist.GetRequestedIndex());
+                LOG_ERROR_AND_QUIT("Failed to set requested index %d", dist.GetRequestedIndex());
             }
         }
         else
@@ -1432,28 +1444,29 @@ int ScenarioPlayer::Init(bool logTime)
 
     // Logger::Inst().OpenLogfile(log_filename);
     // Logger::Inst().LogVersion();
+    // riz temp
     CreateNewFileForLogging(log_filename);
     if (dist.GetNumPermutations() > 0)
     {
-        INFO("Using parameter distribution file: {}", dist.GetFilename());
+        LOG_INFO("Using parameter distribution file: {}", dist.GetFilename());
     }
 
     if (opt.GetOptionSet("threads"))
     {
 #ifdef __APPLE__
-        WARN("Separate viewer thread requested. Unfortunately only supported on Windows and Linux.");
-        INFO("See https://www.mail-archive.com/osg-users@lists.openscenegraph.org/msg72698.html for an explanation.");
+        LOG_WARN("Separate viewer thread requested. Unfortunately only supported on Windows and Linux.");
+        LOG_INFO("See https://www.mail-archive.com/osg-users@lists.openscenegraph.org/msg72698.html for an explanation.");
         return -1;
 #else
         threads = true;
-        INFO("Run viewer in separate thread");
+        LOG_INFO("Run viewer in separate thread");
 #endif
     }
 
     if (opt.GetOptionSet("server"))
     {
         launch_server = true;
-        INFO("Launch server to receive state of external Ego simulator");
+        LOG_INFO("Launch server to receive state of external Ego simulator");
     }
 
     int index = 0;
@@ -1463,16 +1476,16 @@ int ScenarioPlayer::Init(bool logTime)
         if (timestep > SMALL_NUMBER)
         {
             SetFixedTimestep(std::stod(arg_str));
-            INFO("Run simulation decoupled from realtime, with fixed timestep: {:.2f}", GetFixedTimestep());
+            LOG_INFO("Run simulation decoupled from realtime, with fixed timestep: {:.2f}", GetFixedTimestep());
         }
         else
         {
-            INFO("Zero timestep ignored, running in realtime speed");
+            LOG_INFO("Zero timestep ignored, running in realtime speed");
         }
     }
     if (index == 0)
     {
-        INFO("No fixed timestep specified - running in realtime speed");
+        LOG_INFO("No fixed timestep specified - running in realtime speed");
     }
 
     if (opt.GetOptionArg("path") != "")
@@ -1481,7 +1494,7 @@ int ScenarioPlayer::Init(bool logTime)
         while ((arg_str = opt.GetOptionArg("path", counter)) != "")
         {
             SE_Env::Inst().AddPath(arg_str);
-            INFO("Added path {}", arg_str);
+            LOG_INFO("Added path {}", arg_str);
             counter++;
         }
     }
@@ -1489,34 +1502,34 @@ int ScenarioPlayer::Init(bool logTime)
     if (opt.GetOptionSet("disable_controllers"))
     {
         disable_controllers_ = true;
-        INFO("Disable entity controllers");
+        LOG_INFO("Disable entity controllers");
     }
 
     if (opt.GetOptionSet("ignore_z"))
     {
-        INFO("Ignoring z values and placing vehicle relative to road");
+        LOG_INFO("Ignoring z values and placing vehicle relative to road");
     }
 
     if (opt.GetOptionSet("ignore_p"))
     {
-        INFO("Ignoring pitch values and placing vehicle relative to road");
+        LOG_INFO("Ignoring pitch values and placing vehicle relative to road");
     }
 
     if (opt.GetOptionSet("ignore_r"))
     {
-        INFO("Ignoring roll values and placing vehicle relative to road");
+        LOG_INFO("Ignoring roll values and placing vehicle relative to road");
     }
 
     // Use specific seed for repeatable scenarios?
     if ((arg_str = opt.GetOptionArg("seed")) != "")
     {
         unsigned int seed = static_cast<unsigned int>(std::stoul(arg_str));
-        INFO("Using specified seed {}", seed);
+        LOG_INFO("Using specified seed {}", seed);
         SE_Env::Inst().GetRand().SetSeed(seed);
     }
     else
     {
-        INFO("Generated seed {}", SE_Env::Inst().GetRand().GetSeed());
+        LOG_INFO("Generated seed {}", SE_Env::Inst().GetRand().GetSeed());
     }
 
     if (opt.GetOptionSet("collision"))
@@ -1529,18 +1542,18 @@ int ScenarioPlayer::Init(bool logTime)
         if (opt.GetOptionArg("plot") != "synchronous")
         {
 #ifdef __APPLE__
-            INFO("Plot mode {} not supported on mac systems (OpenGL graphics must run in main thread), applying synchronous mode",
-                 opt.GetOptionArg("plot"));
+            LOG_INFO("Plot mode {} not supported on mac systems (OpenGL graphics must run in main thread), applying synchronous mode",
+                     opt.GetOptionArg("plot"));
             opt.ChangeOptionArg("plot", "synchronous");
 #else
             if (opt.GetOptionArg("plot") != "asynchronous")
             {
-                WARN("Plot mode {} not recognized. applying default asynchronous mode", opt.GetOptionArg("plot"));
+                LOG_WARN("Plot mode {} not recognized. applying default asynchronous mode", opt.GetOptionArg("plot"));
                 opt.ChangeOptionArg("plot", "asynchronous");
             }
 #endif  // __APPLE__
         }
-        INFO("Plot mode: {}", opt.GetOptionArg("plot"));
+        LOG_INFO("Plot mode: {}", opt.GetOptionArg("plot"));
     }
 
     // Create scenario engine
@@ -1568,7 +1581,7 @@ int ScenarioPlayer::Init(bool logTime)
         }
         else
         {
-            ERROR("Error: Missing required OpenSCENARIO filename argument or XML string");
+            LOG_ERROR("Error: Missing required OpenSCENARIO filename argument or XML string");
             PrintUsage();
 
             return -1;
@@ -1576,7 +1589,7 @@ int ScenarioPlayer::Init(bool logTime)
     }
     catch (std::logic_error& e)
     {
-        ERROR(std::string("Exception: ").append(e.what()));
+        LOG_ERROR(std::string("Exception: ").append(e.what()));
         return -1;
     }
 
@@ -1645,11 +1658,11 @@ int ScenarioPlayer::Init(bool logTime)
     {
         if (!osiReporter->IsFileOpen())
         {
-            ERROR("Specifying osi frequency without --osi_file on is not possible");
+            LOG_ERROR("Specifying osi frequency without --osi_file on is not possible");
             return -1;
         }
         osi_freq_ = atoi(arg_str.c_str());
-        INFO("Run simulation decoupled from realtime, with fixed timestep: {:.2f}", GetFixedTimestep());
+        LOG_INFO("Run simulation decoupled from realtime, with fixed timestep: {:.2f}", GetFixedTimestep());
     }
 #endif  // _USE_OSI
 
@@ -1667,11 +1680,11 @@ int ScenarioPlayer::Init(bool logTime)
             }
 
             CSV_Log->Open(scenarioEngine->getScenarioFilename(), static_cast<int>(scenarioEngine->entities_.object_.size()), filename);
-            INFO("Log all vehicle data in csv file");
+            LOG_INFO("Log all vehicle data in csv file");
         }
         else
         {
-            ERROR("Failed to open CSV log");
+            LOG_ERROR("Failed to open CSV log");
         }
     }
 
@@ -1701,7 +1714,7 @@ int ScenarioPlayer::Init(bool logTime)
             filename = dist.AddInfoToFilepath(filename);
         }
 
-        INFO("Recording data to file {}", filename);
+        LOG_INFO("Recording data to file {}", filename);
         scenarioGateway->RecordToFile(filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
     }
 
@@ -1713,7 +1726,7 @@ int ScenarioPlayer::Init(bool logTime)
 
     if (opt.GetOptionSet("player_server"))
     {
-        INFO("Launch server to receive actions to inject");
+        LOG_INFO("Launch server to receive actions to inject");
 
         // Launch UDP server to receive actions from external process
         player_server_->Start();
@@ -1736,16 +1749,16 @@ int ScenarioPlayer::Init(bool logTime)
 
             if (viewerState_ == ViewerState::VIEWER_STATE_NOT_STARTED)
             {
-                WARN("Viewer still not ready. Start scenario anyway. Viewer will launch when ready.");
+                LOG_WARN("Viewer still not ready. Start scenario anyway. Viewer will launch when ready.");
             }
             else if (viewerState_ == ViewerState::VIEWER_STATE_DONE)
             {
-                ERROR("Viewer already signaled done - something went wrong");
+                LOG_ERROR("Viewer already signaled done - something went wrong");
                 return -1;
             }
             else if (viewerState_ == ViewerState::VIEWER_STATE_FAILED)
             {
-                ERROR("Viewer initialization failed");
+                LOG_ERROR("Viewer initialization failed");
                 return -1;
             }
         }
@@ -1753,7 +1766,7 @@ int ScenarioPlayer::Init(bool logTime)
         {
             if (InitViewer() != 0)
             {
-                ERROR("Viewer initialization failed");
+                LOG_ERROR("Viewer initialization failed");
                 return -1;
             }
 
@@ -1761,13 +1774,13 @@ int ScenarioPlayer::Init(bool logTime)
         }
 
 #else
-        WARN("window requested, but esmini compiled without OSG capabilities");
+        LOG_WARN("window requested, but esmini compiled without OSG capabilities");
 #endif
     }
     else if (opt.GetOptionSet("capture_screen"))
     {
         PrintUsage();
-        ERROR_AND_QUIT("Capture screen requires a window to be specified!");
+        LOG_ERROR_AND_QUIT("Capture screen requires a window to be specified!");
     }
 
     if (opt.HasUnknownArgs())
@@ -1930,7 +1943,7 @@ int ScenarioPlayer::LoadParameterDistribution(std::string filename)
 
     if (dist.GetNumPermutations() > 0)
     {
-        INFO("Parameter distribution already loaded, reusing it");
+        LOG_INFO("Parameter distribution already loaded, reusing it");
         return -2;
     }
     else

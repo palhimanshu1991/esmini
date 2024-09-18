@@ -128,17 +128,17 @@ std::map<int, std::string> ParseModelIds()
 
     if (i == file_name_candidates.size())
     {
-        ERROR("Failed to load {} file. Tried:", filename);
+        LOG_ERROR("Failed to load {} file. Tried:", filename);
         for (unsigned int j = 0; j < file_name_candidates.size(); j++)
         {
-            INFO("  {}", file_name_candidates[j].c_str());
+            LOG_INFO("  {}", file_name_candidates[j].c_str());
         }
 
-        INFO("  continue with internal hard coded list:");
+        LOG_INFO("  continue with internal hard coded list:");
         for (int j = 0; static_cast<unsigned int>(j) < sizeof(entityModelsFilesFallbackList_) / sizeof(char*); j++)
         {
             entity_model_map_[j] = entityModelsFilesFallbackList_[j];
-            INFO("    {:>2d}: {}", j, entity_model_map_[j]);
+            LOG_INFO("    {:>2d}: {}", j, entity_model_map_[j]);
         }
     }
 
@@ -1031,7 +1031,7 @@ int InvertMatrix3(const double m[3][3], double mi[3][3])
         double pivot = augmented_matrix[i][i];
         if (pivot == 0)
         {
-            ERROR("Matrix is singular. Inversion not possible.");
+            LOG_ERROR("Matrix is singular. Inversion not possible.");
             return -1;
         }
 
@@ -1213,11 +1213,11 @@ std::string SE_Env::GetModelFilenameById(int model_id)
 
     if (name.empty())
     {
-        ERROR("Failed to lookup 3d model filename for model_id {} in list:", model_id);
+        LOG_ERROR("Failed to lookup 3d model filename for model_id {} in list:", model_id);
         std::map<int, std::string>::iterator it;
         for (it = entity_model_map_.begin(); it != entity_model_map_.end(); ++it)
         {
-            INFO("  {} {}", it->first, it->second);
+            LOG_INFO("  {} {}", it->first, it->second);
         }
     }
 
@@ -1728,7 +1728,7 @@ SE_Mutex::SE_Mutex()
 
     if (mutex_ == NULL)
     {
-        ERROR("CreateMutex error: {}\n", GetLastError());
+        LOG_ERROR("CreateMutex error: {}\n", GetLastError());
         mutex_ = 0;
     }
 #else
@@ -1894,7 +1894,7 @@ int SE_Options::SetOptionValue(std::string opt, std::string value, bool add)
         }
         else
         {
-            ERROR("Argument parser error: Missing option {} argument", opt);
+            LOG_ERROR("Argument parser error: Missing option {} argument", opt);
             return -1;
         }
     }
@@ -1944,7 +1944,7 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
                 }
                 else
                 {
-                    ERROR("Argument parser error: Missing option {} argument", option->opt_str_);
+                    LOG_ERROR("Argument parser error: Missing option {} argument", option->opt_str_);
                     option->set_ = false;
                     returnVal    = -1;
                 }
@@ -2012,13 +2012,13 @@ int SE_WritePPM(const char* filename, int width, int height, const unsigned char
 
     if (pixelSize != 3)
     {
-        ERROR("PPM PixelSize {} not supported yet, only 3", pixelSize);
+        LOG_ERROR("PPM PixelSize {} not supported yet, only 3", pixelSize);
         return -2;
     }
 
     if (pixelFormat != static_cast<int>(PixelFormat::BGR) && pixelFormat != static_cast<int>(PixelFormat::RGB))
     {
-        ERROR("PPM PixelFormat {} not supported yet, only 0x{} (RGB) and 0x{} (BGR)", PixelFormat::RGB, PixelFormat::BGR);
+        LOG_ERROR("PPM PixelFormat {} not supported yet, only 0x{} (RGB) and 0x{} (BGR)", PixelFormat::RGB, PixelFormat::BGR);
         return -3;
     }
 
@@ -2087,13 +2087,13 @@ int SE_WriteTGA(const char* filename, int width, int height, const unsigned char
 
     if (pixelSize != 3)
     {
-        ERROR("TGA PixelSize {} not supported yet, only 3", pixelSize);
+        LOG_ERROR("TGA PixelSize {} not supported yet, only 3", pixelSize);
         return -2;
     }
 
     if (pixelFormat != static_cast<int>(PixelFormat::BGR) && pixelFormat != static_cast<int>(PixelFormat::RGB))
     {
-        ERROR("TGA PixelFormat 0x{} not supported yet, only 0x{} (RGB) and 0x{} (BGR)", pixelFormat, PixelFormat::RGB, PixelFormat::BGR);
+        LOG_ERROR("TGA PixelFormat 0x{} not supported yet, only 0x{} (RGB) and 0x{} (BGR)", pixelFormat, PixelFormat::RGB, PixelFormat::BGR);
         return -3;
     }
 
@@ -2153,7 +2153,7 @@ int SE_ReadCSVFile(const char* filename, std::vector<std::vector<std::string>>& 
         {
             if (!getline(file, line))
             {
-                ERROR("Failed to skip {} lines in CSV file {}", skip_lines, filename);
+                LOG_ERROR("Failed to skip {} lines in CSV file {}", skip_lines, filename);
                 return -1;
             }
         }
@@ -2170,7 +2170,7 @@ int SE_ReadCSVFile(const char* filename, std::vector<std::vector<std::string>>& 
     }
     else
     {
-        ERROR("Failed to open CSV file {}", filename);
+        LOG_ERROR("Failed to open CSV file {}", filename);
         return -1;
     }
 
