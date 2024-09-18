@@ -396,7 +396,7 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
         else
         {
             WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object",
-                objectState[i]->state_.info.obj_type);
+                 objectState[i]->state_.info.obj_type);
         }
     }
 
@@ -469,7 +469,7 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
         else
         {
             WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object",
-                objectState[i]->state_.info.obj_type);
+                 objectState[i]->state_.info.obj_type);
         }
     }
 
@@ -758,12 +758,12 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
         else
         {
             ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle category: {} ({}). Set to UNKNOWN.",
-                objectState->state_.info.obj_category,
-                Vehicle::Category2String(objectState->state_.info.obj_category));
+                  objectState->state_.info.obj_category,
+                  Vehicle::Category2String(objectState->state_.info.obj_category));
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN);
         }
 
-#ifdef _OSI_VERSION_3_3_1        
+#ifdef _OSI_VERSION_3_3_1
         WARN_ONCE("using OSI 3.3.1, skipping vehicle role attribute");
 #else
         if (objectState->state_.info.obj_role == Vehicle::Role::AMBULANCE)
@@ -801,8 +801,8 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
         else
         {
             ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle role: {} ({}). Set classification UNKNOWN.",
-                objectState->state_.info.obj_role,
-                Vehicle::Role2String(objectState->state_.info.obj_role).c_str());
+                  objectState->state_.info.obj_role,
+                  Vehicle::Role2String(objectState->state_.info.obj_role).c_str());
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
         }
 #endif
@@ -824,16 +824,16 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
         else
         {
             ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object pedestrian category: {} ({}). Set type UNKNOWN.",
-                objectState->state_.info.obj_category,
-                Pedestrian::Category2String(objectState->state_.info.obj_category));
+                  objectState->state_.info.obj_category,
+                  Pedestrian::Category2String(objectState->state_.info.obj_category));
             obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
         }
     }
     else
     {
         ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object type: {} ({}). Set UNKNOWN.",
-            objectState->state_.info.obj_type,
-            Object::Type2String(objectState->state_.info.obj_type));
+              objectState->state_.info.obj_type,
+              Object::Type2String(objectState->state_.info.obj_type));
         obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
     }
 
@@ -1066,8 +1066,8 @@ int OSIReporter::UpdateOSIIntersection()
                 if (roadlink == nullptr)
                 {
                     ERROR("Failed to resolve {} link of incoming road id {}",
-                        roadmanager::OpenDrive::LinkType2Str(connecting_road_link_type),
-                        incomming_road->GetId());
+                          roadmanager::OpenDrive::LinkType2Str(connecting_road_link_type),
+                          incomming_road->GetId());
                     return -1;
                 }
                 outgoing_road = opendrive->GetRoadById(roadlink->GetElementId());
@@ -1227,9 +1227,9 @@ int OSIReporter::UpdateOSIIntersection()
                         else
                         {
                             ERROR("Connecting road {} incoming road {} failed get lane by id {}",
-                                connecting_road->GetId(),
-                                connection->GetIncomingRoad()->GetId(),
-                                junctionlanelink->to_);
+                                  connecting_road->GetId(),
+                                  connection->GetIncomingRoad()->GetId(),
+                                  junctionlanelink->to_);
                         }
                     }
                 }
@@ -2003,9 +2003,9 @@ int OSIReporter::UpdateOSIRoadLane()
                                 if (driving_lane_predecessor)
                                 {
                                     WARN("Lane {} on predecessor road {} s {:.2f} is not a driving lane",
-                                        lane->GetId(),
-                                        predecessorRoad->GetId(),
-                                        predecessor_lane_section->GetS());
+                                         lane->GetId(),
+                                         predecessorRoad->GetId(),
+                                         predecessor_lane_section->GetS());
                                 }
                             }
                             else
@@ -2019,9 +2019,9 @@ int OSIReporter::UpdateOSIRoadLane()
                                 if (driving_lane_successor)
                                 {
                                     WARN("Lane {} on successor road {} s {:.2f} is not a driving lane",
-                                        lane->GetId(),
-                                        successorRoad->GetId(),
-                                        successor_lane_section->GetS());
+                                         lane->GetId(),
+                                         successorRoad->GetId(),
+                                         successor_lane_section->GetS());
                                 }
                             }
                             else

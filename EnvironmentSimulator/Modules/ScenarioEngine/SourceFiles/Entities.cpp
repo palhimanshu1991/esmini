@@ -1742,7 +1742,7 @@ Object* Object::TowVehicle()
                 {
                     tow_vehicle = static_cast<Vehicle*>(vehicle->trailer_coupler_->tow_vehicle_);
                     if (tow_vehicle != nullptr && tow_vehicle->trailer_hitch_ == nullptr)
-                    {                        
+                    {
                         WARN_ONCE("Tow vehicle {} lacks hitch", tow_vehicle->GetName());
                         tow_vehicle = nullptr;
                     }
@@ -1769,7 +1769,7 @@ Object* Object::TrailerVehicle()
                 {
                     trailer_vehicle = static_cast<Vehicle*>(vehicle->trailer_hitch_->trailer_vehicle_);
                     if (trailer_vehicle != nullptr && trailer_vehicle->trailer_coupler_ == nullptr)
-                    {                        
+                    {
                         WARN_ONCE("Trailer vehicle {} lacks coupler", trailer_vehicle->GetName());
                         trailer_vehicle = nullptr;
                     }

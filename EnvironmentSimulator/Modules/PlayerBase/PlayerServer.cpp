@@ -58,10 +58,9 @@ namespace scenarioengine
                  (static_cast<OSCPrivateAction *>(a)->object_ == static_cast<OSCPrivateAction *>(action)->object_)))
             {
                 WARN("Action {} of type {} already ongoing{}, stopping it",
-                    a->GetName(),
-                    a->Type2Str(),
-                    a->GetBaseType() == OSCAction::BaseType::PRIVATE ? (" for " + static_cast<OSCPrivateAction *>(a)->object_->GetName())
-                                                                     : "");
+                     a->GetName(),
+                     a->Type2Str(),
+                     a->GetBaseType() == OSCAction::BaseType::PRIVATE ? (" for " + static_cast<OSCPrivateAction *>(a)->object_->GetName()) : "");
                 a->End();
             }
         }

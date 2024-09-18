@@ -33,9 +33,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
         {
             osi3::TrafficAction *ta = tc->add_action();
 
-            INFO("OSITrafficCmd: Lane change action {} started for obj {}",
-                action->GetName(),
-                action->object_ ? action->object_->GetId() : -1);
+            INFO("OSITrafficCmd: Lane change action {} started for obj {}", action->GetName(), action->object_ ? action->object_->GetId() : -1);
             tc->mutable_traffic_participant_id()->set_value(action->object_ ? static_cast<unsigned int>(action->object_->GetId()) : UINT_MAX);
 
             ta->mutable_lane_change_action()->mutable_action_header()->mutable_action_id()->set_value(action->GetId());

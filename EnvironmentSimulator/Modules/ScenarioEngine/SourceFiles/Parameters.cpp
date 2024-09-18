@@ -440,7 +440,7 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
                     }
 
                     if (rs.type == EXPR_RETURN_DOUBLE)
-                    {                        
+                    {
                         INFO("Expr {} = {} = {:.10f}", attr.value(), expr, rs._double);
                         return_value = std::to_string(rs._double);
                     }
@@ -515,7 +515,7 @@ void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSC
             type_str = pdChild.attribute("variableType").value();
         }
         else
-        {            
+        {
             ERROR_AND_QUIT("Missing parameter or variable type (or wrongly spelled attribute) for {}", param.name);
         }
 
@@ -548,11 +548,11 @@ void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSC
             param.type = OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING;
         }
         else if (type_str == "unsignedInt" || type_str == "unsignedShort" || type_str == "dateTime")
-        {            
+        {
             ERROR("Type {} is not supported yet", type_str);
         }
         else
-        {            
+        {
             ERROR_AND_QUIT("Unexpected Type: {}", type_str);
         }
         pd->Parameter.insert(pd->Parameter.begin(), param);

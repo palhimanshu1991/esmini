@@ -1,3 +1,4 @@
+#include "TestHelper.hpp"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "esminiRMLib.hpp"

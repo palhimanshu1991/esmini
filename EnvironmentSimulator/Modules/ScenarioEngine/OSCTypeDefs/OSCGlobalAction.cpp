@@ -229,7 +229,12 @@ SwarmTrafficAction::~SwarmTrafficAction()
 
 void SwarmTrafficAction::Start(double simTime)
 {
-    INFO("Swarm IR: {:.2f}, SMjA: {:.2f}, SMnA: {:.2f}, maxV: {} vel: {:.2f}", innerRadius_, semiMajorAxis_, semiMinorAxis_, numberOfVehicles, velocity_);
+    INFO("Swarm IR: {:.2f}, SMjA: {:.2f}, SMnA: {:.2f}, maxV: {} vel: {:.2f}",
+         innerRadius_,
+         semiMajorAxis_,
+         semiMinorAxis_,
+         numberOfVehicles,
+         velocity_);
     double x0, y0, x1, y1;
 
     midSMjA  = (semiMajorAxis_ + innerRadius_) / 2.0;
@@ -283,7 +288,7 @@ void SwarmTrafficAction::Start(double simTime)
             vehicle_pool_.push_back(static_cast<Vehicle*>(centralObject_));
         }
         else
-        {            
+        {
             ERROR_AND_QUIT("No vehicles available to populate swarm traffic. Vehicle catalog empty?");
         }
     }

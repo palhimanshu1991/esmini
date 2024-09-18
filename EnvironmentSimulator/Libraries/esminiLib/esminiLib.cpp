@@ -370,9 +370,9 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     if (ghost->trail_.FindPointAtTime(static_cast<double>(time) - ghost->GetHeadstartTime(), trailPos, index_out, obj->trail_follow_index_) != 0)
     {
         ERROR("Failed to lookup point at time {:.2f} (time arg = {:.2f}) along ghost ({}) trail",
-            player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + static_cast<double>(time),
-            static_cast<double>(time),
-            ghost->GetId());
+              player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + static_cast<double>(time),
+              static_cast<double>(time),
+              ghost->GetId());
         return -1;
     }
     else
@@ -414,34 +414,34 @@ static int InitScenario()
     std::setlocale(LC_ALL, "C.UTF-8");
 
     Logger::Inst().SetCallback(log_callback);
-    //Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
-    //Logger::Inst().LogVersion();
-    // riz temp
-    
+    // Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
+    // Logger::Inst().LogVersion();
+    //  riz temp
+
     LoggerConfig logConfig;
-    SE_Options& opt = SE_Env::Inst().GetOptions();
-    if( opt.IsOptionArgumentSet("log_Only_Modules"))
+    SE_Options  &opt = SE_Env::Inst().GetOptions();
+    if (opt.IsOptionArgumentSet("log_only_modules"))
     {
-        auto arg_str = opt.GetOptionArg("log_Only_Modules");        
+        auto       arg_str  = opt.GetOptionArg("log_only_modules");
         const auto splitted = utils::SplitString(arg_str, ',');
-        if( !splitted.empty())
+        if (!splitted.empty())
         {
             logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
-        }        
+        }
     }
 
-    if( opt.IsOptionArgumentSet("log_Skip_Modules"))
+    if (opt.IsOptionArgumentSet("log_skip_modules"))
     {
-        auto arg_str = opt.GetOptionArg("log_Skip_Modules");        
+        auto       arg_str  = opt.GetOptionArg("log_skip_modules");
         const auto splitted = utils::SplitString(arg_str, ',');
-        if( !splitted.empty())
+        if (!splitted.empty())
         {
             logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
-        }        
+        }
     }
     SetupLogger(logConfig);
-    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath().c_str());
-    LogTimeOnly();   
+    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
+    LogTimeOnly();
     ConvertArguments();
 
     // Create scenario engine
@@ -490,7 +490,7 @@ extern "C"
 
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
     {
-        //SE_Env::Inst().SetLogFilePath(logFilePath);
+        // SE_Env::Inst().SetLogFilePath(logFilePath);
         CreateNewFileForLogging(logFilePath);
     }
 
@@ -953,7 +953,7 @@ extern "C"
 
     SE_DLL_API void SE_LogToConsole(bool mode)
     {
-        //SetOptions()
+        // SetOptions()
         logToConsole = mode;
     }
 
@@ -1756,7 +1756,7 @@ extern "C"
 
     SE_DLL_API void SE_CloseLogFile()
     {
-        //Logger::Inst().CloseLogFile();
+        // Logger::Inst().CloseLogFile();
         StopFileLogging();
     }
 

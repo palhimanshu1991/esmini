@@ -68,7 +68,7 @@ int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controlle
 
     // Filename as is - look in current directory or absolute path if provided
     file_name_candidates.push_back(oscFilename);
-    
+
     // Also check registered paths
     for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
     {
@@ -538,8 +538,8 @@ int ScenarioEngine::parseScenario()
     if (scenarioReader->GetVersionMajor() < 1)
     {
         ERROR_AND_QUIT("OpenSCENARIO v{}.{} not supported. Please migrate scenario to v1.0 or higher and try again.",
-                     scenarioReader->GetVersionMajor(),
-                     scenarioReader->GetVersionMinor());
+                       scenarioReader->GetVersionMajor(),
+                       scenarioReader->GetVersionMinor());
     }
     INFO("Loading {} (v{}.{})", scenarioReader->getScenarioFilename(), scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
 
@@ -639,7 +639,7 @@ int ScenarioEngine::parseScenario()
                 if (obj->ghost_)
                 {
                     INFO("NOTE: Ghost feature activated. Consider headstart time offset (-{:.2f} s) when reading log.",
-                             obj->ghost_->GetHeadstartTime());
+                         obj->ghost_->GetHeadstartTime());
 
                     if (obj->ghost_->GetHeadstartTime() > SE_Env::Inst().GetGhostHeadstart())
                     {
@@ -986,8 +986,8 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
                         {
                             CreateGhostTeleport(obj1, obj2, event);
                             INFO("Created new teleport action for ghost and {} trigger (entity {})",
-                                cond->name_,
-                                trig->triggering_entities_.entity_[k].object_->GetName());
+                                 cond->name_,
+                                 trig->triggering_entities_.entity_[k].object_->GetName());
                         }
                     }
                 }

@@ -20,28 +20,28 @@
 
 using namespace scenarioengine;
 
-#define R157_LOG(level, format, ...)                                                                 \
-    {                                                                                                \
-        if (level > 0 && level <= GetLogLevel())                                                     \
+#define R157_LOG(level, format, ...)                                                                  \
+    {                                                                                                 \
+        if (level > 0 && level <= GetLogLevel())                                                      \
         {                                                                                             \
             INFO((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str(), ##__VA_ARGS__); \
-        }                                                                                            \
-        else                                                                                         \
-        {                                                                                            \
-            (void)0;                                                                                 \
-        }                                                                                            \
+        }                                                                                             \
+        else                                                                                          \
+        {                                                                                             \
+            (void)0;                                                                                  \
+        }                                                                                             \
     }
 
-#define R157_LOG_SIMPLE(level, format)                                                \
-    {                                                                                 \
-        if (level > 0 && level <= GetLogLevel())                                      \
-        {                                                                             \
+#define R157_LOG_SIMPLE(level, format)                                                 \
+    {                                                                                  \
+        if (level > 0 && level <= GetLogLevel())                                       \
+        {                                                                              \
             INFO((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str()); \
-        }                                                                             \
-        else                                                                          \
-        {                                                                             \
-            (void)0;                                                                  \
-        }                                                                             \
+        }                                                                              \
+        else                                                                           \
+        {                                                                              \
+            (void)0;                                                                   \
+        }                                                                              \
     }
 
 std::map<ControllerALKS_R157SM::ScenarioType, std::string> ControllerALKS_R157SM::ScenarioTypeName = {
@@ -97,12 +97,11 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
                 }
                 else
                 {
-                    WARN("ControllerALKS_R157SM: Unexpected cutInPerceptionDelayMode: {}",
-                        args->properties->GetValueStr("cutInPerceptionDelayMode"));
+                    WARN("ControllerALKS_R157SM: Unexpected cutInPerceptionDelayMode: {}", args->properties->GetValueStr("cutInPerceptionDelayMode"));
                 }
             }
             INFO("ALKS_R157SM ReferenceDriver perceptionDelayMode: {}",
-                ref_driver->cut_in_perception_delay_mode_ == ReferenceDriver::CutInPerceptionDelayMode::TIME ? "Time" : "Dist");
+                 ref_driver->cut_in_perception_delay_mode_ == ReferenceDriver::CutInPerceptionDelayMode::TIME ? "Time" : "Dist");
 
             if (args->properties->ValueExists("pedestrianRiskEvaluationTime"))
             {
@@ -165,7 +164,7 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
             model_ = reinterpret_cast<ControllerALKS_R157SM::Model*>(new RSS());
         }
         else
-        {            
+        {
             ERROR_AND_QUIT("ControllerALKS_R157SM unexpected model {}", args->properties->GetValueStr("model"));
         }
         INFO("ALKS_R157SM model: {}", model_->GetModelName());
@@ -217,7 +216,7 @@ void ControllerALKS_R157SM::Init()
 }
 
 void ControllerALKS_R157SM::Step(double timeStep)
-{    
+{
     // INFO("ALKS_R157SM step called with {:.2f}", timeStep);
     // ERROR_AND_QUIT("I m qutting {} {} {} {}", 1, 2, 3, "go");
     double speed = model_->Step(timeStep);
@@ -348,10 +347,7 @@ int ControllerALKS_R157SM::Model::Detect()
         // New object or scenario detected, register scenario type
         SetScenarioType(candidate_obj_info.action);
 
-        R157_LOG(1,
-                 "Detected object: {} Scenario: {}",
-                 candidate_obj_info.obj->GetName(),
-                 ScenarioType2Str(candidate_obj_info.action));
+        R157_LOG(1, "Detected object: {} Scenario: {}", candidate_obj_info.obj->GetName(), ScenarioType2Str(candidate_obj_info.action));
     }
 
     object_in_focus_ = candidate_obj_info;

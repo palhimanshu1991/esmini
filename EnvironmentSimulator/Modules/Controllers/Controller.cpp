@@ -43,7 +43,7 @@ Controller::Controller(InitArgs* args)  // init operatingdomains
     }
     else
     {
-        ERROR_AND_QUIT("Controller constructor missing args");        
+        ERROR_AND_QUIT("Controller constructor missing args");
     }
 
     if (args->properties && args->properties->ValueExists("mode"))
@@ -143,7 +143,7 @@ int Controller::Activate(ControlActivationMode lat_mode,
                 WARN("Warning: Controller {} operating domains: {}. Skipping activation on domain {}",
                      GetName(),
                      ControlDomain2Str(operating_domains_),
-                     ControlDomain2Str(control_domains[i]));                
+                     ControlDomain2Str(control_domains[i]));
             }
             else
             {
@@ -187,8 +187,8 @@ std::string Controller::Mode2Str(ControlOperationMode mode)
     }
     else
     {
-        //ERROR("Unexpected mode \"{}\"", mode);
-        ERROR("Unexpected mode \"{}\"", std::to_string( static_cast<int> (mode)));
+        // ERROR("Unexpected mode \"{}\"", mode);
+        ERROR("Unexpected mode \"{}\"", std::to_string(static_cast<int>(mode)));
         return "invalid mode";
     }
 }

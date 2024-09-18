@@ -159,16 +159,16 @@ extern "C"
             RM_Close();
         }
 
-        //Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
-        //Logger::Inst().LogVersion();
-        CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath().c_str());
+        // Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
+        // Logger::Inst().LogVersion();
+        CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
         // LoggerConfig logConfig;
         // if( !SE_Env::Inst().GetLogFilePath().empty())
         // {
         //     logConfig.logFilePath_ = SE_Env::Inst().GetLogFilePath();
         // }
         // SetupLogger(loggerConfig, GetVersionInfoForLog());
-        
+
         // Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
         std::setlocale(LC_ALL, "C.UTF-8");
 
@@ -192,7 +192,7 @@ extern "C"
 
     RM_DLL_API void RM_SetLogFilePath(const char* logFilePath)
     {
-        //SE_Env::Inst().SetLogFilePath(logFilePath);
+        // SE_Env::Inst().SetLogFilePath(logFilePath);
         CreateNewFileForLogging(logFilePath);
     }
 

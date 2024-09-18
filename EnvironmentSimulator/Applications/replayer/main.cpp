@@ -350,10 +350,10 @@ int main(int argc, char** argv)
 
     // Use logger callback for console output instead of logfile
     Logger::Inst().SetCallback(log_callback);
-    
-    LoggerConfig logConfig;    
+
+    LoggerConfig logConfig;
     SetupLogger(logConfig);
-    //Logger::Inst().LogVersion();    
+    // Logger::Inst().LogVersion();
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
     // use common options parser to manage the program arguments
@@ -571,26 +571,37 @@ int main(int argc, char** argv)
             int counter = 0;
 
             while ((arg_str = opt.GetOptionArg("custom_camera", counter)) != "")
-            {                
+            {
                 const auto splitted = utils::SplitString(arg_str, ',');
-                
-                if( splitted.size() == 3)
+
+                if (splitted.size() == 3)
                 {
                     viewer->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), false);
                     INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
                 }
-                else if( splitted.size() == 5)
+                else if (splitted.size() == 5)
                 {
-                    viewer->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]), strtod(splitted[4]), false);                    
-                    INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3], splitted[4]);
+                    viewer->AddCustomCamera(strtod(splitted[0]),
+                                            strtod(splitted[1]),
+                                            strtod(splitted[2]),
+                                            strtod(splitted[3]),
+                                            strtod(splitted[4]),
+                                            false);
+                    INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})",
+                         counter,
+                         splitted[0],
+                         splitted[1],
+                         splitted[2],
+                         splitted[3],
+                         splitted[4]);
                 }
-                else 
+                else
                 {
-                    ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());    
+                    ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
                 }
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
 
-                counter++;                
+                counter++;
             }
         }
 
@@ -601,20 +612,31 @@ int main(int argc, char** argv)
             while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
             {
                 const auto splitted = utils::SplitString(arg_str, ',');
-                
-                if( splitted.size() == 3)
+
+                if (splitted.size() == 3)
                 {
                     viewer->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), true);
                     INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
                 }
-                else if( splitted.size() == 5)
+                else if (splitted.size() == 5)
                 {
-                    viewer->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]), strtod(splitted[4]), true);                    
-                    INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3], splitted[4]);
+                    viewer->AddCustomCamera(strtod(splitted[0]),
+                                            strtod(splitted[1]),
+                                            strtod(splitted[2]),
+                                            strtod(splitted[3]),
+                                            strtod(splitted[4]),
+                                            true);
+                    INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})",
+                         counter,
+                         splitted[0],
+                         splitted[1],
+                         splitted[2],
+                         splitted[3],
+                         splitted[4]);
                 }
-                else 
+                else
                 {
-                    ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());    
+                    ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
                 }
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
                 counter++;
@@ -628,7 +650,7 @@ int main(int argc, char** argv)
             while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
             {
                 const auto splitted = utils::SplitString(arg_str, ',');
-                if( splitted.size() != 4)
+                if (splitted.size() != 4)
                 {
                     ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
                 }
@@ -636,7 +658,7 @@ int main(int argc, char** argv)
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
 
                 INFO("Created custom fixed top camera {} ({}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3]);
-                counter++; 
+                counter++;
             }
         }
 
@@ -991,7 +1013,8 @@ int main(int argc, char** argv)
                                                                (player->GetState(scenarioEntity[j].id)->info.speed)) *
                                                            3.6f;
                                         double rel_angle = static_cast<double>(scenarioEntity[i].pos.h - scenarioEntity[j].pos.h) * 180.0 / M_PI;
-                                        WARN("Collision between {} (id {}) and {} (id {}) at time {:.2f}.\n- Relative speed {:.2f} km/h\n- Angle {:.2f} degrees (ego to target)",
+                                        WARN(
+                                            "Collision between {} (id {}) and {} (id {}) at time {:.2f}.\n- Relative speed {:.2f} km/h\n- Angle {:.2f} degrees (ego to target)",
                                             scenarioEntity[i].name,
                                             scenarioEntity[i].id,
                                             scenarioEntity[j].name,

@@ -106,7 +106,7 @@ OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset
 OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation orientation) : OSCPosition(PositionType::ROAD)
 {
     if (position_.GetRoadById(roadId) == nullptr)
-    {        
+    {
         ERROR_AND_QUIT("Reffered road ID {} not available in road network", roadId);
     }
 

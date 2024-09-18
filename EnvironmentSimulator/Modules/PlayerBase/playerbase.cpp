@@ -109,9 +109,9 @@ ScenarioPlayer::~ScenarioPlayer()
         }
     }
 #endif  // _USE_OSG
-    //Logger::Inst().SetTimePtr(0);  
-      
-    SetLoggerTime(0); 
+    // Logger::Inst().SetTimePtr(0);
+
+    SetLoggerTime(0);
     if (scenarioEngine)
     {
         delete scenarioEngine;
@@ -773,28 +773,28 @@ int ScenarioPlayer::InitViewer()
         int counter = 0;
 
         while ((arg_str = opt.GetOptionArg("custom_camera", counter)) != "")
-        {                
+        {
             const auto splitted = utils::SplitString(arg_str, ',');
-            
-            if( splitted.size() == 3)
+
+            if (splitted.size() == 3)
             {
                 AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), false);
                 INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
             }
-            else if( splitted.size() == 5)
+            else if (splitted.size() == 5)
             {
-                AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]), strtod(splitted[4]), false);                    
+                AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]), strtod(splitted[4]), false);
                 INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3], splitted[4]);
             }
-            else 
+            else
             {
-                ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());    
+                ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
             }
 
             counter++;
         }
     }
-    
+
     if (opt.GetOptionSet("custom_fixed_camera") == true)
     {
         int counter = 0;
@@ -802,21 +802,21 @@ int ScenarioPlayer::InitViewer()
         while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
         {
             const auto splitted = utils::SplitString(arg_str, ',');
-                
-            if( splitted.size() == 3)
+
+            if (splitted.size() == 3)
             {
                 AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), true);
                 INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
             }
-            else if( splitted.size() == 5)
+            else if (splitted.size() == 5)
             {
-                AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]), strtod(splitted[4]), true);                    
+                AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]), strtod(splitted[4]), true);
                 INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3], splitted[4]);
             }
-            else 
+            else
             {
-                ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());    
-            }            
+                ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
+            }
             counter++;
         }
     }
@@ -828,14 +828,14 @@ int ScenarioPlayer::InitViewer()
         while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
         {
             const auto splitted = utils::SplitString(arg_str, ',');
-            if( splitted.size() != 4)
+            if (splitted.size() != 4)
             {
                 ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
             }
-            AddCustomFixedTopCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]));            
+            AddCustomFixedTopCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]));
 
             INFO("Created custom fixed top camera {} ({}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3]);
-            counter++; 
+            counter++;
         }
     }
 
@@ -847,7 +847,7 @@ int ScenarioPlayer::InitViewer()
         while ((arg_str = opt.GetOptionArg("custom_light", counter)) != "")
         {
             const auto splitted = utils::SplitString(arg_str, ',');
-            if( splitted.size() != 4)
+            if (splitted.size() != 4)
             {
                 ERROR_AND_QUIT("Expected custom_light <x,y,z,intensity>. Got {} values instead of 4", splitted.size());
             }
@@ -858,7 +858,12 @@ int ScenarioPlayer::InitViewer()
             }
             else
             {
-                INFO("Max nr custom lights ({}) reached. Ignoring ({:.2f}, {:.2f}, {:.2f}, {:.2f})", lightCounter, splitted[0], splitted[1], splitted[2], splitted[3]);
+                INFO("Max nr custom lights ({}) reached. Ignoring ({:.2f}, {:.2f}, {:.2f}, {:.2f})",
+                     lightCounter,
+                     splitted[0],
+                     splitted[1],
+                     splitted[2],
+                     splitted[3]);
             }
             counter++;
         }
@@ -1237,7 +1242,7 @@ int ScenarioPlayer::Init(bool logTime)
     opt.AddOption("log_meta_data", "log file name, function name and line number");
     opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
     opt.AddOption("log_only_modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
-    opt.AddOption("log_skip_modules", "skip log from these modules, all remaining modules will be logged.", "modulename(s)"); 
+    opt.AddOption("log_skip_modules", "skip log from these modules, all remaining modules will be logged.", "modulename(s)");
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
 #ifdef _USE_OSI
@@ -1277,10 +1282,10 @@ int ScenarioPlayer::Init(bool logTime)
         PrintUsage();
         return -2;
     }
-    if( logTime)
+    if (logTime)
     {
         LogTimeOnly();
-    }    
+    }
     if (opt.GetOptionSet("help"))
     {
         PrintUsage();
@@ -1290,14 +1295,13 @@ int ScenarioPlayer::Init(bool logTime)
     if (opt.GetOptionSet("disable_stdout"))
     {
         Logger::Inst().SetCallback(0);
-        
     }
 
     // Setup logger
-    std::string log_filename = SE_Env::Inst().GetLogFilePath();
+    std::string  log_filename = SE_Env::Inst().GetLogFilePath();
     LoggerConfig logConfig;
     if (opt.GetOptionSet("disable_log"))
-    {        
+    {
         log_filename = "";
         printf("Disable logfile\n");
     }
@@ -1326,30 +1330,30 @@ int ScenarioPlayer::Init(bool logTime)
             printf("Custom logfile path: %s\n", log_filename.c_str());
         }
     }
-    if( opt.IsOptionArgumentSet("log_Only_Modules"))
+    if (opt.IsOptionArgumentSet("log_only_modules"))
     {
-        arg_str = opt.GetOptionArg("log_Only_Modules");        
-        const auto splitted = utils::SplitString(arg_str, ',');        
-        if( !splitted.empty())
+        arg_str             = opt.GetOptionArg("log_only_modules");
+        const auto splitted = utils::SplitString(arg_str, ',');
+        if (!splitted.empty())
         {
             logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
-        }        
+        }
     }
-    if( opt.IsOptionArgumentSet("log_Skip_Modules"))
+    if (opt.IsOptionArgumentSet("log_Skip_Modules"))
     {
-        arg_str = opt.GetOptionArg("log_Skip_Modules");        
+        arg_str             = opt.GetOptionArg("log_Skip_Modules");
         const auto splitted = utils::SplitString(arg_str, ',');
-        if( !splitted.empty())
+        if (!splitted.empty())
         {
             logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
-        }        
+        }
     }
-    
+
     SetupLogger(logConfig);
 
     if (opt.GetOptionSet("version"))
     {
-        //Logger::Inst().LogVersion();
+        // Logger::Inst().LogVersion();
         LogVersion();
         return -2;
     }
@@ -1426,9 +1430,9 @@ int ScenarioPlayer::Init(bool logTime)
         log_filename = dist.AddInfoToFilepath(log_filename);
     }
 
-    //Logger::Inst().OpenLogfile(log_filename);
-    //Logger::Inst().LogVersion();
-    CreateNewFileForLogging(log_filename.c_str());
+    // Logger::Inst().OpenLogfile(log_filename);
+    // Logger::Inst().LogVersion();
+    CreateNewFileForLogging(log_filename);
     if (dist.GetNumPermutations() > 0)
     {
         INFO("Using parameter distribution file: {}", dist.GetFilename());
@@ -1526,7 +1530,7 @@ int ScenarioPlayer::Init(bool logTime)
         {
 #ifdef __APPLE__
             INFO("Plot mode {} not supported on mac systems (OpenGL graphics must run in main thread), applying synchronous mode",
-                opt.GetOptionArg("plot"));
+                 opt.GetOptionArg("plot"));
             opt.ChangeOptionArg("plot", "synchronous");
 #else
             if (opt.GetOptionArg("plot") != "asynchronous")
@@ -1547,7 +1551,7 @@ int ScenarioPlayer::Init(bool logTime)
             SE_Env::Inst().AddPath(DirNameOf(arg_str));  // add scenario directory to list pf paths
             scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
             Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
-            SetLoggerTime(scenarioEngine->GetSimulationTimePtr());            
+            SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
         }
         else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
         {

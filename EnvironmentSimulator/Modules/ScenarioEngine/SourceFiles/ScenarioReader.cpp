@@ -117,7 +117,7 @@ int ScenarioReader::loadOSCFile(const char *path)
 {
     pugi::xml_parse_result result = doc_.load_file(path);
     if (!result)
-    {        
+    {
         WARN("{} at offset (character position): {}", result.description(), result.offset);
         return -1;
     }
@@ -643,8 +643,8 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         else
         {
             WARN("Info: Missing mandatory Performance maxAcceleration for {}, applying default {:.2f}",
-                vehicle->GetTypeName(),
-                vehicle->GetMaxAcceleration());
+                 vehicle->GetTypeName(),
+                 vehicle->GetMaxAcceleration());
         }
 
         if (!(performance_node.attribute("maxDeceleration").empty()))
@@ -654,17 +654,17 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         else
         {
             WARN("Info: Missing mandatory Performance maxDeceleration for {}, applying default {:.2f}",
-                vehicle->GetTypeName(),
-                vehicle->GetMaxDeceleration());
+                 vehicle->GetTypeName(),
+                 vehicle->GetMaxDeceleration());
         }
     }
     else
     {
         WARN("Info: Missing mandatory Performance element for {}, applying defaults maxspeed {:.2f} maxacc {:.2f} maxdec {:.2f}",
-            vehicle->GetTypeName(),
-            vehicle->GetMaxSpeed(),
-            vehicle->GetMaxAcceleration(),
-            vehicle->GetMaxDeceleration());
+             vehicle->GetTypeName(),
+             vehicle->GetMaxSpeed(),
+             vehicle->GetMaxAcceleration(),
+             vehicle->GetMaxDeceleration());
     }
 
     pugi::xml_node axles = vehicleNode.child("Axles");
@@ -1118,9 +1118,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectoryRef(pugi::xml_node tra
         }
         else
         {
-            ERROR("Catalog entry of type {} expected - found {}",
-                Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE),
-                entry->GetTypeAsStr());
+            ERROR("Catalog entry of type {} expected - found {}", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE), entry->GetTypeAsStr());
             throw std::runtime_error("Failed to resolve catalog reference");
         }
     }
@@ -1216,14 +1214,14 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                 double stopTime  = strtod(parameters.ReadAttribute(shapeNode, "stopTime"));
 
                 INFO("Adding clothoid(x={:.2f} y={:.2f} h={:.2f} curv={:.2f} curvDot={:.2f} len={:.2f} startTime={:.2f} stopTime={:.2f})",
-                    pos->GetRMPos()->GetX(),
-                    pos->GetRMPos()->GetY(),
-                    pos->GetRMPos()->GetH(),
-                    curvature,
-                    curvaturePrime,
-                    length,
-                    startTime,
-                    stopTime);
+                     pos->GetRMPos()->GetX(),
+                     pos->GetRMPos()->GetY(),
+                     pos->GetRMPos()->GetH(),
+                     curvature,
+                     curvaturePrime,
+                     length,
+                     startTime,
+                     stopTime);
 
                 roadmanager::ClothoidShape *clothoid =
                     new roadmanager::ClothoidShape(*pos->GetRMPos(), curvature, curvaturePrime, length, startTime, stopTime);
@@ -1404,11 +1402,11 @@ bool scenarioengine::ScenarioReader::CheckModelId(Object *object)
     if (filename != FileNameOf(object->model3d_))
     {
         WARN("Warning: {} {} model_id {} correponds to {}, not specified 3D model {}",
-            Object::Type2String(object->GetType()),
-            object->GetTypeName(),
-            object->model_id_,
-            filename.empty() ? "Unknown" : filename,
-            FileNameOf(object->model3d_));
+             Object::Type2String(object->GetType()),
+             object->GetTypeName(),
+             object->model_id_,
+             filename.empty() ? "Unknown" : filename,
+             FileNameOf(object->model3d_));
         return false;
     }
 
@@ -2342,18 +2340,18 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
             if (*values[i].variable < SMALL_NUMBER)
             {
                 WARN("parseDynamicConstraints: Unexpected small {} value: {:.5f}, replacing with {} value {:.2f}",
-                    values[i].label,
-                    *values[i].variable,
-                    values[i].default_value < values[i].performance_value ? "default" : "performance",
-                    values[i].default_value < values[i].performance_value ? values[i].default_value : values[i].performance_value);
+                     values[i].label,
+                     *values[i].variable,
+                     values[i].default_value < values[i].performance_value ? "default" : "performance",
+                     values[i].default_value < values[i].performance_value ? values[i].default_value : values[i].performance_value);
                 *values[i].variable = values[i].default_value < values[i].performance_value ? values[i].default_value : values[i].performance_value;
             }
             else if (*values[i].variable > values[i].performance_value)
             {
                 WARN("parseDynamicConstraints: {} value {:.2f} exceeds object performance value: {:.2f}, truncating",
-                    values[i].label,
-                    *values[i].variable,
-                    values[i].performance_value);
+                     values[i].label,
+                     *values[i].variable,
+                     values[i].performance_value);
                 *values[i].variable = values[i].performance_value;
             }
         }
@@ -2563,7 +2561,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         if (action_dist->distance_ < 0.0)
                         {
                             // action_dist->displacement_ != LongDistanceAction::DisplacementType::NONE &&
-                            WARN("Negative distance or timeGap not supported in OSC version >= 1.1. Using absolute value. Use displacement to specify leading or trailing behavior.");
+                            WARN(
+                                "Negative distance or timeGap not supported in OSC version >= 1.1. Using absolute value. Use displacement to specify leading or trailing behavior.");
                             action_dist->distance_ = abs(action_dist->distance_);
                         }
                     }
@@ -2656,7 +2655,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             else
                             {
                                 action_lane->max_lateral_acc_ = 0.5;  // Just set some reasonable default value
-                                WARN("Missing optional LaneOffsetAction maxLateralAcc attribute. Using default: {:.2f}", action_lane->max_lateral_acc_);
+                                WARN("Missing optional LaneOffsetAction maxLateralAcc attribute. Using default: {:.2f}",
+                                     action_lane->max_lateral_acc_);
                             }
 
                             action_lane->transition_.shape_ = ParseDynamicsShape(parameters.ReadAttribute(laneOffsetChild, "dynamicsShape"));
@@ -2792,7 +2792,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         action_synch->final_speed_->GetValue() < SMALL_NUMBER)
                     {
                         ERROR("SynchronizeAction steady state with 0 or negative final speed ({:.2f}) is not supported",
-                            action_synch->final_speed_->GetValue());
+                              action_synch->final_speed_->GetValue());
                         throw std::runtime_error("SynchronizeAction steady state with 0 or negative final speed is not supported");
                     }
                     if (!strcmp(steady_state_node.name(), "TargetDistanceSteadyState"))
@@ -3023,7 +3023,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         action_follow_trajectory->traj_->GetDuration() < SMALL_NUMBER)
                     {
                         WARN("Warning: FollowTrajectoryAction {} timeref is != NONE but trajectory duration is 0. Applying timeref=NONE.",
-                            action_follow_trajectory->GetName());
+                             action_follow_trajectory->GetName());
                         action_follow_trajectory->timing_domain_ = FollowTrajectoryAction::TimingDomain::NONE;
                     }
 
@@ -3263,8 +3263,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 if (!verFromMinor2)
                                 {
                                     ERROR("Unexpected BrakeInput element in version {}.{}, introduced in OSC 1.2",
-                                        GetVersionMajor(),
-                                        GetVersionMinor());
+                                          GetVersionMajor(),
+                                          GetVersionMinor());
                                 }
                             }
                         }
@@ -3336,8 +3336,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 if (!verFromMinor2)
                                 {
                                     ERROR("Unexpected BrakeInput element in version {}.{}, introduced in OSC 1.2",
-                                        GetVersionMajor(),
-                                        GetVersionMinor());
+                                          GetVersionMajor(),
+                                          GetVersionMinor());
                                 }
                             }
                         }
@@ -4496,7 +4496,8 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
                                 if (trig->type_ == TrigByValue::Type::SIMULATION_TIME && trig->edge_ != OSCCondition::NONE &&
                                     fabs((static_cast<TrigBySimulationTime *>((trig)))->value_) < SMALL_NUMBER)
                                 {
-                                    WARN("Warning: simulationTime = 0 condition used with edge \"{}\" which could be missed. Edge \"none\" is recommended.",
+                                    WARN(
+                                        "Warning: simulationTime = 0 condition used with edge \"{}\" which could be missed. Edge \"none\" is recommended.",
                                         trig->Edge2Str());
                                 }
                             }

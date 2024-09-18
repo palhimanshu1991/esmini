@@ -683,7 +683,7 @@ void StrCopy(char* dest, const char* src, size_t size, bool terminate)
 }
 
 std::string GetVersionInfoForLog()
-{    
+{
     std::string info = "esmini GIT REV: ";
     info.append(esmini_git_rev());
     info.append("\nesmini GIT TAG: ");
@@ -692,7 +692,7 @@ std::string GetVersionInfoForLog()
     info.append(esmini_git_branch());
     info.append("\nesmini BUILD VERSION: ");
     info.append(esmini_build_version());
-    return info;  
+    return info;
 }
 
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
@@ -1346,7 +1346,7 @@ void Logger::CloseLogFile()
 }
 
 void Logger::LogVersion()
-{    
+{
     static char message[1024];
 
     snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
@@ -1566,7 +1566,7 @@ void CSV_Logger::LogVehicleData(bool        isendline,
 }
 
 void CSV_Logger::SetCallback(FuncPtr callback)
-{    
+{
     callback_ = callback;
 
     static char message[1024];
@@ -1584,7 +1584,7 @@ void CSV_Logger::SetCallback(FuncPtr callback)
 // instantiator
 // Filename and vehicle number are used for dynamic header creation
 void CSV_Logger::Open(std::string scenario_filename, int numvehicles, std::string csv_filename)
-{    
+{
     if (file_.is_open())
     {
         file_.close();

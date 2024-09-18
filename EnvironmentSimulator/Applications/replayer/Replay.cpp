@@ -28,25 +28,25 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
 
     file_.read(reinterpret_cast<char*>(&header_), sizeof(header_));
     INFO("Recording {} opened. dat version: {} odr: {} model: {}",
-        FileNameOf(filename),
-        header_.version,
-        FileNameOf(header_.odr_filename),
-        FileNameOf(header_.model_filename));
+         FileNameOf(filename),
+         header_.version,
+         FileNameOf(header_.odr_filename),
+         FileNameOf(header_.model_filename));
 
     if (header_.version != DAT_FILE_FORMAT_VERSION)
     {
         ERROR_AND_QUIT("Version mismatch. {} is version {} while supported version is {}. Please re-create dat file.",
-                      filename,
-                      header_.version,
-                      DAT_FILE_FORMAT_VERSION);
+                       filename,
+                       header_.version,
+                       DAT_FILE_FORMAT_VERSION);
     }
 
     if (header_.version != DAT_FILE_FORMAT_VERSION)
     {
         ERROR_AND_QUIT("Version mismatch. {} is version {} while supported version is {}. Please re-create dat file.",
-                     filename,
-                     header_.version,
-                     DAT_FILE_FORMAT_VERSION);
+                       filename,
+                       header_.version,
+                       DAT_FILE_FORMAT_VERSION);
     }
 
     while (!file_.eof())
@@ -98,17 +98,17 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         }
         file_.read(reinterpret_cast<char*>(&header_), sizeof(header_));
         INFO("Recording {} opened. dat version: {} odr: {} model: {}",
-            FileNameOf(scenarios_[i]),
-            header_.version,
-            FileNameOf(header_.odr_filename),
-            FileNameOf(header_.model_filename));
+             FileNameOf(scenarios_[i]),
+             header_.version,
+             FileNameOf(header_.odr_filename),
+             FileNameOf(header_.model_filename));
 
         if (header_.version != DAT_FILE_FORMAT_VERSION)
         {
             ERROR_AND_QUIT("Version mismatch. {} is version {} while supported version is {}. Please re-create dat file.",
-                         scenarios_[i],
-                         header_.version,
-                         DAT_FILE_FORMAT_VERSION);
+                           scenarios_[i],
+                           header_.version,
+                           DAT_FILE_FORMAT_VERSION);
         }
         while (!file_.eof())
         {

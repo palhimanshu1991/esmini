@@ -141,10 +141,10 @@ void StoryBoardElement::Start(double simTime)
     else
     {
         ERROR("{} Invalid Start transition request from {} to {}, {}start_trigger",
-            name_,
-            state2str(GetCurrentState()),
-            state2str(State::RUNNING),
-            start_trigger_ ? "" : "no ");
+              name_,
+              state2str(GetCurrentState()),
+              state2str(State::RUNNING),
+              start_trigger_ ? "" : "no ");
     }
 
     // Start children for all element types except events
@@ -228,10 +228,7 @@ void StoryBoardElement::Stop()
     }
     else
     {
-        ERROR("{} Invalid Stop transition requested from {} to {}",
-            name_,
-            state2str(GetCurrentState()),
-            state2str(State::COMPLETE));
+        ERROR("{} Invalid Stop transition requested from {} to {}", name_, state2str(GetCurrentState()), state2str(State::COMPLETE));
     }
 
     if (parent_)
@@ -306,10 +303,10 @@ void StoryBoardElement::End()
     else
     {
         ERROR("{} Invalid End transition requested from {} to {} or {}",
-            name_,
-            state2str(GetCurrentState()),
-            state2str(State::STANDBY),
-            state2str(State::COMPLETE));
+              name_,
+              state2str(GetCurrentState()),
+              state2str(State::STANDBY),
+              state2str(State::COMPLETE));
     }
 
     if (parent_)
@@ -335,11 +332,7 @@ void StoryBoardElement::SetState(StoryBoardElement::State state)
 {
     if (GetCurrentState() != state)
     {
-        INFO("{} {} -> {} -> {}",
-            name_,
-            state2str(GetCurrentState()),
-            transition2str(GetCurrentTransition()),
-            state2str(state));
+        INFO("{} {} -> {} -> {}", name_, state2str(GetCurrentState()), transition2str(GetCurrentTransition()), state2str(state));
 
         if (stateChangeCallback != nullptr)
         {

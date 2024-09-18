@@ -563,21 +563,21 @@ void AssignControllerAction::Start(double simTime)
                 if (lat_activation_mode_ != ControlActivationMode::UNDEFINED || long_activation_mode_ != ControlActivationMode::UNDEFINED ||
                     light_activation_mode_ != ControlActivationMode::UNDEFINED || anim_activation_mode_ != ControlActivationMode::UNDEFINED)
                 {
-                    controller_->Activate(lat_activation_mode_, long_activation_mode_, light_activation_mode_, anim_activation_mode_);                    
+                    controller_->Activate(lat_activation_mode_, long_activation_mode_, light_activation_mode_, anim_activation_mode_);
                     INFO("Controller {} activated (lat {}, long {}, light {}, anim {}), domain mask=0x{}",
-                        controller_->GetName(),
-                        DomainActivation2Str(lat_activation_mode_),
-                        DomainActivation2Str(long_activation_mode_),
-                        DomainActivation2Str(light_activation_mode_),
-                        DomainActivation2Str(anim_activation_mode_),
-                        controller_->GetActiveDomains());    
+                         controller_->GetName(),
+                         DomainActivation2Str(lat_activation_mode_),
+                         DomainActivation2Str(long_activation_mode_),
+                         DomainActivation2Str(light_activation_mode_),
+                         DomainActivation2Str(anim_activation_mode_),
+                         controller_->GetActiveDomains());
                 }
             }
             else
             {
                 INFO("Controller {} already active (domainmask 0x{}), should not happen when just assigned!",
-                    controller_->GetName(),
-                    controller_->GetActiveDomains());
+                     controller_->GetName(),
+                     controller_->GetActiveDomains());
             }
         }
     }
@@ -602,9 +602,9 @@ void ActivateControllerAction::Start(double simTime)
             if (scenarioEngine_->GetScenarioReader()->GetVersionMinor() > 2)
             {
                 WARN("Warning: No controller name given for activation on object {}, {}: {}",
-                    object_->name_,
-                    object_->GetNrOfAssignedControllers() > 1 ? "pick most recently assigned" : "using assigned controller",
-                    controller_->GetName());
+                     object_->name_,
+                     object_->GetNrOfAssignedControllers() > 1 ? "pick most recently assigned" : "using assigned controller",
+                     controller_->GetName());
             }
         }
         else
@@ -624,32 +624,32 @@ void ActivateControllerAction::Start(double simTime)
                 (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG)) != nullptr)
             {
                 WARN("Deactivating conflicting ctrl {} on domain {}",
-                    ctrl->GetName(),
-                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)));
+                     ctrl->GetName(),
+                     ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)));
                 ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG));
             }
             if (lat_activation_mode_ == ControlActivationMode::ON &&
                 (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LAT)) != nullptr)
             {
                 WARN("Deactivating conflicting ctrl {} on domain {}",
-                    ctrl->GetName(),
-                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)));
+                     ctrl->GetName(),
+                     ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)));
                 ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT));
             }
             if (anim_activation_mode_ == ControlActivationMode::ON &&
                 (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_ANIM)) != nullptr)
             {
                 WARN("Deactivating conflicting ctrl {} on domain {}",
-                    ctrl->GetName(),
-                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM)));
+                     ctrl->GetName(),
+                     ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM)));
                 ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM));
             }
             if (light_activation_mode_ == ControlActivationMode::ON &&
                 (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LIGHT)) != nullptr)
             {
                 WARN("Deactivating conflicting ctrl %s on domain %s",
-                    ctrl->GetName(),
-                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT)));
+                     ctrl->GetName(),
+                     ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT)));
                 ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT));
             }
 
@@ -657,9 +657,9 @@ void ActivateControllerAction::Start(double simTime)
             {
                 object_->SetDirtyBits(Object::DirtyBit::CONTROLLER);
                 INFO("Controller {} active on domains: {} (mask=0x{})",
-                    controller_->GetName(),
-                    ControlDomain2Str(controller_->GetActiveDomains()),
-                    controller_->GetActiveDomains());
+                     controller_->GetName(),
+                     ControlDomain2Str(controller_->GetActiveDomains()),
+                     controller_->GetActiveDomains());
                 OSCAction::Start(simTime);
                 End();  // action ends immediately
             }
@@ -817,8 +817,8 @@ void LatLaneChangeAction::Step(double simTime, double dt)
         if (!object_->pos_.IsInJunction() && !internal_pos_.GetTrackId() && object_->pos_.GetTrackId() != internal_pos_.GetTrackId())
         {
             WARN("Warning/Info: LaneChangeAction moved away from route (track id {} -> track id {}), disabling route",
-                object_->pos_.GetTrackId(),
-                internal_pos_.GetTrackId());
+                 object_->pos_.GetTrackId(),
+                 internal_pos_.GetTrackId());
             object_->pos_.SetRoute(nullptr);
             object_->SetDirtyBits(Object::DirtyBit::ROUTE);
         }
@@ -1341,9 +1341,9 @@ void LongSpeedProfileAction::Start(double simTime)
                 if (IS_IN_SPAN(k1, -dynamics_.max_deceleration_, dynamics_.max_acceleration_) && t3 > vertex[1].t_)
                 {
                     WARN("SpeedProfile: Can't reach target speed {:.2f} on target time {:.2f}s with given jerk constraints, extend to {:.2f}s",
-                        v3,
-                        vertex[1].t_,
-                        t3);
+                         v3,
+                         vertex[1].t_,
+                         t3);
                 }
             }
             else
@@ -1462,8 +1462,8 @@ void LongSpeedProfileAction::Start(double simTime)
                     if (t1 < t0)
                     {
                         WARN("LongSpeedProfileAction failed at point {} (time={:.2f}). Falling back to linear (Position) mode.",
-                            index,
-                            vertex[index].t_);
+                             index,
+                             vertex[index].t_);
                         following_mode_ = FollowingMode::POSITION;
                         continue;
                     }
@@ -1524,9 +1524,9 @@ void LongSpeedProfileAction::CheckAcceleration(double acc)
     if (acc > dynamics_.max_acceleration_ + SMALL_NUMBER || acc < -dynamics_.max_deceleration_ - SMALL_NUMBER)
     {
         WARN("Acceleration {:.2f} not within constrained span [{:.2f}:{:.2f}], revert to linear mode",
-            acc,
-            dynamics_.max_acceleration_,
-            -dynamics_.max_deceleration_);
+             acc,
+             dynamics_.max_acceleration_,
+             -dynamics_.max_deceleration_);
 
         following_mode_ = FollowingMode::POSITION;
     }
@@ -1542,9 +1542,9 @@ void LongSpeedProfileAction::CheckAccelerationRate(double acc_rate)
     if (acc_rate > dynamics_.max_acceleration_rate_ + SMALL_NUMBER || acc_rate < -dynamics_.max_deceleration_rate_ - SMALL_NUMBER)
     {
         WARN("Acceleration rate {:.2f} not within constrained span [{:.2f}:{:.2f}], revert to linear mode",
-            acc_rate,
-            dynamics_.max_acceleration_rate_,
-            -dynamics_.max_deceleration_rate_);
+             acc_rate,
+             dynamics_.max_acceleration_rate_,
+             -dynamics_.max_deceleration_rate_);
 
         following_mode_ = FollowingMode::POSITION;
     }

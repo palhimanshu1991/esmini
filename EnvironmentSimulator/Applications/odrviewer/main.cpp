@@ -381,8 +381,8 @@ int main(int argc, char **argv)
     opt.Reset();
 
     // Use logger callback
-    Logger::Inst().SetCallback(log_callback);    
-    
+    Logger::Inst().SetCallback(log_callback);
+
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
     std::vector<std::string> args;
@@ -413,8 +413,8 @@ int main(int argc, char **argv)
     opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
     opt.AddOption("log_meta_data", "log file name, function name and line number");
     opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
-    opt.AddOption("log_Only_Modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
-    opt.AddOption("log_Skip_Modules", "skip log from these modules, all remaining modules will be logged.", "modulename(s)"); 
+    opt.AddOption("log_only_modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
+    opt.AddOption("log_skip_modules", "skip log from these modules, all remaining modules will be logged.", "modulename(s)");
     opt.AddOption("model", "3D Model filename", "model_filename");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
     opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
@@ -438,7 +438,7 @@ int main(int argc, char **argv)
 
     if (opt.GetOptionSet("version"))
     {
-        //Logger::Inst().LogVersion();        
+        // Logger::Inst().LogVersion();
         return 0;
     }
 
@@ -459,7 +459,6 @@ int main(int argc, char **argv)
     LoggerConfig logConfig;
     if (opt.GetOptionSet("disable_stdout"))
     {
-        
         Logger::Inst().SetCallback(0);
     }
 
@@ -469,7 +468,7 @@ int main(int argc, char **argv)
         printf("Disable logfile\n");
     }
     else if (opt.IsOptionArgumentSet("logfile_path"))
-    {        
+    {
         arg_str = opt.GetOptionArg("logfile_path");
         SE_Env::Inst().SetLogFilePath(arg_str);
         if (arg_str.empty())
@@ -477,38 +476,38 @@ int main(int argc, char **argv)
             printf("Custom logfile path empty, disable logfile\n");
         }
         else
-        {            
+        {
             printf("Custom logfile path: %s\n", arg_str.c_str());
         }
         logConfig.logFilePath_ = arg_str;
     }
-    
-    if( opt.IsOptionArgumentSet("log_Only_Modules"))
+
+    if (opt.IsOptionArgumentSet("log_only_modules"))
     {
-        arg_str = opt.GetOptionArg("log_Only_Modules");        
+        arg_str             = opt.GetOptionArg("log_only_modules");
         const auto splitted = utils::SplitString(arg_str, ',');
-        if( !splitted.empty())
+        if (!splitted.empty())
         {
             logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
-        }        
+        }
     }
 
-    if( opt.IsOptionArgumentSet("log_Skip_Modules"))
+    if (opt.IsOptionArgumentSet("log_skip_modules"))
     {
-        arg_str = opt.GetOptionArg("log_Skip_Modules");        
+        arg_str             = opt.GetOptionArg("log_skip_modules");
         const auto splitted = utils::SplitString(arg_str, ',');
-        if( !splitted.empty())
+        if (!splitted.empty())
         {
             logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
-        }        
+        }
     }
-    if( !SE_Env::Inst().GetLogFilePath().empty())
+    if (!SE_Env::Inst().GetLogFilePath().empty())
     {
         logConfig.logFilePath_ = SE_Env::Inst().GetLogFilePath();
     }
-    SetupLogger(logConfig);    
-    //Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
-    //Logger::Inst().LogVersion();  
+    SetupLogger(logConfig);
+    // Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
+    // Logger::Inst().LogVersion();
     CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath().c_str());
     if ((arg_str = opt.GetOptionArg("path")) != "")
     {
@@ -627,20 +626,31 @@ int main(int argc, char **argv)
             while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
             {
                 const auto splitted = utils::SplitString(arg_str, ',');
-                
-                if( splitted.size() == 3)
+
+                if (splitted.size() == 3)
                 {
                     viewer->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), true);
                     INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
                 }
-                else if( splitted.size() == 5)
+                else if (splitted.size() == 5)
                 {
-                    viewer->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]), strtod(splitted[4]), true);                    
-                    INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3], splitted[4]);
+                    viewer->AddCustomCamera(strtod(splitted[0]),
+                                            strtod(splitted[1]),
+                                            strtod(splitted[2]),
+                                            strtod(splitted[3]),
+                                            strtod(splitted[4]),
+                                            true);
+                    INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})",
+                         counter,
+                         splitted[0],
+                         splitted[1],
+                         splitted[2],
+                         splitted[3],
+                         splitted[4]);
                 }
-                else 
+                else
                 {
-                    ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());    
+                    ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
                 }
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
                 counter++;
@@ -654,7 +664,7 @@ int main(int argc, char **argv)
             while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
             {
                 const auto splitted = utils::SplitString(arg_str, ',');
-                if( splitted.size() != 4)
+                if (splitted.size() != 4)
                 {
                     ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
                 }
@@ -662,7 +672,7 @@ int main(int argc, char **argv)
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
 
                 INFO("Created custom fixed top camera {} ({}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3]);
-                counter++;                
+                counter++;
             }
         }
 
@@ -673,8 +683,8 @@ int main(int argc, char **argv)
         }
 
         INFO("osi_features: lines %s points %s",
-            viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_LINES) ? "on" : "off",
-            viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_POINTS) ? "on" : "off");
+             viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_LINES) ? "on" : "off",
+             viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_POINTS) ? "on" : "off");
 
         if (SetupCars(odrManager, viewer) == -1)
         {

@@ -36,7 +36,7 @@ UDPBase::UDPBase(unsigned short int port) : port_(port), sock_(SE_INVALID_SOCKET
 
     if ((sock_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SE_INVALID_SOCKET)
     {
-       ERROR_AND_QUIT("socket failed");
+        ERROR_AND_QUIT("socket failed");
         return;
     }
 }

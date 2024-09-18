@@ -213,8 +213,8 @@ void ControllerUDPDriver::Step(double timeStep)
         if (msg.header.version != UDP_DRIVER_MESSAGE_VERSION)
         {
             ERROR_ONCE("ControllerUDPDriver: Got unsupported msg version {} (only accepting version {})",
-                      msg.header.version,
-                      UDP_DRIVER_MESSAGE_VERSION);
+                       msg.header.version,
+                       UDP_DRIVER_MESSAGE_VERSION);
         }
 
         if (msg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR))

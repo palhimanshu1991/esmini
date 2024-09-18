@@ -951,19 +951,19 @@ CarModel::CarModel(Viewer*                  viewer,
     if (retval[0] || retval[1] || retval[2] || retval[3])
     {
         if (!retval[0])
-        {            
+        {
             WARN_ONCE("Missing wheel node {} in vehicle model {} - ignoring", "wheel_fl", car_node->getName());
         }
         if (!retval[1])
-        {            
+        {
             WARN_ONCE("Missing wheel node {} in vehicle model {} - ignoring", "wheel_fr", car_node->getName());
         }
         if (!retval[2])
-        {            
+        {
             WARN_ONCE("Missing wheel node {} in vehicle model {} - ignoring", "wheel_rr", car_node->getName());
         }
         if (!retval[3])
-        {            
+        {
             WARN_ONCE("Missing wheel node {} in vehicle model {} - ignoring", "wheel_rl", car_node->getName());
         }
     }
@@ -1089,7 +1089,7 @@ void MovingModel::ShowRouteSensor(bool mode)
 void EntityModel::SetTransparency(double factor)
 {
     if (factor < 0 || factor > 1)
-    {        
+    {
         INFO("Clamping transparency factor {:.2f} to [0:1]", factor);
         factor = CLAMP(factor, 0, 1);
     }
@@ -1334,7 +1334,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     {
         // Viewer failed to create graphics context. Probably Anti Aliasing is not supported on executing platform.
         // Make another attempt without AA
-        WARN("Viewer failure. Probably requested level of Anti Aliasing ({} multisamples) is not supported. Making another attempt without Anti-Alias and on first screen.",
+        WARN(
+            "Viewer failure. Probably requested level of Anti Aliasing ({} multisamples) is not supported. Making another attempt without Anti-Alias and on first screen.",
             aa_mode);
 
         InitTraits(traits, winDim_.x, winDim_.y, winDim_.w, winDim_.h, 0, decoration, 0, opt->GetOptionSet("headless"));
@@ -1342,7 +1343,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
         gc = osg::GraphicsContext::createGraphicsContext(traits.get());
 
         if (!gc.valid())
-        {            
+        {
             ERROR("Failed 2nd attempt to create viewer, giving up. Try --headless option to run without viewer");
             return;
         }
@@ -1965,8 +1966,8 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         else
         {
             ERROR("Failed to load visual model %s. %s",
-                modelFilepath.c_str(),
-                file_name_candidates.size() > 1 ? "Also tried the following paths:" : "");
+                  modelFilepath.c_str(),
+                  file_name_candidates.size() > 1 ? "Also tried the following paths:" : "");
             for (size_t i = 1; i < file_name_candidates.size(); i++)
             {
                 INFO("    %s", file_name_candidates[i].c_str());
@@ -2026,8 +2027,8 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
             if (scaleMode == EntityScaleMode::MODEL_TO_BB)
             {
                 WARN("Request to scale model ({} / {}) to non existing or 0 size bounding box. Created a dummy BB of typical car dimension.",
-                    name,
-                    modelFilepath);
+                     name,
+                     modelFilepath);
             }
             else if (scaleMode == EntityScaleMode::NONE)
             {
@@ -2073,14 +2074,14 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
             boundingBox->dimensions_.height_ = modelBB._max.z() - modelBB._min.z();
 
             INFO("Adjusted {} bounding box to model {} - xyz: {:.2f}, {:.2f}, {:.2f} lwh: {:.2f}, {:.2f}, {:.2f}",
-                name,
-                FileNameOf(modelFilepath),
-                static_cast<double>(boundingBox->center_.x_),
-                static_cast<double>(boundingBox->center_.y_),
-                static_cast<double>(boundingBox->center_.z_),
-                static_cast<double>(boundingBox->dimensions_.length_),
-                static_cast<double>(boundingBox->dimensions_.width_),
-                static_cast<double>(boundingBox->dimensions_.height_));
+                 name,
+                 FileNameOf(modelFilepath),
+                 static_cast<double>(boundingBox->center_.x_),
+                 static_cast<double>(boundingBox->center_.y_),
+                 static_cast<double>(boundingBox->center_.z_),
+                 static_cast<double>(boundingBox->dimensions_.length_),
+                 static_cast<double>(boundingBox->dimensions_.width_),
+                 static_cast<double>(boundingBox->dimensions_.height_));
         }
     }
     else if (scaleMode == EntityScaleMode::MODEL_TO_BB)
@@ -2870,9 +2871,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 }
                 else
                 {
-                    ERROR("Failed to load signal {}.osgb / {}.osgb - use simple bounding box",
-                        filename,
-                        signal->GetName());
+                    ERROR("Failed to load signal {}.osgb / {}.osgb - use simple bounding box", filename, signal->GetName());
                     osg::ref_ptr<osg::PositionAttitudeTransform> obj_standin =
                         dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
                     obj_standin->setNodeMask(NODE_MASK_SIGN);
@@ -2947,9 +2946,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 
                     if (tx == nullptr)
                     {
-                        WARN("Failed to load road object model file: {} ({}). Creating a bounding box as stand in.",
-                            filename,
-                            object->GetName());
+                        WARN("Failed to load road object model file: {} ({}). Creating a bounding box as stand in.", filename, object->GetName());
                     }
                 }
 
@@ -3424,8 +3421,8 @@ int Viewer::LoadShadowfile(std::string vehicleModelFilename)
     if (!shadow_node_)
     {
         WARN("Failed to locate shadow model {} based on vehicle model filename {} - continue without",
-            SHADOW_MODEL_FILEPATH,
-            vehicleModelFilename.c_str());
+             SHADOW_MODEL_FILEPATH,
+             vehicleModelFilename.c_str());
         return -1;
     }
 

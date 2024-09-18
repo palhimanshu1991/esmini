@@ -10,7 +10,7 @@
 #include "ScenarioEngine.hpp"
 #include "ScenarioReader.hpp"
 #include "ControllerFollowRoute.hpp"
-
+#include "TestHelper.hpp"
 #define TRIG_ERR_MARGIN 0.001
 
 using namespace roadmanager;
@@ -232,6 +232,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
 int main(int argc, char **argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestOptionHandling*";
+    ParseAndSetLoggerOptions(argc, argv);
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

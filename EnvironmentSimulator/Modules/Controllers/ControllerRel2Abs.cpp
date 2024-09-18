@@ -420,7 +420,7 @@ void ControllerRel2Abs::Step(double timeStep)
                     lda->End();
                     lsa->Start(scenario_engine_->getSimulationTime());
                     INFO("Replacing the relative target LongDistanceAction with an absolute target LongSpeedAction and target value: {:.2f}",
-                        currentSpeed);
+                         currentSpeed);
                 }
             }
             else if (activeActions[i]->action_type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
@@ -529,7 +529,8 @@ void ControllerRel2Abs::Step(double timeStep)
                             }
                             sa->End();
                             lsa->Start(scenario_engine_->getSimulationTime());
-                            INFO("Replacing the SynchronizeAction (with final speed) with an absolute target LongSpeedAction and target value: {:.2f}",
+                            INFO(
+                                "Replacing the SynchronizeAction (with final speed) with an absolute target LongSpeedAction and target value: {:.2f}",
                                 trgSpeed);
                         }
                         else if (sa->mode_ == SynchronizeAction::SynchMode::MODE_NON_LINEAR)
@@ -576,7 +577,7 @@ void ControllerRel2Abs::Step(double timeStep)
                         sa->End();
                         lsa->Start(scenario_engine_->getSimulationTime());
                         INFO("Replacing the SynchronizeAction (no final speed) with an absolute target LongSpeedAction and target value: {:.2f}",
-                            currentSpeed);
+                             currentSpeed);
                     }
                 }
             }
