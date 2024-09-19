@@ -1240,7 +1240,7 @@ public:
             Note: Needs to be called prior to calling SE_Init()
             @param path Logfile path
     */
-    void        SetLogFilePath(std::string logFilePath);
+    // void        SetLogFilePath(std::string logFilePath);
     std::string GetLogFilePath()
     {
         return logFilePath_;

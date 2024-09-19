@@ -464,13 +464,13 @@ int main(int argc, char **argv)
 
     if (opt.GetOptionSet("disable_log"))
     {
-        SE_Env::Inst().SetLogFilePath("");
+        // SE_Env::Inst().SetLogFilePath("");
         printf("Disable logfile\n");
     }
     else if (opt.IsOptionArgumentSet("logfile_path"))
     {
         arg_str = opt.GetOptionArg("logfile_path");
-        SE_Env::Inst().SetLogFilePath(arg_str);
+        // SE_Env::Inst().SetLogFilePath(arg_str);
         if (arg_str.empty())
         {
             printf("Custom logfile path empty, disable logfile\n");

@@ -1380,15 +1380,16 @@ SE_Env& SE_Env::Inst()
     return instance_;
 }
 
-void SE_Env::SetLogFilePath(std::string logFilePath)
-{
-    logFilePath_ = logFilePath;
-    if (Logger::Inst().IsFileOpen())
-    {
-        // Probably user wants another logfile with a new name
-        Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
-    }
-}
+// void SE_Env::SetLogFilePath(std::string logFilePath)
+// {
+
+//     logFilePath_ = logFilePath;
+//     if (Logger::Inst().IsFileOpen())
+//     {
+//         // Probably user wants another logfile with a new name
+//         Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
+//     }
+// }
 
 void SE_Env::SetDatFilePath(std::string datFilePath)
 {

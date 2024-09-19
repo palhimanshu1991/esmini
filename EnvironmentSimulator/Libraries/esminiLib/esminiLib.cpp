@@ -492,6 +492,7 @@ extern "C"
     {
         // SE_Env::Inst().SetLogFilePath(logFilePath);
         LOG_INFO("calling CreateNewFileForLogging");
+        SE_SetOptionValue("--logfile_path", logFilePath);
         CreateNewFileForLogging(logFilePath);
     }
 
