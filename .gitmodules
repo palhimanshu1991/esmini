@@ -4,3 +4,6 @@
 [submodule "externals/fmi2"]
 	path = externals/fmi2
 	url = https://github.com/modelica/fmi-standard.git
+[submodule "externals/spdlog"]
+	path = externals/spdlog
+	url = https://github.com/gabime/spdlog.git
