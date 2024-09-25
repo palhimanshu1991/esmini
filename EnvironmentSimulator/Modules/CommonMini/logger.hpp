@@ -174,8 +174,8 @@ void __LOG_ERROR__AND__QUIT__(char const* function, char const* file, long line,
         firstTime = false;                                              \
     }
 
-#define LOG_WARN(log, ...) __LOG_WARN__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
+#define LOG_WARN(...) __LOG_WARN__(__func__, __FILE__, __LINE__, ##__VA_ARGS__)
 
-#define LOG_INFO(log, ...) __LOG_INFO__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
+#define LOG_INFO(...) __LOG_INFO__(__func__, __FILE__, __LINE__, ##__VA_ARGS__)
 
-#define LOG_DEBUG(log, ...) __LOG_DEBUG__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
+#define LOG_DEBUG(...) __LOG_DEBUG__(__func__, __FILE__, __LINE__, ##__VA_ARGS__)
