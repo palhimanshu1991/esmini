@@ -120,9 +120,18 @@ endif()
 
 # ############################### Loading common packages ############################################################
 
+set(SPDLOG_BUILD_SHARED
+    OFF)
+set(SPDLOG_BUILD_PIC
+    ON)
+add_subdirectory(externals/spdlog)
+set(SPDLOG_LIBRARIES
+    spdlog)
+
 if(LINUX)
-    # add link lib for missing filesystem functions in gcc 7.5
+    # add link lib for missing filesystem functions in case gcc 7.5 is used
     set(SPDLOG_LIBRARIES
+        ${SPDLOG_LIBRARIES}
         "-lstdc++fs")
 endif()
 
