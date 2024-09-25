@@ -1,7 +1,7 @@
 #include "logger.hpp"
 
-//#include "spdlog/spdlog.h"
-//#include "spdlog/sinks/stdout_color_sinks.h"
+// #include "spdlog/spdlog.h"
+// #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_sinks.h"
 #include "spdlog/fmt/fmt.h"
@@ -61,7 +61,7 @@ bool LogConsole()
         }
         else
         {
-            //consoleLogger = spdlog::stdout_color_mt("console");
+            // consoleLogger = spdlog::stdout_color_mt("console");
             consoleLogger = spdlog::stdout_logger_mt("console");
             InitIndivisualLogger(consoleLogger);
         }
