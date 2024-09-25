@@ -119,8 +119,13 @@ if(NOT
 endif()
 
 # ############################### Loading common packages ############################################################
-# Add spdlog include directory
-include_directories(${CMAKE_SOURCE_DIR}/externals/)
+
+if(LINUX)
+    # add link lib for missing filesystem functions in gcc 7.5
+    set(SPDLOG_LIBRARIES
+        "-lstdc++fs")
+endif()
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/color.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/locations.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/definitions.cmake)
