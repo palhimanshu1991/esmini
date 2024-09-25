@@ -30,7 +30,7 @@ void                      SetupLogger(const LoggerConfig& logConfig);
 void                      InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger);
 bool                      ShouldLogModule(char const* file);
 void                      LogVersion();
-std::string               AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& level);
+std::string               AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& level, const std::string& log);
 spdlog::level::level_enum GetLogLevelFromStr(const std::string& str);
 void                      LogTimeOnly();
 void                      SetLoggerTime(double* ptr);
@@ -43,7 +43,7 @@ extern std::shared_ptr<spdlog::logger> consoleLogger;
 extern std::shared_ptr<spdlog::logger> fileLogger;
 
 template <class... ARGS>
-void __LOG_DEBUG__(char const* function, char const* file, long line, ARGS... args)
+void __LOG_DEBUG__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
 {
     if (!ShouldLogModule(file))
     {
@@ -52,21 +52,21 @@ void __LOG_DEBUG__(char const* function, char const* file, long line, ARGS... ar
     std::string logWithTimeAndMeta;
     if (LogConsole())
     {
-        logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "debug");
-        consoleLogger->debug("{}{}", logWithTimeAndMeta, args...);
+        logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "debug", log);
+        consoleLogger->debug(logWithTimeAndMeta, args...);
     }
     if (LogFile())
     {
         if (logWithTimeAndMeta.empty())
         {
-            logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "debug");
+            logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "debug", log);
         }
-        fileLogger->debug("{}{}", logWithTimeAndMeta, args...);
+        fileLogger->debug(logWithTimeAndMeta, args...);
     }
 }
 
 template <class... ARGS>
-void __LOG_INFO__(char const* function, char const* file, long line, ARGS... args)
+void __LOG_INFO__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
 {
     if (!ShouldLogModule(file))
     {
@@ -75,21 +75,21 @@ void __LOG_INFO__(char const* function, char const* file, long line, ARGS... arg
     std::string logWithTimeAndMeta;
     if (LogConsole())
     {
-        logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "info");
-        consoleLogger->info("{}{}", logWithTimeAndMeta, args...);
+        logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "info", log);
+        consoleLogger->info(logWithTimeAndMeta, args... );
     }
     if (LogFile())
     {
         if (logWithTimeAndMeta.empty())
         {
-            logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "info");
+            logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "info", log);
         }
-        fileLogger->info("{}{}", logWithTimeAndMeta, args...);
+        fileLogger->info(logWithTimeAndMeta, args...);
     }
 }
 
 template <class... ARGS>
-void __LOG_WARN__(char const* function, char const* file, long line, ARGS... args)
+void __LOG_WARN__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
 {
     if (!ShouldLogModule(file))
     {
@@ -98,21 +98,21 @@ void __LOG_WARN__(char const* function, char const* file, long line, ARGS... arg
     std::string logWithTimeAndMeta;
     if (LogConsole())
     {
-        logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "warn");
+        logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "warn", log);
         consoleLogger->warn(logWithTimeAndMeta, args...);
     }
     if (LogFile())
     {
         if (logWithTimeAndMeta.empty())
         {
-            logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "warn");
+            logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "warn", log);
         }
         fileLogger->warn(logWithTimeAndMeta, args...);
     }
 }
 
 template <class... ARGS>
-void __LOG_ERROR__(char const* function, char const* file, long line, ARGS... args)
+void __LOG_ERROR__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
 {
     if (!ShouldLogModule(file))
     {
@@ -121,33 +121,33 @@ void __LOG_ERROR__(char const* function, char const* file, long line, ARGS... ar
     std::string logWithTimeAndMeta;
     if (LogConsole())
     {
-        logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "error");
+        logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "error", log);
         consoleLogger->error(logWithTimeAndMeta, args...);
     }
     if (LogFile())
     {
         if (logWithTimeAndMeta.empty())
         {
-            logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "error");
+            logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "error", log);
         }
         fileLogger->error(logWithTimeAndMeta, args...);
     }
 }
 
 template <class... ARGS>
-void __LOG_ERROR__AND__QUIT__(char const* function, char const* file, long line, ARGS... args)
+void __LOG_ERROR__AND__QUIT__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
 {
     std::string logMsg;
     if (LogConsole())
     {
-        logMsg = fmt::format(AddTimeAndMetaData(function, file, line, "error"), args...);
+        logMsg = fmt::format(AddTimeAndMetaData(function, file, line, "error", log), args...);
         consoleLogger->error(logMsg);
     }
     if (LogFile())
     {
         if (logMsg.empty())
         {
-            logMsg = fmt::format(AddTimeAndMetaData(function, file, line, "error"), args...);
+            logMsg = fmt::format(AddTimeAndMetaData(function, file, line, "error", log), args...);
         }
         fileLogger->error(logMsg);
     }

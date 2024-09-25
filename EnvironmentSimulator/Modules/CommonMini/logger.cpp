@@ -231,7 +231,7 @@ bool ShouldLogModule(char const* file)
     return true;
 }
 
-std::string AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& level)
+std::string AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& level, const std::string& log)
 {
     // std::cout << "Pointer value: " << loggerConfig.time_ << std::endl;
     if (loggerConfig.time_ != nullptr)
@@ -246,12 +246,12 @@ std::string AddTimeAndMetaData(char const* function, char const* file, long line
     if (SE_Env::Inst().GetOptions().GetOptionSet("log_meta_data"))
     {
         std::string fileName = fs::path(file).filename().string();
-        std::string logWithTimeAndMeta{fmt::format("{} [{}] [{}::{}::{}] ", strTime, level, fileName, function, line)};
+        std::string logWithTimeAndMeta{fmt::format("{} [{}] [{}::{}::{}] {}", strTime, level, fileName, function, line, log)};
         return logWithTimeAndMeta;
     }
     else
     {
-        std::string logWithTime{fmt::format("{} [{}] ", strTime, level)};
+        std::string logWithTime{fmt::format("{} [{}] {}", strTime, level, log)};
         return logWithTime;
     }
 }
