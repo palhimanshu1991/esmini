@@ -524,6 +524,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^20.000, 1, NPC1, 60.000, -1.535, 0.000, 0.000, 0.000, 0.000, 1.000, 0.000, 0.594', csv, re.MULTILINE))
         self.assertTrue(re.search('^20.000, 2, NPC2, 30.000, 1.535, 0.000, 3.142, 0.000, 0.000, 1.000, 0.000, 0.594', csv, re.MULTILINE))
 
+<<<<<<< HEAD
         # osg viewer, which replayer depends on, fails on CI headless mac system
         if sys.platform != "darwin":
             # make sure replayer is available, which is not the case when USE_OSG=FALSE has been defined in build configuration
@@ -539,6 +540,16 @@ class TestSuite(unittest.TestCase):
                 print('\n  - skipping collision checks due to missing replayer, probably esmini built without OSG support', flush=True)
         else:
             print('\n  - skipping collision checks on mac due to replayer graphics dependencies not working on CI macOS image', flush=True)
+=======
+        if sys.platform != "darwin":  # osg viewer, which replayer depends on, fails on CI headless mac system
+            log = run_replayer(COMMON_REPLAYER_ARGS + '--collision continue')
+            self.assertTrue(re.search('Collision between Ego \\(id 0\\) and NPC2 \\(id 2\\) at time 5.25', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('Relative speed 14.40 km/h', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('Angle -180.00 degrees \\(ego to target\\)', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('Collision between Ego \\(id 0\\) and NPC1 \\(id 1\\) at time 6.26.', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('Relative speed 14.40 km/h', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('Angle 0.00 degrees \\(ego to target\\)', log, re.MULTILINE)  is not None)
+>>>>>>> d7813858 (Add platform specific details and test cases)
 
     def test_add_delete_entity(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ESMINI_ARGS)
