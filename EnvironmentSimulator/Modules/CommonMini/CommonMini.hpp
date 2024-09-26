@@ -60,30 +60,7 @@ typedef int64_t __int64;
 #define LOG_FILENAME                  "log.txt"
 #define DAT_FILENAME                  "sim.dat"
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
-/*
-#define LOG(...)       Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-#define LOG_TRACE(...) Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-#define LOG_ONCE(...)                                                                            \
-    {                                                                                            \
-        static bool firstTime = true;                                                            \
-        if (firstTime)                                                                           \
-        {                                                                                        \
-            Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__); \
-            firstTime = false;                                                                   \
-        }                                                                                        \
-    }
-#define LOG_TRACE_ONCE(...)                                                                     \
-    {                                                                                           \
-        static bool firstTime = true;                                                           \
-        if (firstTime)                                                                          \
-        {                                                                                       \
-            Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__); \
-            firstTime = false;                                                                  \
-        }                                                                                       \
-    }
-#define LOG_AND_QUIT(...)       Logger::Inst().Log(true, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-#define LOG_TRACE_AND_QUIT(...) Logger::Inst().Log(true, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-*/
+
 // Time functions
 __int64 SE_getSystemTime();
 void    SE_sleep(unsigned int msec);
@@ -889,11 +866,13 @@ public:
     {
         return originalArgs_;
     }
-    bool IsInOriginalArgs(std::string opt);
-    bool HasUnknownArgs();
-    void Reset();
-    int  ChangeOptionArg(std::string opt, std::string new_value, int index = 0);
-    int  SetOptionValue(std::string opt, std::string value, bool add = false);
+    bool                          IsInOriginalArgs(std::string opt);
+    bool                          HasUnknownArgs();
+    void                          Reset();
+    int                           ChangeOptionArg(std::string opt, std::string new_value, int index = 0);
+    int                           SetOptionValue(std::string opt, std::string value, bool add = false);
+    int                           UnsetOption(const std::string& opt);
+    const std::vector<SE_Option>& GetAllOptions() const;
 
 private:
     std::vector<SE_Option>   option_;

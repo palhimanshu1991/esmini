@@ -29,6 +29,8 @@
 #include "viewer.hpp"
 #endif
 
+#include "spdlog/fmt/fmt.h"
+
 using namespace scenarioengine;
 
 #define GHOST_HEADSTART 2.5
@@ -44,11 +46,6 @@ void RegisterImageCallback(viewer::ImageCallbackFunc func, void* data)
     imageCallback.data = data;
 }
 #endif
-
-static void log_callback(const char* str)
-{
-    printf("%s\n", str);
-}
 
 ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     : maxStepSize(0.1),
@@ -1201,13 +1198,13 @@ void ScenarioPlayer::PrintUsage()
 #endif
 }
 
-int ScenarioPlayer::Init(bool logTime)
+int ScenarioPlayer::Init()
 {
     // Use logger callback
-    if (!(Logger::Inst().IsCallbackSet()))
-    {
-        Logger::Inst().SetCallback(log_callback);
-    }
+    // if (!(Logger::Inst().IsCallbackSet()))
+    // {
+    //     Logger::Inst().SetCallback(log_callback);
+    // }
 
     std::string arg_str;
 
@@ -1294,10 +1291,29 @@ int ScenarioPlayer::Init(bool logTime)
         PrintUsage();
         return -2;
     }
-    if (logTime)
+    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
+    LogTimeOnly();
+
+    std::string strAllSetOptions;
+
+    for (const auto& option : opt.GetAllOptions())
     {
-        LogTimeOnly();
+        if (option.set_)
+        {
+            std::string currentOptionValue;
+            if (!option.arg_value_.empty())
+            {
+                for (auto itr = option.arg_value_.begin(); itr != option.arg_value_.end(); ++itr)
+                {
+                    currentOptionValue = fmt::format("{} {}", currentOptionValue, *itr);
+                }
+            }
+
+            strAllSetOptions = fmt::format("{}--{}{} ", strAllSetOptions, option.opt_str_, currentOptionValue);
+        }
     }
+    LOG_INFO("Player options: {}", strAllSetOptions);
+
     if (opt.GetOptionSet("help"))
     {
         PrintUsage();
@@ -1309,9 +1325,20 @@ int ScenarioPlayer::Init(bool logTime)
         Logger::Inst().SetCallback(0);
     }
 
+    if (opt.IsOptionArgumentSet("disable_stdout"))
+    {
+        opt.SetOptionValue("--disable_stdout", opt.GetOptionArg("disable_stdout"));
+    }
+    else
+    {
+        // default there will be no console logging by logger itself
+        // player activates it explicitly
+        opt.SetOptionValue("--disable_stdout", "no");
+    }
+
     // Setup logger
-    std::string  log_filename = SE_Env::Inst().GetLogFilePath();
-    LoggerConfig logConfig;
+    std::string log_filename = SE_Env::Inst().GetLogFilePath();
+    // LoggerConfig logConfig;
     if (opt.GetOptionSet("disable_log"))
     {
         log_filename = "";
@@ -1348,7 +1375,7 @@ int ScenarioPlayer::Init(bool logTime)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
+            LoggerConfig::Inst().enabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
     if (opt.IsOptionArgumentSet("log_skip_modules"))
@@ -1357,11 +1384,11 @@ int ScenarioPlayer::Init(bool logTime)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
+            LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
 
-    SetupLogger(logConfig);
+    // SetupLogger(logConfig);
 
     if (opt.GetOptionSet("version"))
     {
@@ -1442,9 +1469,6 @@ int ScenarioPlayer::Init(bool logTime)
         log_filename = dist.AddInfoToFilepath(log_filename);
     }
 
-    // Logger::Inst().OpenLogfile(log_filename);
-    // Logger::Inst().LogVersion();
-    // riz temp
     CreateNewFileForLogging(log_filename);
     if (dist.GetNumPermutations() > 0)
     {

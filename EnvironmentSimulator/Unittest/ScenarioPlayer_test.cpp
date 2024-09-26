@@ -439,26 +439,15 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
     delete se;
 }
 
-// #define LOG_TO_CONSOLE
-
-#ifdef LOG_TO_CONSOLE
-static void log_callback(const char* str)
-{
-    printf("%s\n", str);
-}
-#endif
-
 int main(int argc, char** argv)
 {
-#ifdef LOG_TO_CONSOLE
-    if (!(Logger::Inst().IsCallbackSet()))
-    {
-        Logger::Inst().SetCallback(log_callback);
-    }
-#endif
-
     // testing::GTEST_FLAG(filter) = "*TestCustomCameraVariants*";
-    ParseAndSetLoggerOptions(argc, argv);
     testing::InitGoogleTest(&argc, argv);
+
+    if (ParseAndSetLoggerOptions(argc, argv) != 0)
+    {
+        return -1;
+    }
+
     return RUN_ALL_TESTS();
 }
