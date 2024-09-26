@@ -70,16 +70,16 @@ TEST(LoggerTests, check_verbosity_level_warn)
             SE_StepDT(0.01f);
         }
     }
-    
+
     SE_Close();
-    
+
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;    
+    const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
-    fread(msg_buf, 1, max_msg_size, file);    
+    fread(msg_buf, 1, max_msg_size, file);
     bool found = strstr(msg_buf, "This message should not be logged") != NULL;
-    EXPECT_FALSE(found);   
+    EXPECT_FALSE(found);
 
     fclose(file);
 }
@@ -98,16 +98,16 @@ TEST(LoggerTests, check_verbosity_level_info)
             SE_StepDT(0.01f);
         }
     }
-    
+
     SE_Close();
-    
+
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;    
+    const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
-    fread(msg_buf, 1, max_msg_size, file);    
+    fread(msg_buf, 1, max_msg_size, file);
     bool found = strstr(msg_buf, "This message should be logged") != NULL;
-    EXPECT_TRUE(found);   
+    EXPECT_TRUE(found);
 
     fclose(file);
 }
@@ -118,7 +118,7 @@ TEST(LoggerTests, check_meta_data)
     const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--log_meta_data"};
 
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-    
+
     for (int i = 0; i < 6; i++)
     {
         if (i < 5)  // skip step of the last round
@@ -126,24 +126,24 @@ TEST(LoggerTests, check_meta_data)
             SE_StepDT(0.01f);
         }
     }
-    
+
     SE_Close();
-    
+
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;    
+    const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
-    fread(msg_buf, 1, max_msg_size, file);    
+    fread(msg_buf, 1, max_msg_size, file);
     bool found = strstr(msg_buf, ".cpp::") != NULL;
-    EXPECT_TRUE(found);   
+    EXPECT_TRUE(found);
 
     fclose(file);
 }
 
-
 TEST(LoggerTests, check_log_only_modules)
 {
-    const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--log_meta_data", "--log_only_modules", "StoryboardElement"};
+    const char* args[] =
+        {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--log_meta_data", "--log_only_modules", "StoryboardElement"};
 
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     SE_LogMessage("This message should be not logged");
@@ -155,14 +155,14 @@ TEST(LoggerTests, check_log_only_modules)
             SE_StepDT(0.01f);
         }
     }
-    
+
     SE_Close();
-    
+
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;    
+    const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
-    fread(msg_buf, 1, max_msg_size, file);    
+    fread(msg_buf, 1, max_msg_size, file);
     bool found = strstr(msg_buf, "This message should be not logged") != NULL;
     EXPECT_FALSE(found);
 
@@ -171,17 +171,17 @@ TEST(LoggerTests, check_log_only_modules)
 
     found = strstr(msg_buf, "Loaded OpenDRIVE:") != NULL;
     EXPECT_FALSE(found);
-    
-    found = strstr(msg_buf, "Init Ego LongitudinalAction initState") != NULL;    
+
+    found = strstr(msg_buf, "Init Ego LongitudinalAction initState") != NULL;
     EXPECT_TRUE(found);
 
     fclose(file);
 }
 
-
 TEST(LoggerTests, check_log_skip_modules)
 {
-    const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--log_meta_data", "--log_skip_modules", "StoryboardElement"};
+    const char* args[] =
+        {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--log_meta_data", "--log_skip_modules", "StoryboardElement"};
 
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     SE_LogMessage("This message should be logged");
@@ -193,14 +193,14 @@ TEST(LoggerTests, check_log_skip_modules)
             SE_StepDT(0.01f);
         }
     }
-    
+
     SE_Close();
-    
+
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;    
+    const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
-    fread(msg_buf, 1, max_msg_size, file);    
+    fread(msg_buf, 1, max_msg_size, file);
     bool found = strstr(msg_buf, "This message should be logged") != NULL;
     EXPECT_TRUE(found);
 
@@ -209,19 +209,18 @@ TEST(LoggerTests, check_log_skip_modules)
 
     found = strstr(msg_buf, "Loaded OpenDRIVE:") != NULL;
     EXPECT_TRUE(found);
-    
-    found = strstr(msg_buf, "Init Ego LongitudinalAction initState") != NULL;    
+
+    found = strstr(msg_buf, "Init Ego LongitudinalAction initState") != NULL;
     EXPECT_FALSE(found);
 
     fclose(file);
 }
 
-
 TEST(LoggerTests, check_log_append)
 {
     const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--log_meta_data", "--log_append"};
 
-    for( int j = 0; j < 2; ++j)
+    for (int j = 0; j < 2; ++j)
     {
         ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
         SE_LogMessage("This message should be logged");
@@ -232,20 +231,20 @@ TEST(LoggerTests, check_log_append)
             {
                 SE_StepDT(0.01f);
             }
-        }    
+        }
         SE_Close();
-    }    
-    
+    }
+
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;    
+    const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
-    fread(msg_buf, 1, max_msg_size, file);    
-    char * pos = strstr(msg_buf, "This message should be logged");
-    bool found = pos != NULL;
+    fread(msg_buf, 1, max_msg_size, file);
+    char* pos   = strstr(msg_buf, "This message should be logged");
+    bool  found = pos != NULL;
     EXPECT_TRUE(found);
-    
-    pos = strstr(pos + 1, "This message should be logged");
+
+    pos   = strstr(pos + 1, "This message should be logged");
     found = pos != NULL;
     EXPECT_TRUE(found);
 

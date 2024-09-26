@@ -28,7 +28,7 @@ void CreateFileLogger(const std::string& path)
     if (path != currentLogFileName)
     {
         bool createNewFile = !SE_Env::Inst().GetOptions().GetOptionSet("log_append");
-        fileLogger = spdlog::basic_logger_mt("file", path, createNewFile);
+        fileLogger         = spdlog::basic_logger_mt("file", path, createNewFile);
         InitIndivisualLogger(fileLogger);
         currentLogFileName = path;
     }
@@ -246,11 +246,11 @@ void InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger)
         logger->set_pattern("%v");
         logger->info(GetVersionInfoForLog());
         if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_level"))
-        {            
+        {
             logger->set_level(GetLogLevelFromStr(SE_Env::Inst().GetOptions().GetOptionArg("log_level")));
         }
         else
-        { 
+        {
             logger->set_level(spdlog::level::info);  // we keep info level as default
         }
     }
