@@ -6262,7 +6262,7 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
         LOG_ERROR("Failed to load {} file. Tried:", sign_filename);
         for (int j = 0; j < file_name_candidates.size(); j++)
         {
-            LOG_INFO("  %s", file_name_candidates[j]);
+            LOG_INFO("  {}", file_name_candidates[j]);
         }
         return false;
     }
@@ -10482,10 +10482,8 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
         diff.dt = tB - (abs(GetT()) * SIGN(adjustedLaneIdA));
         diff.ds = dist;
 
-        // #if 0  // Change to 1 to print some info on stdout - e.g. for debugging
-
         std::string roadIds;
-        // printf("Dist %.2f Path (reversed): %d", dist, pos_b->GetTrackId());
+        LOG_DEBUG("Dist {:.2f} Path (reversed): {}", dist, pos_b->GetTrackId());
         if (path->visited_.size() > 0)
         {
             std::ostringstream  oss;
@@ -10495,15 +10493,12 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
                 if (node->fromRoad != 0)
                 {
                     oss << " <- " << node->fromRoad->GetId();
-                    // printf(" <- %d", node->fromRoad->GetId());
                 }
                 node = node->previous;
             }
             roadIds = oss.str();
         }
         LOG_DEBUG("Dist {:.2f} Path (reversed): {} {}", dist, pos_b->GetTrackId(), roadIds);
-        // printf("\n");
-        // #endif
     }
     else  // no valid route found
     {

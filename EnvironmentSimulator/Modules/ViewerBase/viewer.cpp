@@ -1393,11 +1393,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osgViewer::GraphicsWindow* gw = dynamic_cast<osgViewer::GraphicsWindow*>(gc.get());
     if (!opt->GetOptionSet("headless") && gw == nullptr)
     {
-<<<<<<< HEAD
-        LOG("Failed to create viewer window %d %d %d %d. Try --headless option to run without window", winDim_.x, winDim_.y, winDim_.w, winDim_.h);
-=======
         LOG_ERROR("Failed to create viewer window. Try --headless option to run without window");
->>>>>>> 8addd449 (Add new logger features based on spdlog)
         return;
     }
 
@@ -1526,7 +1522,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
         if (i == file_name_candidates.size())
         {
-            LOG_ERROR("Failed to read environment model {!", modelFilename);
+            LOG_ERROR("Failed to read environment model {}", modelFilename);
         }
     }
 
@@ -2012,12 +2008,10 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         }
         else
         {
-            LOG_ERROR("Failed to load visual model %s. %s",
-                      modelFilepath.c_str(),
-                      file_name_candidates.size() > 1 ? "Also tried the following paths:" : "");
+            LOG_ERROR("Failed to load visual model {}. {}", modelFilepath, file_name_candidates.size() > 1 ? "Also tried the following paths:" : "");
             for (size_t i = 1; i < file_name_candidates.size(); i++)
             {
-                LOG_INFO("    %s", file_name_candidates[i].c_str());
+                LOG_INFO("    {}", file_name_candidates[i]);
             }
             LOG_WARN("Creating a dummy model instead");
         }
