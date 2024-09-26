@@ -77,7 +77,10 @@ TEST(LoggerTests, check_verbosity_level_warn)
     ASSERT_NE(file, nullptr);
     const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
-    fread(msg_buf, 1, max_msg_size, file);
+
+    size_t size = fread(msg_buf, 1, max_msg_size, file);
+    EXPECT_NE(size, 0);
+
     bool found = strstr(msg_buf, "This message should not be logged") != NULL;
     EXPECT_FALSE(found);
 
@@ -105,7 +108,8 @@ TEST(LoggerTests, check_verbosity_level_info)
     ASSERT_NE(file, nullptr);
     const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
-    fread(msg_buf, 1, max_msg_size, file);
+    size_t    size = fread(msg_buf, 1, max_msg_size, file);
+    EXPECT_NE(size, 0);
     bool found = strstr(msg_buf, "This message should be logged") != NULL;
     EXPECT_TRUE(found);
 
@@ -114,7 +118,6 @@ TEST(LoggerTests, check_verbosity_level_info)
 
 TEST(LoggerTests, check_meta_data)
 {
-    //"--log_only_modules", "info"
     const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--log_meta_data"};
 
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
@@ -133,7 +136,8 @@ TEST(LoggerTests, check_meta_data)
     ASSERT_NE(file, nullptr);
     const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
-    fread(msg_buf, 1, max_msg_size, file);
+    size_t    size = fread(msg_buf, 1, max_msg_size, file);
+    EXPECT_NE(size, 0);
     bool found = strstr(msg_buf, ".cpp::") != NULL;
     EXPECT_TRUE(found);
 
@@ -162,7 +166,8 @@ TEST(LoggerTests, check_log_only_modules)
     ASSERT_NE(file, nullptr);
     const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
-    fread(msg_buf, 1, max_msg_size, file);
+    size_t    size = fread(msg_buf, 1, max_msg_size, file);
+    EXPECT_NE(size, 0);
     bool found = strstr(msg_buf, "This message should be not logged") != NULL;
     EXPECT_FALSE(found);
 
@@ -200,7 +205,8 @@ TEST(LoggerTests, check_log_skip_modules)
     ASSERT_NE(file, nullptr);
     const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
-    fread(msg_buf, 1, max_msg_size, file);
+    size_t    size = fread(msg_buf, 1, max_msg_size, file);
+    EXPECT_NE(size, 0);
     bool found = strstr(msg_buf, "This message should be logged") != NULL;
     EXPECT_TRUE(found);
 
@@ -239,7 +245,8 @@ TEST(LoggerTests, check_log_append)
     ASSERT_NE(file, nullptr);
     const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
-    fread(msg_buf, 1, max_msg_size, file);
+    size_t    size = fread(msg_buf, 1, max_msg_size, file);
+    EXPECT_NE(size, 0);
     char* pos   = strstr(msg_buf, "This message should be logged");
     bool  found = pos != NULL;
     EXPECT_TRUE(found);
