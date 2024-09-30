@@ -1203,6 +1203,7 @@ void ScenarioPlayer::PrintUsage()
 
 int ScenarioPlayer::Init(bool logTime)
 {
+    // riz - temp check
     // Use logger callback
     if (!(Logger::Inst().IsCallbackSet()))
     {
@@ -1309,6 +1310,17 @@ int ScenarioPlayer::Init(bool logTime)
         Logger::Inst().SetCallback(0);
     }
 
+    if (opt.IsOptionArgumentSet("disable_stdout"))
+    {
+        opt.SetOptionValue("--disable_stdout", opt.GetOptionArg("disable_stdout"));
+    }
+    else
+    {
+        // default there will be no console logging by logger itself
+        // player activates it explicitly
+        opt.SetOptionValue("--disable_stdout", "no");
+    }
+
     // Setup logger
     std::string  log_filename = SE_Env::Inst().GetLogFilePath();
     LoggerConfig logConfig;
@@ -1348,7 +1360,7 @@ int ScenarioPlayer::Init(bool logTime)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
+            loggerConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
     if (opt.IsOptionArgumentSet("log_skip_modules"))
@@ -1357,11 +1369,11 @@ int ScenarioPlayer::Init(bool logTime)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
+            loggerConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
 
-    SetupLogger(logConfig);
+    //SetupLogger(logConfig);
 
     if (opt.GetOptionSet("version"))
     {

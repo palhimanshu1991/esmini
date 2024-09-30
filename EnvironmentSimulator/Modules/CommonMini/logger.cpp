@@ -40,10 +40,10 @@ void CreateFileLogger(const std::string& path)
 
 bool LogConsole()
 {
-    bool consoleLoggerDisabled = SE_Env::Inst().GetOptions().GetOptionSet("disable_stdout");
+    bool stdoutDisabled = SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout");
     if (consoleLogger)
     {
-        if (consoleLoggerDisabled)
+        if (stdoutDisabled || !loggerConfig.appEnabledConsole_)
         {
             spdlog::drop("console");
             consoleLogger.reset();
@@ -52,17 +52,18 @@ bool LogConsole()
     }
     else  // no console logging currently available
     {
-        if (consoleLoggerDisabled)
+        if (stdoutDisabled)
         {
             return false;
         }
-        else
+        if(loggerConfig.appEnabledConsole_)
         {
             consoleLogger = spdlog::stdout_color_mt("console");
             InitIndivisualLogger(consoleLogger);
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 bool LogFile(const std::string& providedPath)
@@ -113,13 +114,27 @@ bool LogFile(const std::string& providedPath)
     return true;
 }
 
-void CreateNewFileForLogging(const std::string& filePath)
+void SetLoggerLevel(std::shared_ptr<spdlog::logger>& logger)
 {
+    if( !logger)
+    {
+        return;
+    }
     if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_level"))
     {
-        fileLogger->set_level(GetLogLevelFromStr(SE_Env::Inst().GetOptions().GetOptionArg("log_level")));
-        consoleLogger->set_level(GetLogLevelFromStr(SE_Env::Inst().GetOptions().GetOptionArg("log_level")));
+        logger->set_level(GetLogLevelFromStr(SE_Env::Inst().GetOptions().GetOptionArg("log_level")));
     }
+    else
+    {
+        logger->set_level(spdlog::level::info);  // we keep info level as default
+    }
+}
+
+void CreateNewFileForLogging(const std::string& filePath)
+{    
+    SetLoggerLevel(fileLogger);
+    SetLoggerLevel(consoleLogger);        
+
     if (filePath.empty() || currentLogFileName == filePath)
     {
         return;
@@ -245,14 +260,7 @@ void InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger)
     {
         logger->set_pattern("%v");
         logger->info(GetVersionInfoForLog());
-        if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_level"))
-        {
-            logger->set_level(GetLogLevelFromStr(SE_Env::Inst().GetOptions().GetOptionArg("log_level")));
-        }
-        else
-        {
-            logger->set_level(spdlog::level::info);  // we keep info level as default
-        }
+        SetLoggerLevel(logger);
     }
     catch (const std::exception& e)
     {

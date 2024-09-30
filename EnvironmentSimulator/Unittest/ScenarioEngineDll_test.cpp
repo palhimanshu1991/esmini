@@ -4483,15 +4483,17 @@ TEST(StringIds, TestRoadStringIds)
 
 int main(int argc, char** argv)
 {
-    ParseAndSetLoggerOptions(argc, argv);
     testing::InitGoogleTest(&argc, argv);
-
+    
 #if 0  // set to 1 and modify filter to run one single test
 	testing::GTEST_FLAG(filter) = "*AssignRoleTest*";
 	// Or make use of launch argument, e.g. --gtest_filter=TestFetchImage*
 #else
-    SE_LogToConsole(false);
+    // SE_LogToConsole(false);
 #endif
+
+    testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();    
+    listeners.Append(new CommonTestSetup(argc, argv));
 
     return RUN_ALL_TESTS();
 }

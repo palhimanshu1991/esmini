@@ -449,8 +449,12 @@ int main(int argc, char** argv)
         Logger::Inst().SetCallback(log_callback);
     }
 #endif
-    ParseAndSetLoggerOptions(argc, argv);
-    // testing::GTEST_FLAG(filter) = "*check_GroundTruth_including_init_state*";
     testing::InitGoogleTest(&argc, argv);
+    if (ParseAndSetLoggerOptions(argc, argv) != 0)
+    {
+        return -1;
+    }
+    // testing::GTEST_FLAG(filter) = "*check_GroundTruth_including_init_state*";
+    
     return RUN_ALL_TESTS();
 }

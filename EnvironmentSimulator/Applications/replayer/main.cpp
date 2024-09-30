@@ -349,10 +349,11 @@ int main(int argc, char** argv)
     std::string             arg_str;
 
     // Use logger callback for console output instead of logfile
-    Logger::Inst().SetCallback(log_callback);
+    //Logger::Inst().SetCallback(log_callback);
+    loggerConfig.appEnabledConsole_ = true;
 
-    LoggerConfig logConfig;
-    SetupLogger(logConfig);
+    // LoggerConfig logConfig;
+    // SetupLogger(logConfig);
     // Logger::Inst().LogVersion();
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 

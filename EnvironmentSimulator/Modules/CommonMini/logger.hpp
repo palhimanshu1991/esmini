@@ -19,6 +19,7 @@ struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::forma
 
 struct LoggerConfig
 {
+    bool                            appEnabledConsole_ = false;
     std::string                     logFilePath_ = "log.txt";
     std::unordered_set<std::string> enabledFiles_;
     std::unordered_set<std::string> disabledFiles_;

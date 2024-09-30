@@ -37,7 +37,7 @@ static ScenarioPlayer *player = 0;
 static char                   **argv_ = 0;
 static int                      argc_ = 0;
 static std::vector<std::string> args_v;
-static bool                     logToConsole = true;
+//static bool                     logToConsole = true;
 static __int64                  time_stamp   = 0;
 
 static struct
@@ -60,13 +60,13 @@ static std::vector<SE_ObjCallback> objCallback;
 // List of 3D models populated from any found found model_ids.txt file
 static std::map<int, std::string> entity_model_map_;
 
-static void log_callback(const char *str)
-{
-    if (logToConsole)
-    {
-        printf("%s\n", str);
-    }
-}
+// static void log_callback(const char *str)
+// {
+//     if (logToConsole)
+//     {
+//         printf("%s\n", str);
+//     }
+// }
 
 static void resetScenario(void)
 {
@@ -413,12 +413,12 @@ static int InitScenario()
     // Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
     std::setlocale(LC_ALL, "C.UTF-8");
 
-    Logger::Inst().SetCallback(log_callback);
+    loggerConfig.appEnabledConsole_ = true;
+    //Logger::Inst().SetCallback(log_callback);
     // Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
     // Logger::Inst().LogVersion();
-    //  riz temp
-
-    LoggerConfig logConfig;
+    
+    //LoggerConfig logConfig;
     SE_Options  &opt = SE_Env::Inst().GetOptions();
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
@@ -426,7 +426,7 @@ static int InitScenario()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
+            loggerConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
 
@@ -436,10 +436,11 @@ static int InitScenario()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
+            loggerConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
-    SetupLogger(logConfig);
+
+    //SetupLogger(logConfig);
     CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
     LogTimeOnly();
     ConvertArguments();
@@ -956,7 +957,8 @@ extern "C"
     SE_DLL_API void SE_LogToConsole(bool mode)
     {
         // SetOptions()
-        logToConsole = mode;
+        // logToConsole = mode;
+        loggerConfig.appEnabledConsole_ = mode;
     }
 
     SE_DLL_API void SE_CollisionDetection(bool mode)

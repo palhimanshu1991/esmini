@@ -3606,7 +3606,10 @@ int main(int argc, char** argv)
     testing::GTEST_FLAG(filter) = "*ALKS_R157_TestR157RegulationMinDist*";
     // Or make use of launch argument, e.g. --gtest_filter=*ALKS_R157_TestR157RegulationMinDist*
 #endif
-    ParseAndSetLoggerOptions(argc, argv);
     testing::InitGoogleTest(&argc, argv);
+    if (ParseAndSetLoggerOptions(argc, argv) != 0)
+    {
+        return -1;
+    }
     return RUN_ALL_TESTS();
 }

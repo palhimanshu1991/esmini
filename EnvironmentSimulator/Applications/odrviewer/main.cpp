@@ -381,7 +381,8 @@ int main(int argc, char **argv)
     opt.Reset();
 
     // Use logger callback
-    Logger::Inst().SetCallback(log_callback);
+    //Logger::Inst().SetCallback(log_callback);
+    loggerConfig.appEnabledConsole_ = true;
 
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
