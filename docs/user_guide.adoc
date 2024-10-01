@@ -3290,6 +3290,54 @@ Limitations:
 - OpenDRIVE stationary objects not considered
 - Only reference point checking (part of the object can be inside frustum and still not detected)
 
+==== Logging
+
+By default, both file and console logging are enabled. Default log filename is `log.txt`. Default location is current folder, normally the folder from which the application was started.
+
+All this can be controlled and modified through the API. Full details see log related functions in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[esminiLib.hpp]. Following is a brief overview:
+
+===== Enable or disable logging to console:
+
+[source,c++]
+----
+void SE_LogToConsole(bool mode, bool persistent);
+----
+
+The `persistent` flag controls the lifespan of the setting. If `true`, the setting will persist for the remainder of the application lifetime, or until changed again. If `false`, the setting will remain only for the current scenario session. In other words, persistent setting will remain over full `SE_Init()` / `SE_Close()` cycles, while non-persistent setting will be reset to default (console enabled) by each `SE_Init()`.
+
+An additional way to control non-persistent setting of console logging is to set or unset the launch option `--disable_stdout` using the API functions:
+
+[source,c++]
+----
+int SE_SetOption(const char *name);
+int SE_UnsetOption(const char *name);
+----
+
+with `"--disable_stdout"` as argument.
+
+===== Change log filename and/or location
+
+[source,c++]
+----
+void SE_SetLogFilePath(const char *logFilePath);
+----
+
+- Full path can be provided, e.g. `"../myresult/scenario_2.txt"`.
+- If only directory provided, default filename will be used.
+- If only filename provided, default location will be used.
+- if empty string `""` is provided, log file will not be created.
+
+The setting is persistent over scenario runs. Normally it should be called before SE_Init(). If called during the run of a scenario, the current log file will be closed and a new with the specified name and/or location will be created.
+
+===== Log single message
+
+[source,c++]
+----
+void SE_LogMessage(const char *message);
+----
+
+The provided string will be posted to console and file according to settings.
+
 === Simplest example
 
 Below example is just to show the simplicity of using esmini library. For more information and realistic examples, e.g. involving cmake, please go ahead to <<Hello World programming tutorial>>.
