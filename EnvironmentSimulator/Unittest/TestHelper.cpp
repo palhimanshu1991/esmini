@@ -10,7 +10,6 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-
 #include "logger.hpp"
 
 int ParseAndSetLoggerOptions(int argc, char** argv)

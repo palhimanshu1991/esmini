@@ -1197,7 +1197,7 @@ void ScenarioPlayer::PrintUsage()
 }
 
 int ScenarioPlayer::Init(bool logTime)
-{    
+{
     // Use logger callback
     // if (!(Logger::Inst().IsCallbackSet()))
     // {

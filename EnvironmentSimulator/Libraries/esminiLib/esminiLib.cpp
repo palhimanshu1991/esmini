@@ -37,7 +37,7 @@ static ScenarioPlayer *player = 0;
 static char                   **argv_ = 0;
 static int                      argc_ = 0;
 static std::vector<std::string> args_v;
-static __int64                  time_stamp   = 0;
+static __int64                  time_stamp = 0;
 
 static struct
 {
@@ -943,12 +943,12 @@ extern "C"
     SE_DLL_API void SE_LogToConsole(bool mode)
     {
         // SetOptions()
-        SE_EnableConsoleLogging(mode, false);   // check with Emil
+        SE_EnableConsoleLogging(mode, false);  // check with Emil
     }
 
     SE_DLL_API void SE_EnableConsoleLogging(bool state, bool persistant)
     {
-        EnableConsoleLogging(state, persistant);   
+        EnableConsoleLogging(state, persistant);
     }
 
     SE_DLL_API void SE_CollisionDetection(bool mode)

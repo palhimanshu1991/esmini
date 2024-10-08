@@ -1910,10 +1910,10 @@ int SE_Options::UnsetOption(const std::string& opt)
     SE_Option* option = GetOption(opt);
 
     // check that the option exists and that it's a pure option, without arguments
-    if (option != nullptr && option->opt_arg_.empty()) 
+    if (option != nullptr && option->opt_arg_.empty())
     {
-        option->set_ = false; 
-        option->arg_value_.clear();   
+        option->set_ = false;
+        option->arg_value_.clear();
     }
     return 0;
 }

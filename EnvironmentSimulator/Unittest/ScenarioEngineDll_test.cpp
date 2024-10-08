@@ -4484,7 +4484,7 @@ TEST(StringIds, TestRoadStringIds)
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
-    
+
 #if 0  // set to 1 and modify filter to run one single test
 	testing::GTEST_FLAG(filter) = "*AssignRoleTest*";
 	// Or make use of launch argument, e.g. --gtest_filter=TestFetchImage*
@@ -4495,8 +4495,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-#endif    
-    
+#endif
 
     return RUN_ALL_TESTS();
 }

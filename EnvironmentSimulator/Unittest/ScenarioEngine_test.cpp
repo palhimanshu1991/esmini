@@ -3585,13 +3585,12 @@ TEST(ActionTest, TestInstantLaneChange)
 
 int main(int argc, char** argv)
 {
-
 #if 0  // set to 1 and modify filter to run one single test
     testing::GTEST_FLAG(filter) = "*ALKS_R157_TestR157RegulationMinDist*";
     // Or make use of launch argument, e.g. --gtest_filter=*ALKS_R157_TestR157RegulationMinDist*
 #endif
     testing::InitGoogleTest(&argc, argv);
-    
+
     if (ParseAndSetLoggerOptions(argc, argv) != 0)
     {
         return -1;

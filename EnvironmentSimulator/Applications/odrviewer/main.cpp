@@ -451,14 +451,14 @@ int main(int argc, char **argv)
         printf("Run simulation decoupled from realtime, with fixed timestep: %.2f", fixed_timestep);
     }
     LoggerConfig logConfig;
-    
+
     if (opt.GetOptionSet("disable_log"))
-    {    
+    {
         printf("Disable logfile\n");
     }
     else if (opt.IsOptionArgumentSet("logfile_path"))
     {
-        arg_str = opt.GetOptionArg("logfile_path");     
+        arg_str = opt.GetOptionArg("logfile_path");
         if (arg_str.empty())
         {
             printf("Custom logfile path empty, disable logfile\n");
@@ -493,7 +493,7 @@ int main(int argc, char **argv)
     {
         logConfig.logFilePath_ = SE_Env::Inst().GetLogFilePath();
     }
-    SetupLogger(logConfig);    
+    SetupLogger(logConfig);
     LOG_INFO("calling CreateNewFileForLogging");
     CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
     if ((arg_str = opt.GetOptionArg("path")) != "")

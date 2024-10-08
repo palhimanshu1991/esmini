@@ -37,7 +37,7 @@ std::string                     currentLogFileName;
 
 void SetLoggerLevel(std::shared_ptr<spdlog::logger>& logger)
 {
-    if( !logger)
+    if (!logger)
     {
         return;
     }
@@ -71,13 +71,13 @@ void CreateFileLogger(const std::string& path)
 bool LogConsole()
 {
     bool stdoutDisabled = SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout");
-    bool shouldLog = loggerConfig.persistedState_ != PERSISTANCE_STATE::FALSE && !stdoutDisabled;
+    bool shouldLog      = loggerConfig.persistedState_ != PERSISTANCE_STATE::FALSE && !stdoutDisabled;
     if (shouldLog && !consoleLogger)
     {
         consoleLogger = spdlog::stdout_color_mt("console");
         SetLoggerLevel(consoleLogger);
         consoleLogger->set_pattern("%v");
-        consoleLogger->info( GetVersionInfoForLog());    
+        consoleLogger->info(GetVersionInfoForLog());
     }
     return shouldLog;
 }
@@ -131,9 +131,9 @@ bool LogFile(const std::string& providedPath)
 }
 
 void CreateNewFileForLogging(const std::string& filePath)
-{    
+{
     SetLoggerLevel(fileLogger);
-    SetLoggerLevel(consoleLogger);        
+    SetLoggerLevel(consoleLogger);
 
     if (filePath.empty() || currentLogFileName == filePath)
     {
@@ -285,14 +285,14 @@ void LogTimeOnly()
 
 void SetupLogger(const LoggerConfig& logConfig)
 {
-    loggerConfig.enabledFiles_ = logConfig.enabledFiles_;
+    loggerConfig.enabledFiles_  = logConfig.enabledFiles_;
     loggerConfig.disabledFiles_ = logConfig.disabledFiles_;
 }
 
 // we will override program option, discuss if there can be any issue in it
 void EnableConsoleLogging(bool state, bool persistant)
 {
-    if( persistant)
+    if (persistant)
     {
         if (state == true)
         {
@@ -301,19 +301,19 @@ void EnableConsoleLogging(bool state, bool persistant)
         else
         {
             loggerConfig.persistedState_ = PERSISTANCE_STATE::FALSE;
-        }        
+        }
     }
     else
     {
         loggerConfig.persistedState_ = PERSISTANCE_STATE::UNDEFINED;
     }
-    
-    if( state)
-    {            
+
+    if (state)
+    {
         SE_Env::Inst().GetOptions().UnsetOption("disable_stdout");
     }
     else
     {
         SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "");
-    }    
+    }
 }

@@ -38,8 +38,8 @@ enum PERSISTANCE_STATE
 
 struct LoggerConfig
 {
-    PERSISTANCE_STATE                persistedState_ = PERSISTANCE_STATE::UNDEFINED;    
-    std::string                     logFilePath_ = "log.txt";
+    PERSISTANCE_STATE               persistedState_ = PERSISTANCE_STATE::UNDEFINED;
+    std::string                     logFilePath_    = "log.txt";
     std::unordered_set<std::string> enabledFiles_;
     std::unordered_set<std::string> disabledFiles_;
     double*                         time_ = nullptr;

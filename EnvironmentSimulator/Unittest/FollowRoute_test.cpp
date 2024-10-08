@@ -757,12 +757,11 @@ TEST(FollowRouteTest, CalcAverageSpeedForTwoRoadTypes)
     ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
 }
 
-
 int main(int argc, char** argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestOptionHandling*";
     testing::InitGoogleTest(&argc, argv);
-    
+
     if (ParseAndSetLoggerOptions(argc, argv) != 0)
     {
         return -1;

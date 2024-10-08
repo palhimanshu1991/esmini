@@ -23,29 +23,29 @@ set(OperatingSystem_test_sources
 
 unittest(
     OperatingSystem_test
-    "${OperatingSystem_test_sources}"     
+    "${OperatingSystem_test_sources}"
     PlayerBase)
 
 # ############################### Creating executable (RoadManager_test) #############################################
 
-set (RoadManager_test_sources
+set(RoadManager_test_sources
     RoadManager_test.cpp
     ${UNITTEST_COMMON_SRC})
 
 unittest(
     RoadManager_test
-    "${RoadManager_test_sources}"    
+    "${RoadManager_test_sources}"
     RoadManager)
 
 # ############################### Creating executable (ScenarioEngine_test) ##########################################
 
-set (ScenarioEngine_test_sources
+set(ScenarioEngine_test_sources
     ScenarioEngine_test.cpp
     ${UNITTEST_COMMON_SRC})
 
 unittest(
     ScenarioEngine_test
-    "${ScenarioEngine_test_sources}"    
+    "${ScenarioEngine_test_sources}"
     ScenarioEngine
     Controllers
     RoadManager
@@ -88,7 +88,7 @@ set(ScenarioEngineDll_sources
 
 unittest(
     ScenarioEngineDll_test
-    "${ScenarioEngineDll_sources}"    
+    "${ScenarioEngineDll_sources}"
     esminiLib
     CommonMini
     ${OSI_LIBRARIES})
@@ -106,9 +106,9 @@ unittest(
     CommonMini)
 
 # ############################### Creating executable (CommonMini_test) ##############################################
-set( CommonMini_test_sources
-     CommonMini_test.cpp
-     ${UNITTEST_COMMON_SRC})
+set(CommonMini_test_sources
+    CommonMini_test.cpp
+    ${UNITTEST_COMMON_SRC})
 
 unittest(
     CommonMini_test
@@ -122,7 +122,7 @@ set(FollowRoute_test_sources
 
 unittest(
     FollowRoute_test
-    "${FollowRoute_test_sources}"    
+    "${FollowRoute_test_sources}"
     RoadManager)
 
 # ############################### Creating executable (FollowRouteController_test) ##############################################
@@ -132,7 +132,7 @@ set(FollowRouteController_test_sources
 
 unittest(
     FollowRouteController_test
-    "${FollowRouteController_test_sources}"    
+    "${FollowRouteController_test_sources}"
     ScenarioEngine
     Controllers
     PlayerBase
