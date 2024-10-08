@@ -71,7 +71,7 @@ void CreateFileLogger(const std::string& path)
 bool LogConsole()
 {
     bool stdoutDisabled = SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout");
-    bool shouldLog      = loggerConfig.persistedState_ != PERSISTANCE_STATE::FALSE && !stdoutDisabled;
+    bool shouldLog      = loggerConfig.persistedState_ != LOG_PERSISTANCE_STATE::LPS_FALSE && !stdoutDisabled;
     if (shouldLog && !consoleLogger)
     {
         consoleLogger = spdlog::stdout_color_mt("console");
@@ -296,16 +296,16 @@ void EnableConsoleLogging(bool state, bool persistant)
     {
         if (state == true)
         {
-            loggerConfig.persistedState_ = PERSISTANCE_STATE::TRUE;
+            loggerConfig.persistedState_ = LOG_PERSISTANCE_STATE::LPS_TRUE;
         }
         else
         {
-            loggerConfig.persistedState_ = PERSISTANCE_STATE::FALSE;
+            loggerConfig.persistedState_ = LOG_PERSISTANCE_STATE::LPS_FALSE;
         }
     }
     else
     {
-        loggerConfig.persistedState_ = PERSISTANCE_STATE::UNDEFINED;
+        loggerConfig.persistedState_ = LOG_PERSISTANCE_STATE::LPS_UNDEFINED;
     }
 
     if (state)

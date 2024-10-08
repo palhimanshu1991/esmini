@@ -29,16 +29,16 @@ struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::forma
     }
 };
 
-enum PERSISTANCE_STATE
+enum class LOG_PERSISTANCE_STATE
 {
-    UNDEFINED,
-    TRUE,
-    FALSE
+    LPS_UNDEFINED,
+    LPS_TRUE,
+    LPS_FALSE
 };
 
 struct LoggerConfig
 {
-    PERSISTANCE_STATE               persistedState_ = PERSISTANCE_STATE::UNDEFINED;
+    LOG_PERSISTANCE_STATE           persistedState_ = LOG_PERSISTANCE_STATE::LPS_UNDEFINED;
     std::string                     logFilePath_    = "log.txt";
     std::unordered_set<std::string> enabledFiles_;
     std::unordered_set<std::string> disabledFiles_;
