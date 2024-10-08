@@ -3583,24 +3583,8 @@ TEST(ActionTest, TestInstantLaneChange)
     delete se;
 }
 
-// Uncomment to print log output to console
-// #define LOG_TO_CONSOLE
-
-#ifdef LOG_TO_CONSOLE
-static void log_callback(const char* str)
-{
-    printf("%s\n", str);
-}
-#endif
-
 int main(int argc, char** argv)
 {
-#ifdef LOG_TO_CONSOLE
-    if (!(Logger::Inst().IsCallbackSet()))
-    {
-        Logger::Inst().SetCallback(log_callback);
-    }
-#endif
 
 #if 0  // set to 1 and modify filter to run one single test
     testing::GTEST_FLAG(filter) = "*ALKS_R157_TestR157RegulationMinDist*";
@@ -3612,6 +3596,6 @@ int main(int argc, char** argv)
     {
         return -1;
     }
-        
+
     return RUN_ALL_TESTS();
 }

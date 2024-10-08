@@ -59,14 +59,6 @@ static std::vector<SE_ObjCallback> objCallback;
 // List of 3D models populated from any found found model_ids.txt file
 static std::map<int, std::string> entity_model_map_;
 
-// static void log_callback(const char *str)
-// {
-//     if (logToConsole)
-//     {
-//         printf("%s\n", str);
-//     }
-// }
-
 static void resetScenario(void)
 {
     if (player != nullptr)
@@ -412,10 +404,6 @@ static int InitScenario()
     // Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
     std::setlocale(LC_ALL, "C.UTF-8");
 
-    //Logger::Inst().SetCallback(log_callback);
-    // Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
-    // Logger::Inst().LogVersion();
-    
     LoggerConfig logConfig;
     SE_Options  &opt = SE_Env::Inst().GetOptions();
     if (opt.IsOptionArgumentSet("log_only_modules"))

@@ -45,11 +45,6 @@ void RegisterImageCallback(viewer::ImageCallbackFunc func, void* data)
 }
 #endif
 
-static void log_callback(const char* str)
-{
-    printf("%s\n", str);
-}
-
 ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     : maxStepSize(0.1),
       minStepSize(0.001),

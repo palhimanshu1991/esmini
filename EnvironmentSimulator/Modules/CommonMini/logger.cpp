@@ -80,34 +80,6 @@ bool LogConsole()
         consoleLogger->info( GetVersionInfoForLog());    
     }
     return shouldLog;
-    // if (consoleLogger)
-    // {    
-    //     if (stdoutDisabled)
-    //     {
-    //         spdlog::drop("console");
-    //         consoleLogger.reset();
-    //         return false;
-    //     }
-    //     else
-    //     {
-    //         return true;
-    //     }
-        
-    // }
-    // else  // no console logging currently available
-    // {
-    //     if (stdoutDisabled)
-    //     {
-    //         return false;
-    //     }
-    //     if(loggerConfig.consoleAvailable_)
-    //     {
-    //         consoleLogger = spdlog::stdout_color_mt("console");
-    //         InitIndivisualLogger(consoleLogger);
-    //         return true;
-    //     }
-    // }
-    // return false;
 }
 
 bool LogFile(const std::string& providedPath)
@@ -282,26 +254,6 @@ void SetLoggerTime(double* ptr)
     loggerConfig.time_ = ptr;
 }
 
-/*
-void InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger)
-{
-    try
-    {
-        logger->set_pattern("%v");
-        logger->info(GetVersionInfoForLog());        
-        SetLoggerLevel(logger);
-    }
-    catch (const std::exception& e)
-    {
-        std::cout << e.what() << '\n';
-    }
-    catch (...)
-    {
-        std::cout << "generic error incurred" << std::endl;
-    }
-}
-*/
-
 void LogVersion()
 {
     std::string esminiVersion = GetVersionInfoForLog();
@@ -363,19 +315,5 @@ void EnableConsoleLogging(bool state, bool persistant)
     else
     {
         SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "");
-    }
-
-    // if( persistant)
-    // {
-    //     loggerConfig.persistedState_ = state;
-    // }
-    // else if( state)
-    // {
-        
-    //     SE_Env::Inst().GetOptions().UnsetOption("disable_stdout");
-    // }
-    // else
-    // {
-    //     SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "");
-    // }
+    }    
 }

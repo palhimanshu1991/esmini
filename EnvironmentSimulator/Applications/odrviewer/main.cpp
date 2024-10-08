@@ -95,11 +95,6 @@ static const char *carModelsFiles_[] = {
 
 std::vector<osg::ref_ptr<osg::LOD>> carModels_;
 
-// void log_callback(const char *str)
-// {
-//     printf("%s\n", str);
-// }
-
 void FetchKeyEvent(viewer::KeyEvent *keyEvent, void *)
 {
     if (keyEvent->down_)
@@ -380,8 +375,6 @@ int main(int argc, char **argv)
     SE_Options &opt = SE_Env::Inst().GetOptions();
     opt.Reset();
 
-    // Use logger callback
-    //Logger::Inst().SetCallback(log_callback);
     EnableConsoleLogging(true, true);
 
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
@@ -458,20 +451,14 @@ int main(int argc, char **argv)
         printf("Run simulation decoupled from realtime, with fixed timestep: %.2f", fixed_timestep);
     }
     LoggerConfig logConfig;
-    if (opt.GetOptionSet("disable_stdout"))
-    {
-        Logger::Inst().SetCallback(0);
-    }
-
+    
     if (opt.GetOptionSet("disable_log"))
-    {
-        // SE_Env::Inst().SetLogFilePath("");
+    {    
         printf("Disable logfile\n");
     }
     else if (opt.IsOptionArgumentSet("logfile_path"))
     {
-        arg_str = opt.GetOptionArg("logfile_path");
-        // SE_Env::Inst().SetLogFilePath(arg_str);
+        arg_str = opt.GetOptionArg("logfile_path");     
         if (arg_str.empty())
         {
             printf("Custom logfile path empty, disable logfile\n");
@@ -506,9 +493,7 @@ int main(int argc, char **argv)
     {
         logConfig.logFilePath_ = SE_Env::Inst().GetLogFilePath();
     }
-    SetupLogger(logConfig);
-    // Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
-    // Logger::Inst().LogVersion();
+    SetupLogger(logConfig);    
     LOG_INFO("calling CreateNewFileForLogging");
     CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
     if ((arg_str = opt.GetOptionArg("path")) != "")

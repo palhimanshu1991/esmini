@@ -348,9 +348,6 @@ int main(int argc, char** argv)
     static char             info_str_buf[256];
     std::string             arg_str;
 
-    // Use logger callback for console output instead of logfile
-    //Logger::Inst().SetCallback(log_callback);
-
     EnableConsoleLogging(true, true);
     LoggerConfig logConfig;
     SetupLogger(logConfig);
