@@ -1905,6 +1905,19 @@ int SE_Options::SetOptionValue(std::string opt, std::string value, bool add)
     return 0;
 }
 
+int SE_Options::UnsetOption(const std::string& opt)
+{
+    SE_Option* option = GetOption(opt);
+
+    // check that the option exists and that it's a pure option, without arguments
+    if (option != nullptr && option->opt_arg_.empty()) 
+    {
+        option->set_ = false; 
+        option->arg_value_.clear();   
+    }
+    return 0;
+}
+
 int SE_Options::ParseArgs(int argc, const char* const argv[])
 {
     std::vector<const char*> args = {argv, std::next(argv, argc)};

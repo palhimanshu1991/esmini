@@ -3607,9 +3607,11 @@ int main(int argc, char** argv)
     // Or make use of launch argument, e.g. --gtest_filter=*ALKS_R157_TestR157RegulationMinDist*
 #endif
     testing::InitGoogleTest(&argc, argv);
+    
     if (ParseAndSetLoggerOptions(argc, argv) != 0)
     {
         return -1;
     }
+        
     return RUN_ALL_TESTS();
 }

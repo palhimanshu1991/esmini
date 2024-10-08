@@ -112,8 +112,7 @@ static int execute_scenario(int argc, char* argv[])
 }
 
 int main(int argc, char* argv[])
-{
-    loggerConfig.appEnabledConsole_ = true;
+{    
     OSCParameterDistribution& dist   = OSCParameterDistribution::Inst();
     int                       retval = 0;
 

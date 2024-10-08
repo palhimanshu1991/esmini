@@ -350,10 +350,10 @@ int main(int argc, char** argv)
 
     // Use logger callback for console output instead of logfile
     //Logger::Inst().SetCallback(log_callback);
-    loggerConfig.appEnabledConsole_ = true;
 
-    // LoggerConfig logConfig;
-    // SetupLogger(logConfig);
+    EnableConsoleLogging(true, true);
+    LoggerConfig logConfig;
+    SetupLogger(logConfig);
     // Logger::Inst().LogVersion();
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
@@ -1015,7 +1015,7 @@ int main(int argc, char** argv)
                                                            3.6f;
                                         double rel_angle = static_cast<double>(scenarioEntity[i].pos.h - scenarioEntity[j].pos.h) * 180.0 / M_PI;
                                         LOG_WARN(
-                                            "Collision between {} (id {}) and {} (id {}) at time {:.2f}.\n- Relative speed {:.2f} km/h\n- Angle {:.2f} degrees (ego to target)",
+                                            "Collision between {} (id {}) and {} (id {}) at time {:.2f}, Relative speed {:.2f} km/h, Angle {:.2f} degrees (ego to target)",
                                             scenarioEntity[i].name,
                                             scenarioEntity[i].id,
                                             scenarioEntity[j].name,

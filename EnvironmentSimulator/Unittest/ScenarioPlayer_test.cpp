@@ -459,9 +459,11 @@ int main(int argc, char** argv)
 
     // testing::GTEST_FLAG(filter) = "*TestCustomCameraVariants*";
     testing::InitGoogleTest(&argc, argv);
+    
     if (ParseAndSetLoggerOptions(argc, argv) != 0)
     {
         return -1;
     }
+
     return RUN_ALL_TESTS();
 }

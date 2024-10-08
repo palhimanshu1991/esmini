@@ -37,7 +37,6 @@ static ScenarioPlayer *player = 0;
 static char                   **argv_ = 0;
 static int                      argc_ = 0;
 static std::vector<std::string> args_v;
-//static bool                     logToConsole = true;
 static __int64                  time_stamp   = 0;
 
 static struct
@@ -413,12 +412,11 @@ static int InitScenario()
     // Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
     std::setlocale(LC_ALL, "C.UTF-8");
 
-    loggerConfig.appEnabledConsole_ = true;
     //Logger::Inst().SetCallback(log_callback);
     // Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
     // Logger::Inst().LogVersion();
     
-    //LoggerConfig logConfig;
+    LoggerConfig logConfig;
     SE_Options  &opt = SE_Env::Inst().GetOptions();
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
@@ -426,7 +424,7 @@ static int InitScenario()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            loggerConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
+            logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
 
@@ -436,11 +434,11 @@ static int InitScenario()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            loggerConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
+            logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
 
-    //SetupLogger(logConfig);
+    SetupLogger(logConfig);
     CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
     LogTimeOnly();
     ConvertArguments();
@@ -957,8 +955,12 @@ extern "C"
     SE_DLL_API void SE_LogToConsole(bool mode)
     {
         // SetOptions()
-        // logToConsole = mode;
-        loggerConfig.appEnabledConsole_ = mode;
+        SE_EnableConsoleLogging(mode, false);   // check with Emil
+    }
+
+    SE_DLL_API void SE_EnableConsoleLogging(bool state, bool persistant)
+    {
+        EnableConsoleLogging(state, persistant);   
     }
 
     SE_DLL_API void SE_CollisionDetection(bool mode)

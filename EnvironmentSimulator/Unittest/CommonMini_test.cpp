@@ -205,6 +205,7 @@ int main(int argc, char **argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";
     testing::InitGoogleTest(&argc, argv);
+    
     if (ParseAndSetLoggerOptions(argc, argv) != 0)
     {
         return -1;

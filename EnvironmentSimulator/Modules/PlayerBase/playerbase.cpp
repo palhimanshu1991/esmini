@@ -1202,13 +1202,12 @@ void ScenarioPlayer::PrintUsage()
 }
 
 int ScenarioPlayer::Init(bool logTime)
-{
-    // riz - temp check
+{    
     // Use logger callback
-    if (!(Logger::Inst().IsCallbackSet()))
-    {
-        Logger::Inst().SetCallback(log_callback);
-    }
+    // if (!(Logger::Inst().IsCallbackSet()))
+    // {
+    //     Logger::Inst().SetCallback(log_callback);
+    // }
 
     std::string arg_str;
 
@@ -1360,7 +1359,7 @@ int ScenarioPlayer::Init(bool logTime)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            loggerConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
+            logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
     if (opt.IsOptionArgumentSet("log_skip_modules"))
@@ -1369,11 +1368,11 @@ int ScenarioPlayer::Init(bool logTime)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            loggerConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
+            logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
 
-    //SetupLogger(logConfig);
+    SetupLogger(logConfig);
 
     if (opt.GetOptionSet("version"))
     {

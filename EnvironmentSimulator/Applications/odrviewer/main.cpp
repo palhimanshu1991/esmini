@@ -95,10 +95,10 @@ static const char *carModelsFiles_[] = {
 
 std::vector<osg::ref_ptr<osg::LOD>> carModels_;
 
-void log_callback(const char *str)
-{
-    printf("%s\n", str);
-}
+// void log_callback(const char *str)
+// {
+//     printf("%s\n", str);
+// }
 
 void FetchKeyEvent(viewer::KeyEvent *keyEvent, void *)
 {
@@ -382,7 +382,7 @@ int main(int argc, char **argv)
 
     // Use logger callback
     //Logger::Inst().SetCallback(log_callback);
-    loggerConfig.appEnabledConsole_ = true;
+    EnableConsoleLogging(true, true);
 
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 

@@ -1,3 +1,15 @@
+/*
+ * esmini - Environment Simulator Minimalistic
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
 #pragma once
 
 #include "CommonMini.hpp"
@@ -17,9 +29,16 @@ struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::forma
     }
 };
 
+enum PERSISTANCE_STATE
+{
+    UNDEFINED,
+    TRUE,
+    FALSE
+};
+
 struct LoggerConfig
 {
-    bool                            appEnabledConsole_ = false;
+    PERSISTANCE_STATE                persistedState_ = PERSISTANCE_STATE::UNDEFINED;    
     std::string                     logFilePath_ = "log.txt";
     std::unordered_set<std::string> enabledFiles_;
     std::unordered_set<std::string> disabledFiles_;
@@ -40,6 +59,8 @@ bool                      LogFile(const std::string& filePath = "");
 void                      StopFileLogging();
 void                      StopConsoleLogging();
 void                      CreateNewFileForLogging(const std::string& filePath);
+void                      EnableConsoleLogging(bool mode, bool persistant);
+
 extern std::shared_ptr<spdlog::logger> consoleLogger;
 extern std::shared_ptr<spdlog::logger> fileLogger;
 

@@ -4489,11 +4489,14 @@ int main(int argc, char** argv)
 	testing::GTEST_FLAG(filter) = "*AssignRoleTest*";
 	// Or make use of launch argument, e.g. --gtest_filter=TestFetchImage*
 #else
-    // SE_LogToConsole(false);
-#endif
 
-    testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();    
-    listeners.Append(new CommonTestSetup(argc, argv));
+    if (ParseAndSetLoggerOptions(argc, argv) != 0)
+    {
+        return -1;
+    }
+
+#endif    
+    
 
     return RUN_ALL_TESTS();
 }

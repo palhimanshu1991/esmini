@@ -1,3 +1,15 @@
+/*
+ * esmini - Environment Simulator Minimalistic
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
 #include "logger.hpp"
 
 #include "spdlog/spdlog.h"
@@ -23,13 +35,31 @@ std::shared_ptr<spdlog::logger> fileLogger;
 std::string                     strTime;
 std::string                     currentLogFileName;
 
+void SetLoggerLevel(std::shared_ptr<spdlog::logger>& logger)
+{
+    if( !logger)
+    {
+        return;
+    }
+    if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_level"))
+    {
+        logger->set_level(GetLogLevelFromStr(SE_Env::Inst().GetOptions().GetOptionArg("log_level")));
+    }
+    else
+    {
+        logger->set_level(spdlog::level::info);  // we keep info level as default
+    }
+}
+
 void CreateFileLogger(const std::string& path)
 {
     if (path != currentLogFileName)
     {
         bool createNewFile = !SE_Env::Inst().GetOptions().GetOptionSet("log_append");
         fileLogger         = spdlog::basic_logger_mt("file", path, createNewFile);
-        InitIndivisualLogger(fileLogger);
+        SetLoggerLevel(fileLogger);
+        fileLogger->set_pattern("%v");
+        fileLogger->info(GetVersionInfoForLog());
         currentLogFileName = path;
     }
     else
@@ -41,29 +71,43 @@ void CreateFileLogger(const std::string& path)
 bool LogConsole()
 {
     bool stdoutDisabled = SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout");
-    if (consoleLogger)
+    bool shouldLog = loggerConfig.persistedState_ != PERSISTANCE_STATE::FALSE && !stdoutDisabled;
+    if (shouldLog && !consoleLogger)
     {
-        if (stdoutDisabled || !loggerConfig.appEnabledConsole_)
-        {
-            spdlog::drop("console");
-            consoleLogger.reset();
-            return false;
-        }
+        consoleLogger = spdlog::stdout_color_mt("console");
+        SetLoggerLevel(consoleLogger);
+        consoleLogger->set_pattern("%v");
+        consoleLogger->info( GetVersionInfoForLog());    
     }
-    else  // no console logging currently available
-    {
-        if (stdoutDisabled)
-        {
-            return false;
-        }
-        if(loggerConfig.appEnabledConsole_)
-        {
-            consoleLogger = spdlog::stdout_color_mt("console");
-            InitIndivisualLogger(consoleLogger);
-            return true;
-        }
-    }
-    return false;
+    return shouldLog;
+    // if (consoleLogger)
+    // {    
+    //     if (stdoutDisabled)
+    //     {
+    //         spdlog::drop("console");
+    //         consoleLogger.reset();
+    //         return false;
+    //     }
+    //     else
+    //     {
+    //         return true;
+    //     }
+        
+    // }
+    // else  // no console logging currently available
+    // {
+    //     if (stdoutDisabled)
+    //     {
+    //         return false;
+    //     }
+    //     if(loggerConfig.consoleAvailable_)
+    //     {
+    //         consoleLogger = spdlog::stdout_color_mt("console");
+    //         InitIndivisualLogger(consoleLogger);
+    //         return true;
+    //     }
+    // }
+    // return false;
 }
 
 bool LogFile(const std::string& providedPath)
@@ -112,22 +156,6 @@ bool LogFile(const std::string& providedPath)
         }
     }
     return true;
-}
-
-void SetLoggerLevel(std::shared_ptr<spdlog::logger>& logger)
-{
-    if( !logger)
-    {
-        return;
-    }
-    if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_level"))
-    {
-        logger->set_level(GetLogLevelFromStr(SE_Env::Inst().GetOptions().GetOptionArg("log_level")));
-    }
-    else
-    {
-        logger->set_level(spdlog::level::info);  // we keep info level as default
-    }
 }
 
 void CreateNewFileForLogging(const std::string& filePath)
@@ -254,12 +282,13 @@ void SetLoggerTime(double* ptr)
     loggerConfig.time_ = ptr;
 }
 
+/*
 void InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger)
 {
     try
     {
         logger->set_pattern("%v");
-        logger->info(GetVersionInfoForLog());
+        logger->info(GetVersionInfoForLog());        
         SetLoggerLevel(logger);
     }
     catch (const std::exception& e)
@@ -271,6 +300,7 @@ void InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger)
         std::cout << "generic error incurred" << std::endl;
     }
 }
+*/
 
 void LogVersion()
 {
@@ -303,5 +333,49 @@ void LogTimeOnly()
 
 void SetupLogger(const LoggerConfig& logConfig)
 {
-    loggerConfig = logConfig;
+    loggerConfig.enabledFiles_ = logConfig.enabledFiles_;
+    loggerConfig.disabledFiles_ = logConfig.disabledFiles_;
+}
+
+// we will override program option, discuss if there can be any issue in it
+void EnableConsoleLogging(bool state, bool persistant)
+{
+    if( persistant)
+    {
+        if (state == true)
+        {
+            loggerConfig.persistedState_ = PERSISTANCE_STATE::TRUE;
+        }
+        else
+        {
+            loggerConfig.persistedState_ = PERSISTANCE_STATE::FALSE;
+        }        
+    }
+    else
+    {
+        loggerConfig.persistedState_ = PERSISTANCE_STATE::UNDEFINED;
+    }
+    
+    if( state)
+    {            
+        SE_Env::Inst().GetOptions().UnsetOption("disable_stdout");
+    }
+    else
+    {
+        SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "");
+    }
+
+    // if( persistant)
+    // {
+    //     loggerConfig.persistedState_ = state;
+    // }
+    // else if( state)
+    // {
+        
+    //     SE_Env::Inst().GetOptions().UnsetOption("disable_stdout");
+    // }
+    // else
+    // {
+    //     SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "");
+    // }
 }

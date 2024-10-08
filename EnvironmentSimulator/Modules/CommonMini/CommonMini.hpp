@@ -894,6 +894,7 @@ public:
     void Reset();
     int  ChangeOptionArg(std::string opt, std::string new_value, int index = 0);
     int  SetOptionValue(std::string opt, std::string value, bool add = false);
+    int  UnsetOption(const std::string& opt);
 
 private:
     std::vector<SE_Option>   option_;

@@ -525,12 +525,12 @@ class TestSuite(unittest.TestCase):
 
         if sys.platform != "darwin":  # osg viewer, which replayer depends on, fails on CI headless mac system
             log = run_replayer(COMMON_REPLAYER_ARGS + '--collision continue')
-            self.assertTrue(re.search('Collision between Ego \\(id 0\\) and NPC2 \\(id 2\\) at time 5.25.', log, re.MULTILINE)  is not None)
-            self.assertTrue(re.search('- Relative speed 14.40 km/h', log, re.MULTILINE)  is not None)
-            self.assertTrue(re.search('- Angle -180.00 degrees \\(ego to target\\)', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('Collision between Ego \\(id 0\\) and NPC2 \\(id 2\\) at time 5.25', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('Relative speed 14.40 km/h', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('Angle -180.00 degrees \\(ego to target\\)', log, re.MULTILINE)  is not None)
             self.assertTrue(re.search('Collision between Ego \\(id 0\\) and NPC1 \\(id 1\\) at time 6.26.', log, re.MULTILINE)  is not None)
-            self.assertTrue(re.search('- Relative speed 14.40 km/h', log, re.MULTILINE)  is not None)
-            self.assertTrue(re.search('- Angle 0.00 degrees \\(ego to target\\)', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('Relative speed 14.40 km/h', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('Angle 0.00 degrees \\(ego to target\\)', log, re.MULTILINE)  is not None)
 
     def test_add_delete_entity(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ESMINI_ARGS)
