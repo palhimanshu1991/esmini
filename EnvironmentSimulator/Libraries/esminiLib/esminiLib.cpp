@@ -404,7 +404,7 @@ static int InitScenario()
     // Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
     std::setlocale(LC_ALL, "C.UTF-8");
 
-    LoggerConfig logConfig;
+    //LoggerConfig logConfig;
     SE_Options  &opt = SE_Env::Inst().GetOptions();
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
@@ -412,7 +412,7 @@ static int InitScenario()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
+            LoggerConfig::Inst().enabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
 
@@ -422,11 +422,11 @@ static int InitScenario()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
+            LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
 
-    SetupLogger(logConfig);
+    //SetupLogger(logConfig);
     CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
     LogTimeOnly();
     ConvertArguments();
@@ -478,7 +478,7 @@ extern "C"
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
     {
         // SE_Env::Inst().SetLogFilePath(logFilePath);
-        LOG_INFO("calling CreateNewFileForLogging");
+        //LOG_INFO("calling CreateNewFileForLogging");
         SE_SetOptionValue("--logfile_path", logFilePath);
         CreateNewFileForLogging(logFilePath);
     }

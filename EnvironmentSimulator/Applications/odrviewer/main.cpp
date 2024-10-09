@@ -450,7 +450,7 @@ int main(int argc, char **argv)
         fixed_timestep = atof(arg_str.c_str());
         printf("Run simulation decoupled from realtime, with fixed timestep: %.2f", fixed_timestep);
     }
-    LoggerConfig logConfig;
+    //LoggerConfig logConfig;
 
     if (opt.GetOptionSet("disable_log"))
     {
@@ -467,7 +467,7 @@ int main(int argc, char **argv)
         {
             printf("Custom logfile path: %s\n", arg_str.c_str());
         }
-        logConfig.logFilePath_ = arg_str;
+        LoggerConfig::Inst().logFilePath_ = arg_str;
     }
 
     if (opt.IsOptionArgumentSet("log_only_modules"))
@@ -476,7 +476,7 @@ int main(int argc, char **argv)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
+            LoggerConfig::Inst().enabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
 
@@ -486,15 +486,15 @@ int main(int argc, char **argv)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
+            LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
     if (!SE_Env::Inst().GetLogFilePath().empty())
     {
-        logConfig.logFilePath_ = SE_Env::Inst().GetLogFilePath();
+        LoggerConfig::Inst().logFilePath_ = SE_Env::Inst().GetLogFilePath();
     }
-    SetupLogger(logConfig);
-    LOG_INFO("calling CreateNewFileForLogging");
+    //vSetupLogger(logConfig);
+    //LOG_INFO("calling CreateNewFileForLogging");
     CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
     if ((arg_str = opt.GetOptionArg("path")) != "")
     {

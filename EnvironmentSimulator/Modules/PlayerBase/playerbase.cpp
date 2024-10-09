@@ -1317,7 +1317,7 @@ int ScenarioPlayer::Init(bool logTime)
 
     // Setup logger
     std::string  log_filename = SE_Env::Inst().GetLogFilePath();
-    LoggerConfig logConfig;
+    //LoggerConfig logConfig;
     if (opt.GetOptionSet("disable_log"))
     {
         log_filename = "";
@@ -1354,7 +1354,7 @@ int ScenarioPlayer::Init(bool logTime)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
+            LoggerConfig::Inst().enabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
     if (opt.IsOptionArgumentSet("log_skip_modules"))
@@ -1363,11 +1363,11 @@ int ScenarioPlayer::Init(bool logTime)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
+            LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
 
-    SetupLogger(logConfig);
+    //SetupLogger(logConfig);
 
     if (opt.GetOptionSet("version"))
     {

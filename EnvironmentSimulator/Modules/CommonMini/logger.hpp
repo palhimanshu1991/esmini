@@ -37,17 +37,24 @@ enum class LOG_PERSISTANCE_STATE
 };
 
 struct LoggerConfig
-{
+{    
+    static LoggerConfig&            Inst();
     LOG_PERSISTANCE_STATE           persistedState_ = LOG_PERSISTANCE_STATE::LPS_UNDEFINED;
     std::string                     logFilePath_    = "log.txt";
     std::unordered_set<std::string> enabledFiles_;
     std::unordered_set<std::string> disabledFiles_;
     double*                         time_ = nullptr;
+
+    private:
+        LoggerConfig()
+        {
+            std::cout << "LoggerConfig constructor" << this << std::endl;
+        }
 };
 
-static LoggerConfig       loggerConfig;
-void                      SetupLogger(const LoggerConfig& logConfig);
-void                      InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger);
+//static LoggerConfig       loggerConfig;
+//void                      SetupLogger(const LoggerConfig& logConfig);
+//void                      InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger);
 bool                      ShouldLogModule(char const* file);
 void                      LogVersion();
 std::string               AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& level, const std::string& log);

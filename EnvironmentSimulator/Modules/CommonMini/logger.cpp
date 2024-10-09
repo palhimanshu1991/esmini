@@ -35,6 +35,14 @@ std::shared_ptr<spdlog::logger> fileLogger;
 std::string                     strTime;
 std::string                     currentLogFileName;
 
+
+LoggerConfig& LoggerConfig::Inst()
+{
+    static LoggerConfig loggerConfig_;
+    return loggerConfig_;
+}
+
+
 void SetLoggerLevel(std::shared_ptr<spdlog::logger>& logger)
 {
     if (!logger)
@@ -71,9 +79,10 @@ void CreateFileLogger(const std::string& path)
 bool LogConsole()
 {
     bool stdoutDisabled = SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout");
-    bool shouldLog      = loggerConfig.persistedState_ != LOG_PERSISTANCE_STATE::LPS_FALSE && !stdoutDisabled;
+    bool shouldLog      = LoggerConfig::Inst().persistedState_ != LOG_PERSISTANCE_STATE::LPS_FALSE && !stdoutDisabled;
     if (shouldLog && !consoleLogger)
     {
+        std::cout << &LoggerConfig::Inst() << " creating new console logger" << std::endl;
         consoleLogger = spdlog::stdout_color_mt("console");
         SetLoggerLevel(consoleLogger);
         consoleLogger->set_pattern("%v");
@@ -195,9 +204,9 @@ bool ShouldLogModule(char const* file)
     // it may seem that checking emptiness is an overhead as find function does it optimmally
     // but checking emptiness helps to find if user has enabled any file or not, because if its empty
     // then user wants all logs i.e. no filtering
-    if (!loggerConfig.enabledFiles_.empty())
+    if (!LoggerConfig::Inst().enabledFiles_.empty())
     {
-        if (loggerConfig.enabledFiles_.find(fileName) == loggerConfig.enabledFiles_.end())
+        if (LoggerConfig::Inst().enabledFiles_.find(fileName) == LoggerConfig::Inst().enabledFiles_.end())
         {
             // not found in the list, which means user has not enabled this file for logging
             return false;
@@ -208,9 +217,9 @@ bool ShouldLogModule(char const* file)
             return true;
         }
     }
-    if (!loggerConfig.disabledFiles_.empty())
+    if (!LoggerConfig::Inst().disabledFiles_.empty())
     {
-        if (loggerConfig.disabledFiles_.find(fileName) == loggerConfig.disabledFiles_.end())
+        if (LoggerConfig::Inst().disabledFiles_.find(fileName) == LoggerConfig::Inst().disabledFiles_.end())
         {
             // not found in the list, which means this file is enabled for logging
             return true;
@@ -227,9 +236,9 @@ bool ShouldLogModule(char const* file)
 
 std::string AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& level, const std::string& log)
 {
-    if (loggerConfig.time_ != nullptr)
+    if (LoggerConfig::Inst().time_ != nullptr)
     {
-        strTime = fmt::format("[{:.3f}]", *loggerConfig.time_);
+        strTime = fmt::format("[{:.3f}]", *LoggerConfig::Inst().time_);
     }
     else
     {
@@ -251,11 +260,12 @@ std::string AddTimeAndMetaData(char const* function, char const* file, long line
 
 void SetLoggerTime(double* ptr)
 {
-    loggerConfig.time_ = ptr;
+    LoggerConfig::Inst().time_ = ptr;
 }
 
 void LogVersion()
 {
+    /*
     std::string esminiVersion = GetVersionInfoForLog();
     if (LogConsole())
     {
@@ -265,6 +275,7 @@ void LogVersion()
     {
         fileLogger->info(esminiVersion);
     }
+    */
 }
 
 void LogTimeOnly()
@@ -282,30 +293,31 @@ void LogTimeOnly()
         fileLogger->set_pattern("%v");
     }
 }
-
+/*
 void SetupLogger(const LoggerConfig& logConfig)
 {
-    loggerConfig.enabledFiles_  = logConfig.enabledFiles_;
-    loggerConfig.disabledFiles_ = logConfig.disabledFiles_;
+    LoggerConfig::Inst().enabledFiles_ = logConfig.enabledFiles_;
+    LoggerConfig::Inst().disabledFiles_ = logConfig.disabledFiles_;
 }
-
+*/
 // we will override program option, discuss if there can be any issue in it
 void EnableConsoleLogging(bool state, bool persistant)
 {
+    std::cout << &LoggerConfig::Inst() << "===========EnableConsoleLogging called with state:" << state << " persistance:" << persistant << std::endl; 
     if (persistant)
     {
         if (state == true)
         {
-            loggerConfig.persistedState_ = LOG_PERSISTANCE_STATE::LPS_TRUE;
+            LoggerConfig::Inst().persistedState_ = LOG_PERSISTANCE_STATE::LPS_TRUE;
         }
         else
         {
-            loggerConfig.persistedState_ = LOG_PERSISTANCE_STATE::LPS_FALSE;
+            LoggerConfig::Inst().persistedState_ = LOG_PERSISTANCE_STATE::LPS_FALSE;
         }
     }
     else
     {
-        loggerConfig.persistedState_ = LOG_PERSISTANCE_STATE::LPS_UNDEFINED;
+        LoggerConfig::Inst().persistedState_ = LOG_PERSISTANCE_STATE::LPS_UNDEFINED;
     }
 
     if (state)
