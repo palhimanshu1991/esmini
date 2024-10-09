@@ -36,6 +36,11 @@ std::string                     strTime;
 std::string                     currentLogFileName;
 
 
+LoggerConfig::LoggerConfig()
+{
+    std::cout << "--LoggerConfig constructor--" << this << std::endl;
+}
+
 LoggerConfig& LoggerConfig::Inst()
 {
     static LoggerConfig loggerConfig_;

@@ -46,10 +46,8 @@ struct LoggerConfig
     double*                         time_ = nullptr;
 
     private:
-        LoggerConfig()
-        {
-            std::cout << "LoggerConfig constructor" << this << std::endl;
-        }
+        LoggerConfig();
+    
 };
 
 //static LoggerConfig       loggerConfig;
