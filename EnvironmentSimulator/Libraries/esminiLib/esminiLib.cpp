@@ -116,7 +116,7 @@ static void ConvertArguments()
         StrCopy(argv_[i], args_v[i].c_str(), static_cast<unsigned int>(args_v[i].size()) + 1);
         argument_list += std::string(" ") + argv_[i];
     }
-    LOG_INFO("Player arguments: {}", argument_list);
+    //riz-temp LOG_INFO("Player arguments: {}", argument_list);
 }
 
 static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectStateStruct *gw_state)
@@ -427,8 +427,7 @@ static int InitScenario()
     }
 
     //SetupLogger(logConfig);
-    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
-    LogTimeOnly();
+       
     ConvertArguments();
 
     // Create scenario engine
@@ -436,7 +435,7 @@ static int InitScenario()
     {
         // Initialize the scenario engine and viewer
         player     = new ScenarioPlayer(argc_, argv_);
-        int retval = player->Init(false);
+        int retval = player->Init();        
         if (retval == -1)
         {
             LOG_ERROR("Failed to initialize scenario player");
@@ -938,12 +937,12 @@ extern "C"
     {
         resetScenario();
         RegisterParameterDeclarationCallback(nullptr, nullptr);
+        StopFileLogging();
     }
 
     SE_DLL_API void SE_LogToConsole(bool mode)
     {
-        // SetOptions()
-        SE_EnableConsoleLogging(mode, false);  // check with Emil
+        SE_EnableConsoleLogging(mode, false);
     }
 
     SE_DLL_API void SE_EnableConsoleLogging(bool state, bool persistant)

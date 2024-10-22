@@ -1196,7 +1196,7 @@ void ScenarioPlayer::PrintUsage()
 #endif
 }
 
-int ScenarioPlayer::Init(bool logTime)
+int ScenarioPlayer::Init()
 {
     // Use logger callback
     // if (!(Logger::Inst().IsCallbackSet()))
@@ -1289,10 +1289,21 @@ int ScenarioPlayer::Init(bool logTime)
         PrintUsage();
         return -2;
     }
-    if (logTime)
+    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
+    LogTimeOnly();
+
+    std::string strAllOptions;
+    for (const auto& option : opt.GetAllOptions())
     {
-        LogTimeOnly();
+        //strAllOptions = fmt::format("{}{}", strAllOptions, option->);
     }
+    
+
+    /*
+    * //LOG_INFO("Player options:")
+    for (arg in argv_)
+        LOG arg
+    */
     if (opt.GetOptionSet("help"))
     {
         PrintUsage();

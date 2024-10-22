@@ -895,8 +895,10 @@ FILE* FileOpen(const char* filename, const char* mode)
     FILE* file = nullptr;
 
 #ifdef _WIN32
-    if (fopen_s(&file, filename, mode) != 0)
+    int retval = fopen_s(&file, filename, mode);
+    if (retval != 0)
     {
+        printf("%s\n", strerror(errno));
         return nullptr;
     }
 #else
@@ -1918,8 +1920,15 @@ int SE_Options::UnsetOption(const std::string& opt)
     return 0;
 }
 
+const std::vector<SE_Option>& SE_Options::GetAllOptions() const
+{
+    return option_;
+}
+
+
 int SE_Options::ParseArgs(int argc, const char* const argv[])
 {
+    //std::cout << "ParseArgs programOptions:" << &SE_Env::Inst().GetOptions() << std::endl;
     std::vector<const char*> args = {argv, std::next(argv, argc)};
 
     app_name_     = FileNameWithoutExtOf(args[0]);
@@ -2007,6 +2016,9 @@ bool SE_Options::HasUnknownArgs()
 
 void SE_Options::Reset()
 {
+    //bool appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
+    //std::cout << "reseting programOptions:" << &SE_Env::Inst().GetOptions() << "   loggerConf:" << &LoggerConfig::Inst() << "   append:" << appendFile
+    //          << std::endl;
     for (size_t i = 0; i < option_.size(); i++)
     {
         option_[i].arg_value_.clear();

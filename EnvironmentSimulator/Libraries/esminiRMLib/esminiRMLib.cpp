@@ -198,6 +198,11 @@ extern "C"
         CreateNewFileForLogging(logFilePath);
     }
 
+    RM_DLL_API void RM_EnableConsoleLogging(bool state, bool persistant)
+    {
+        EnableConsoleLogging(state, persistant);
+    }
+
     RM_DLL_API int RM_CreatePosition()
     {
         if (odrManager == nullptr)

@@ -37,7 +37,7 @@ enum class LOG_PERSISTANCE_STATE
 };
 
 struct LoggerConfig
-{    
+{
     static LoggerConfig&            Inst();
     LOG_PERSISTANCE_STATE           persistedState_ = LOG_PERSISTANCE_STATE::LPS_UNDEFINED;
     std::string                     logFilePath_    = "log.txt";
@@ -45,14 +45,10 @@ struct LoggerConfig
     std::unordered_set<std::string> disabledFiles_;
     double*                         time_ = nullptr;
 
-    private:
-        LoggerConfig();
-    
+private:
+    LoggerConfig();
 };
 
-//static LoggerConfig       loggerConfig;
-//void                      SetupLogger(const LoggerConfig& logConfig);
-//void                      InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger);
 bool                      ShouldLogModule(char const* file);
 void                      LogVersion();
 std::string               AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& level, const std::string& log);
@@ -63,11 +59,14 @@ bool                      LogConsole();
 bool                      LogFile(const std::string& filePath = "");
 void                      StopFileLogging();
 void                      StopConsoleLogging();
-void                      CreateNewFileForLogging(const std::string& filePath);
+void                      CreateNewFileForLogging(const std::string&);
 void                      EnableConsoleLogging(bool mode, bool persistant);
 
 extern std::shared_ptr<spdlog::logger> consoleLogger;
 extern std::shared_ptr<spdlog::logger> fileLogger;
+
+extern LoggerConfig loggerConfig;
+
 
 template <class... ARGS>
 void __LOG_DEBUG__(char const* function, char const* file, long line, const std::string& log, ARGS... args)

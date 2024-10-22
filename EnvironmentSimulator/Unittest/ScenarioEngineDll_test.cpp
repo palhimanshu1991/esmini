@@ -72,6 +72,7 @@ TEST(LoggerTests, check_verbosity_level_warn)
     }
 
     SE_Close();
+    StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
@@ -103,6 +104,7 @@ TEST(LoggerTests, check_verbosity_level_info)
     }
 
     SE_Close();
+    StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
@@ -131,6 +133,7 @@ TEST(LoggerTests, check_meta_data)
     }
 
     SE_Close();
+    StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
@@ -140,6 +143,46 @@ TEST(LoggerTests, check_meta_data)
     EXPECT_NE(size, 0);
     bool found = strstr(msg_buf, ".cpp::") != NULL;
     EXPECT_TRUE(found);
+
+    fclose(file);
+}
+
+TEST(LoggerTests, check_log_skip_modules)
+{
+    const char* args[] =
+        {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--log_meta_data", "--log_skip_modules", "StoryboardElement"};
+
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    SE_LogMessage("This message should be logged");
+
+    for (int i = 0; i < 6; i++)
+    {
+        if (i < 5)  // skip step of the last round
+        {
+            SE_StepDT(0.01f);
+        }
+    }
+
+    SE_Close();
+    StopFileLogging();
+
+    FILE* file = FileOpen("log.txt", "r");
+    ASSERT_NE(file, nullptr);
+    const int max_msg_size = 10000;
+    char      msg_buf[max_msg_size];
+    size_t    size = fread(msg_buf, 1, max_msg_size, file);
+    EXPECT_NE(size, 0);
+    bool found = strstr(msg_buf, "This message should be logged") != NULL;
+    EXPECT_TRUE(found);
+
+    found = strstr(msg_buf, "OverTaker New position:") != NULL;
+    EXPECT_TRUE(found);
+
+    found = strstr(msg_buf, "Loaded OpenDRIVE:") != NULL;
+    EXPECT_TRUE(found);
+
+    found = strstr(msg_buf, "Init Ego LongitudinalAction initState") != NULL;
+    EXPECT_FALSE(found);
 
     fclose(file);
 }
@@ -183,53 +226,14 @@ TEST(LoggerTests, check_log_only_modules)
     fclose(file);
 }
 
-TEST(LoggerTests, check_log_skip_modules)
-{
-    const char* args[] =
-        {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--log_meta_data", "--log_skip_modules", "StoryboardElement"};
-
-    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-    SE_LogMessage("This message should be logged");
-
-    for (int i = 0; i < 6; i++)
-    {
-        if (i < 5)  // skip step of the last round
-        {
-            SE_StepDT(0.01f);
-        }
-    }
-
-    SE_Close();
-
-    FILE* file = FileOpen("log.txt", "r");
-    ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;
-    char      msg_buf[max_msg_size];
-    size_t    size = fread(msg_buf, 1, max_msg_size, file);
-    EXPECT_NE(size, 0);
-    bool found = strstr(msg_buf, "This message should be logged") != NULL;
-    EXPECT_TRUE(found);
-
-    found = strstr(msg_buf, "OverTaker New position:") != NULL;
-    EXPECT_TRUE(found);
-
-    found = strstr(msg_buf, "Loaded OpenDRIVE:") != NULL;
-    EXPECT_TRUE(found);
-
-    found = strstr(msg_buf, "Init Ego LongitudinalAction initState") != NULL;
-    EXPECT_FALSE(found);
-
-    fclose(file);
-}
-
 TEST(LoggerTests, check_log_append)
-{
+{    
     const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--log_meta_data", "--log_append"};
 
     for (int j = 0; j < 2; ++j)
     {
         ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-        SE_LogMessage("This message should be logged");
+        SE_LogMessage("This message should be logged twice");        
 
         for (int i = 0; i < 6; i++)
         {
@@ -238,20 +242,20 @@ TEST(LoggerTests, check_log_append)
                 SE_StepDT(0.01f);
             }
         }
-        SE_Close();
+        SE_Close();        
     }
-
+    
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
     const int max_msg_size = 10000;
     char      msg_buf[max_msg_size];
     size_t    size = fread(msg_buf, 1, max_msg_size, file);
     EXPECT_NE(size, 0);
-    char* pos   = strstr(msg_buf, "This message should be logged");
+    char* pos   = strstr(msg_buf, "This message should be logged twice");
     bool  found = pos != NULL;
     EXPECT_TRUE(found);
 
-    pos   = strstr(pos + 1, "This message should be logged");
+    pos   = strstr(pos + 1, "This message should be logged twice");
     found = pos != NULL;
     EXPECT_TRUE(found);
 
@@ -4489,7 +4493,12 @@ int main(int argc, char** argv)
 	testing::GTEST_FLAG(filter) = "*AssignRoleTest*";
 	// Or make use of launch argument, e.g. --gtest_filter=TestFetchImage*
 #else
-
+    CreateNewFileForLogging("log-test.txt");
+    //SE_SetLogFilePath("log-test.txt");
+    if (!strcmp(argv[1], "--disable_stdout"))
+    {
+        SE_EnableConsoleLogging(false, true);
+    }
     if (ParseAndSetLoggerOptions(argc, argv) != 0)
     {
         return -1;
