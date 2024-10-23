@@ -1303,13 +1303,13 @@ int ScenarioPlayer::Init()
             std::string currentOptionValue;
             if (!option.arg_value_.empty())
             {
-                for (const auto& val : option.arg_value_)
+                for (auto itr = option.arg_value_.begin(); itr != option.arg_value_.end(); ++itr)
                 {
-                    currentOptionValue = fmt::format("{} {}", currentOptionValue, val);
+                    currentOptionValue = fmt::format("{} {}", currentOptionValue, *itr);
                 }
             }
 
-            strAllSetOptions = fmt::format("{}--{}{}, ", strAllSetOptions, option.opt_str_, currentOptionValue);
+            strAllSetOptions = fmt::format("{}--{}{} ", strAllSetOptions, option.opt_str_, currentOptionValue);
         }
     }
     LOG_INFO("Player options: {}", strAllSetOptions);
