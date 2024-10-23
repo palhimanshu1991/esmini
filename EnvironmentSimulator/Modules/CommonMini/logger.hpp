@@ -67,7 +67,6 @@ extern std::shared_ptr<spdlog::logger> fileLogger;
 
 extern LoggerConfig loggerConfig;
 
-
 template <class... ARGS>
 void __LOG_DEBUG__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
 {

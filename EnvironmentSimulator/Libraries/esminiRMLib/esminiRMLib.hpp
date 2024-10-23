@@ -170,7 +170,6 @@ extern "C"
     */
     RM_DLL_API void RM_EnableConsoleLogging(bool state, bool persistant);
 
-
     /**
     Create a position object
     @return Handle >= 0 to the position object to use for operations or -1 on error

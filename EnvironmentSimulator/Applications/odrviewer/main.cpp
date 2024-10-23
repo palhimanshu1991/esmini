@@ -450,7 +450,7 @@ int main(int argc, char **argv)
         fixed_timestep = atof(arg_str.c_str());
         printf("Run simulation decoupled from realtime, with fixed timestep: %.2f", fixed_timestep);
     }
-    //LoggerConfig logConfig;
+    // LoggerConfig logConfig;
 
     if (opt.GetOptionSet("disable_log"))
     {
@@ -493,8 +493,8 @@ int main(int argc, char **argv)
     {
         LoggerConfig::Inst().logFilePath_ = SE_Env::Inst().GetLogFilePath();
     }
-    //vSetupLogger(logConfig);
-    //LOG_INFO("calling CreateNewFileForLogging");
+    // vSetupLogger(logConfig);
+    // LOG_INFO("calling CreateNewFileForLogging");
     CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
     if ((arg_str = opt.GetOptionArg("path")) != "")
     {

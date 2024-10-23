@@ -1925,10 +1925,9 @@ const std::vector<SE_Option>& SE_Options::GetAllOptions() const
     return option_;
 }
 
-
 int SE_Options::ParseArgs(int argc, const char* const argv[])
 {
-    //std::cout << "ParseArgs programOptions:" << &SE_Env::Inst().GetOptions() << std::endl;
+    // std::cout << "ParseArgs programOptions:" << &SE_Env::Inst().GetOptions() << std::endl;
     std::vector<const char*> args = {argv, std::next(argv, argc)};
 
     app_name_     = FileNameWithoutExtOf(args[0]);
@@ -2016,9 +2015,10 @@ bool SE_Options::HasUnknownArgs()
 
 void SE_Options::Reset()
 {
-    //bool appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
-    //std::cout << "reseting programOptions:" << &SE_Env::Inst().GetOptions() << "   loggerConf:" << &LoggerConfig::Inst() << "   append:" << appendFile
-    //          << std::endl;
+    // bool appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
+    // std::cout << "reseting programOptions:" << &SE_Env::Inst().GetOptions() << "   loggerConf:" << &LoggerConfig::Inst() << "   append:" <<
+    // appendFile
+    //           << std::endl;
     for (size_t i = 0; i < option_.size(); i++)
     {
         option_[i].arg_value_.clear();

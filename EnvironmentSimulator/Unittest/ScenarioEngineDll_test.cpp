@@ -227,13 +227,13 @@ TEST(LoggerTests, check_log_only_modules)
 }
 
 TEST(LoggerTests, check_log_append)
-{    
+{
     const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--log_meta_data", "--log_append"};
 
     for (int j = 0; j < 2; ++j)
     {
         ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-        SE_LogMessage("This message should be logged twice");        
+        SE_LogMessage("This message should be logged twice");
 
         for (int i = 0; i < 6; i++)
         {
@@ -242,9 +242,9 @@ TEST(LoggerTests, check_log_append)
                 SE_StepDT(0.01f);
             }
         }
-        SE_Close();        
+        SE_Close();
     }
-    
+
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
     const int max_msg_size = 10000;
@@ -4494,7 +4494,7 @@ int main(int argc, char** argv)
 	// Or make use of launch argument, e.g. --gtest_filter=TestFetchImage*
 #else
     CreateNewFileForLogging("log-test.txt");
-    //SE_SetLogFilePath("log-test.txt");
+    // SE_SetLogFilePath("log-test.txt");
     if (!strcmp(argv[1], "--disable_stdout"))
     {
         SE_EnableConsoleLogging(false, true);

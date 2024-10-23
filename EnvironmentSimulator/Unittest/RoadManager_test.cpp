@@ -3020,7 +3020,7 @@ TEST(RoadId, TestStringRoadId)
 int main(int argc, char **argv)
 {
     // testing::GTEST_FLAG(filter) = "*RoadWidthAllLanes*";
-    
+
     std::cout << "==============================RoadManager_test called with argc : " << argc << std::endl;
     for (int i = 0; i < argc; ++i)
     {

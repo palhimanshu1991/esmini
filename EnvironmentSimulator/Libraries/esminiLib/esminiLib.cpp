@@ -116,7 +116,7 @@ static void ConvertArguments()
         StrCopy(argv_[i], args_v[i].c_str(), static_cast<unsigned int>(args_v[i].size()) + 1);
         argument_list += std::string(" ") + argv_[i];
     }
-    //riz-temp LOG_INFO("Player arguments: {}", argument_list);
+    // riz-temp LOG_INFO("Player arguments: {}", argument_list);
 }
 
 static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectStateStruct *gw_state)
@@ -404,8 +404,8 @@ static int InitScenario()
     // Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
     std::setlocale(LC_ALL, "C.UTF-8");
 
-    //LoggerConfig logConfig;
-    SE_Options  &opt = SE_Env::Inst().GetOptions();
+    // LoggerConfig logConfig;
+    SE_Options &opt = SE_Env::Inst().GetOptions();
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         auto       arg_str  = opt.GetOptionArg("log_only_modules");
@@ -426,8 +426,8 @@ static int InitScenario()
         }
     }
 
-    //SetupLogger(logConfig);
-       
+    // SetupLogger(logConfig);
+
     ConvertArguments();
 
     // Create scenario engine
@@ -435,7 +435,7 @@ static int InitScenario()
     {
         // Initialize the scenario engine and viewer
         player     = new ScenarioPlayer(argc_, argv_);
-        int retval = player->Init();        
+        int retval = player->Init();
         if (retval == -1)
         {
             LOG_ERROR("Failed to initialize scenario player");
@@ -477,7 +477,7 @@ extern "C"
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
     {
         // SE_Env::Inst().SetLogFilePath(logFilePath);
-        //LOG_INFO("calling CreateNewFileForLogging");
+        // LOG_INFO("calling CreateNewFileForLogging");
         SE_SetOptionValue("--logfile_path", logFilePath);
         CreateNewFileForLogging(logFilePath);
     }

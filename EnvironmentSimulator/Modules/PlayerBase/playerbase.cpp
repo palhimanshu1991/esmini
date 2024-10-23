@@ -1295,9 +1295,8 @@ int ScenarioPlayer::Init()
     std::string strAllOptions;
     for (const auto& option : opt.GetAllOptions())
     {
-        //strAllOptions = fmt::format("{}{}", strAllOptions, option->);
+        // strAllOptions = fmt::format("{}{}", strAllOptions, option->);
     }
-    
 
     /*
     * //LOG_INFO("Player options:")
@@ -1327,8 +1326,8 @@ int ScenarioPlayer::Init()
     }
 
     // Setup logger
-    std::string  log_filename = SE_Env::Inst().GetLogFilePath();
-    //LoggerConfig logConfig;
+    std::string log_filename = SE_Env::Inst().GetLogFilePath();
+    // LoggerConfig logConfig;
     if (opt.GetOptionSet("disable_log"))
     {
         log_filename = "";
@@ -1378,7 +1377,7 @@ int ScenarioPlayer::Init()
         }
     }
 
-    //SetupLogger(logConfig);
+    // SetupLogger(logConfig);
 
     if (opt.GetOptionSet("version"))
     {

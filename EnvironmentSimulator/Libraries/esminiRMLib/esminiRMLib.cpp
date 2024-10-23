@@ -161,7 +161,7 @@ extern "C"
 
         // Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
         // Logger::Inst().LogVersion();
-        //LOG_INFO("calling CreateNewFileForLogging");
+        // LOG_INFO("calling CreateNewFileForLogging");
         CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
         // LoggerConfig logConfig;
         // if( !SE_Env::Inst().GetLogFilePath().empty())
@@ -194,7 +194,7 @@ extern "C"
     RM_DLL_API void RM_SetLogFilePath(const char* logFilePath)
     {
         // SE_Env::Inst().SetLogFilePath(logFilePath);
-        //LOG_INFO("calling CreateNewFileForLogging");
+        // LOG_INFO("calling CreateNewFileForLogging");
         CreateNewFileForLogging(logFilePath);
     }
 

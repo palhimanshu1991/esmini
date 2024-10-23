@@ -32,13 +32,13 @@ namespace fs = std::experimental::filesystem;
 
 std::shared_ptr<spdlog::logger> consoleLogger;
 std::shared_ptr<spdlog::logger> fileLogger;
-static std::string                     strTime;
-static std::string                     currentLogFileName;
-static std::string                     defaultLogFileName = "log.txt";
+static std::string              strTime;
+static std::string              currentLogFileName;
+static std::string              defaultLogFileName = "log.txt";
 
 LoggerConfig::LoggerConfig()
 {
-    //std::cout << "--LoggerConfig constructor--" << this << std::endl;
+    // std::cout << "--LoggerConfig constructor--" << this << std::endl;
 }
 
 LoggerConfig& LoggerConfig::Inst()
@@ -65,15 +65,16 @@ void SetLoggerLevel(std::shared_ptr<spdlog::logger>& logger)
 
 void CreateFileLogger(const std::string& path)
 {
-    //std::cout << "LoggerConfig:" << &LoggerConfig::Inst()<< " currentLogFileName:" << currentLogFileName << "   newPath:" << path << std::endl;
-    if ((path.empty() && currentLogFileName.empty()) || path != currentLogFileName)    
+    // std::cout << "LoggerConfig:" << &LoggerConfig::Inst()<< " currentLogFileName:" << currentLogFileName << "   newPath:" << path << std::endl;
+    if ((path.empty() && currentLogFileName.empty()) || path != currentLogFileName)
     {
-        bool appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append"); 
-        //std::cout << "openingFile programOptions:" << &SE_Env::Inst().GetOptions() << "   loggerConf:" << &LoggerConfig::Inst() << "   append:" << appendFile << std::endl;
+        bool appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
+        // std::cout << "openingFile programOptions:" << &SE_Env::Inst().GetOptions() << "   loggerConf:" << &LoggerConfig::Inst() << "   append:" <<
+        // appendFile << std::endl;
         std::string filePath = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
         fileLogger           = spdlog::basic_logger_mt("file", filePath, !appendFile);
         SetLoggerLevel(fileLogger);
-        fileLogger->set_pattern("%v");        
+        fileLogger->set_pattern("%v");
         fileLogger->info(GetVersionInfoForLog());
         currentLogFileName = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
     }
@@ -89,7 +90,7 @@ bool LogConsole()
     bool shouldLog      = LoggerConfig::Inst().persistedState_ != LOG_PERSISTANCE_STATE::LPS_FALSE && !stdoutDisabled;
     if (shouldLog && !consoleLogger)
     {
-        //std::cout << &LoggerConfig::Inst() << " creating new console logger" << std::endl;
+        // std::cout << &LoggerConfig::Inst() << " creating new console logger" << std::endl;
         consoleLogger = spdlog::stdout_color_mt("console");
         SetLoggerLevel(consoleLogger);
         consoleLogger->set_pattern("%v");
@@ -166,7 +167,7 @@ void CreateNewFileForLogging(const std::string& filePath)
 
 void StopFileLogging()
 {
-//    if (fileLogger && !SE_Env::Inst().GetOptions().GetOptionSet("log_append"))
+    //    if (fileLogger && !SE_Env::Inst().GetOptions().GetOptionSet("log_append"))
     {
         spdlog::drop("file");
         fileLogger.reset();
@@ -174,9 +175,9 @@ void StopFileLogging()
         spdlog::shutdown();
         LoggerConfig::Inst().enabledFiles_.clear();
         LoggerConfig::Inst().disabledFiles_.clear();
-    }    
+    }
 }
- 
+
 void StopConsoleLogging()
 {
     if (consoleLogger)
@@ -304,7 +305,7 @@ void LogTimeOnly()
 
 // we will override program option, discuss if there can be any issue in it
 void EnableConsoleLogging(bool state, bool persistant)
-{    
+{
     if (persistant)
     {
         if (state == true)
