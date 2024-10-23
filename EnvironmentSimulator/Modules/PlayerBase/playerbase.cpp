@@ -29,6 +29,8 @@
 #include "viewer.hpp"
 #endif
 
+#include "spdlog/fmt/fmt.h"
+
 using namespace scenarioengine;
 
 #define GHOST_HEADSTART 2.5
@@ -1292,17 +1294,26 @@ int ScenarioPlayer::Init()
     CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
     LogTimeOnly();
 
-    std::string strAllOptions;
+    std::string strAllSetOptions;
+
     for (const auto& option : opt.GetAllOptions())
     {
-        // strAllOptions = fmt::format("{}{}", strAllOptions, option->);
-    }
+        if (option.set_)
+        {
+            std::string currentOptionValue;
+            if (!option.arg_value_.empty())
+            {
+                for (const auto& val : option.arg_value_)
+                {
+                    currentOptionValue = fmt::format("{} {}", currentOptionValue, val);
+                }
+            }
 
-    /*
-    * //LOG_INFO("Player options:")
-    for (arg in argv_)
-        LOG arg
-    */
+            strAllSetOptions = fmt::format("{}--{}{}, ", strAllSetOptions, option.opt_str_, currentOptionValue);
+        }
+    }
+    LOG_INFO("Player options: {}", strAllSetOptions);
+
     if (opt.GetOptionSet("help"))
     {
         PrintUsage();
