@@ -228,6 +228,7 @@ TEST(LoggerTests, check_log_only_modules)
 
 TEST(LoggerTests, check_log_append)
 {
+    remove("log.txt");
     const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--log_meta_data", "--log_append"};
 
     for (int j = 0; j < 2; ++j)
@@ -4495,13 +4496,16 @@ int main(int argc, char** argv)
 #else
     CreateNewFileForLogging("log-test.txt");
     // SE_SetLogFilePath("log-test.txt");
-    if (!strcmp(argv[1], "--disable_stdout"))
+    if (argc > 1)
     {
-        SE_EnableConsoleLogging(false, true);
-    }
-    if (ParseAndSetLoggerOptions(argc, argv) != 0)
-    {
-        return -1;
+        if (!strcmp(argv[1], "--disable_stdout"))
+        {
+            SE_EnableConsoleLogging(false, true);
+        }
+        if (ParseAndSetLoggerOptions(argc, argv) != 0)
+        {
+            return -1;
+        }
     }
 
 #endif

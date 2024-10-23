@@ -62,9 +62,9 @@ void CreateFileLogger(const std::string& path)
 {
     if ((path.empty() && currentLogFileName.empty()) || path != currentLogFileName)
     {
-        bool appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
-        std::string filePath = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
-        fileLogger           = spdlog::basic_logger_mt("file", filePath, !appendFile);
+        bool        appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
+        std::string filePath   = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
+        fileLogger             = spdlog::basic_logger_mt("file", filePath, !appendFile);
         SetLoggerLevel(fileLogger);
         fileLogger->set_pattern("%v");
         fileLogger->info(GetVersionInfoForLog());
