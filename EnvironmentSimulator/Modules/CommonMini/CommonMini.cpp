@@ -898,7 +898,7 @@ FILE* FileOpen(const char* filename, const char* mode)
     int retval = fopen_s(&file, filename, mode);
     if (retval != 0)
     {
-        //printf("%s\n", strerror(errno));
+        // printf("%s\n", strerror(errno));
         strerror_s(buffer, sizeof(buffer), errno);
         printf("%s\n", buffer);
         return nullptr;
