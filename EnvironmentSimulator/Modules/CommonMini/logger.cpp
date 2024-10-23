@@ -36,11 +36,6 @@ static std::string              strTime;
 static std::string              currentLogFileName;
 static std::string              defaultLogFileName = "log.txt";
 
-LoggerConfig::LoggerConfig()
-{
-    // std::cout << "--LoggerConfig constructor--" << this << std::endl;
-}
-
 LoggerConfig& LoggerConfig::Inst()
 {
     static LoggerConfig loggerConfig_;
@@ -65,12 +60,9 @@ void SetLoggerLevel(std::shared_ptr<spdlog::logger>& logger)
 
 void CreateFileLogger(const std::string& path)
 {
-    // std::cout << "LoggerConfig:" << &LoggerConfig::Inst()<< " currentLogFileName:" << currentLogFileName << "   newPath:" << path << std::endl;
     if ((path.empty() && currentLogFileName.empty()) || path != currentLogFileName)
     {
         bool appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
-        // std::cout << "openingFile programOptions:" << &SE_Env::Inst().GetOptions() << "   loggerConf:" << &LoggerConfig::Inst() << "   append:" <<
-        // appendFile << std::endl;
         std::string filePath = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
         fileLogger           = spdlog::basic_logger_mt("file", filePath, !appendFile);
         SetLoggerLevel(fileLogger);
@@ -90,7 +82,6 @@ bool LogConsole()
     bool shouldLog      = LoggerConfig::Inst().persistedState_ != LOG_PERSISTANCE_STATE::LPS_FALSE && !stdoutDisabled;
     if (shouldLog && !consoleLogger)
     {
-        // std::cout << &LoggerConfig::Inst() << " creating new console logger" << std::endl;
         consoleLogger = spdlog::stdout_color_mt("console");
         SetLoggerLevel(consoleLogger);
         consoleLogger->set_pattern("%v");

@@ -3021,11 +3021,6 @@ int main(int argc, char **argv)
 {
     // testing::GTEST_FLAG(filter) = "*RoadWidthAllLanes*";
 
-    std::cout << "==============================RoadManager_test called with argc : " << argc << std::endl;
-    for (int i = 0; i < argc; ++i)
-    {
-        std::cout << "argv[" << i << "]=" << argv[i] << std::endl;
-    }
     testing::InitGoogleTest(&argc, argv);
 
     if (ParseAndSetLoggerOptions(argc, argv) != 0)

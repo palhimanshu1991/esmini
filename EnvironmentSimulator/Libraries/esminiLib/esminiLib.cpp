@@ -116,7 +116,6 @@ static void ConvertArguments()
         StrCopy(argv_[i], args_v[i].c_str(), static_cast<unsigned int>(args_v[i].size()) + 1);
         argument_list += std::string(" ") + argv_[i];
     }
-    // riz-temp LOG_INFO("Player arguments: {}", argument_list);
 }
 
 static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectStateStruct *gw_state)

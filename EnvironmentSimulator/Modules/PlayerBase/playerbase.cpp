@@ -1469,9 +1469,6 @@ int ScenarioPlayer::Init()
         log_filename = dist.AddInfoToFilepath(log_filename);
     }
 
-    // Logger::Inst().OpenLogfile(log_filename);
-    // Logger::Inst().LogVersion();
-    // riz temp
     CreateNewFileForLogging(log_filename);
     if (dist.GetNumPermutations() > 0)
     {

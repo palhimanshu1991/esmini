@@ -898,7 +898,7 @@ FILE* FileOpen(const char* filename, const char* mode)
     int retval = fopen_s(&file, filename, mode);
     if (retval != 0)
     {
-        printf("%s\n", strerror(errno));
+        printf("%s\n", strerror_s(errno));
         return nullptr;
     }
 #else
@@ -1381,17 +1381,6 @@ SE_Env& SE_Env::Inst()
     static SE_Env instance_;
     return instance_;
 }
-
-// void SE_Env::SetLogFilePath(std::string logFilePath)
-// {
-
-//     logFilePath_ = logFilePath;
-//     if (Logger::Inst().IsFileOpen())
-//     {
-//         // Probably user wants another logfile with a new name
-//         Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
-//     }
-// }
 
 void SE_Env::SetDatFilePath(std::string datFilePath)
 {
@@ -1927,7 +1916,6 @@ const std::vector<SE_Option>& SE_Options::GetAllOptions() const
 
 int SE_Options::ParseArgs(int argc, const char* const argv[])
 {
-    // std::cout << "ParseArgs programOptions:" << &SE_Env::Inst().GetOptions() << std::endl;
     std::vector<const char*> args = {argv, std::next(argv, argc)};
 
     app_name_     = FileNameWithoutExtOf(args[0]);
@@ -2015,10 +2003,6 @@ bool SE_Options::HasUnknownArgs()
 
 void SE_Options::Reset()
 {
-    // bool appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
-    // std::cout << "reseting programOptions:" << &SE_Env::Inst().GetOptions() << "   loggerConf:" << &LoggerConfig::Inst() << "   append:" <<
-    // appendFile
-    //           << std::endl;
     for (size_t i = 0; i < option_.size(); i++)
     {
         option_[i].arg_value_.clear();

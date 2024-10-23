@@ -46,7 +46,7 @@ struct LoggerConfig
     double*                         time_ = nullptr;
 
 private:
-    LoggerConfig();
+    LoggerConfig() = default;
 };
 
 bool                      ShouldLogModule(char const* file);
