@@ -893,12 +893,11 @@ std::string ToLower(const char* in_str)
 FILE* FileOpen(const char* filename, const char* mode)
 {
     FILE* file = nullptr;
-    char  buffer[256];
 #ifdef _WIN32
     int retval = fopen_s(&file, filename, mode);
     if (retval != 0)
     {
-        // printf("%s\n", strerror(errno));
+        char buffer[256];
         strerror_s(buffer, sizeof(buffer), errno);
         printf("%s\n", buffer);
         return nullptr;
