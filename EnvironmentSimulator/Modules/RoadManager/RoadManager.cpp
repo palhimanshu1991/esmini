@@ -1570,7 +1570,7 @@ int Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id
                         lane_info.lane_id_);
                 }
 
-                int new_lane_index = lane_section->GetClosestLaneIdx(s, t, 0, offset, true, laneTypeMask);
+                int new_lane_index = lane_section->GetClosestLaneIdx(s, t, GetLaneOffset(s), 0, offset, true, laneTypeMask);
 
                 if (new_lane_index < 0)
                 {
@@ -3070,7 +3070,7 @@ bool Road::UpdateZAndRollBySAndT(double s, double t, double* z, double* roadSupe
         {
             double ds = s - super_elevation->GetS();
             *roll     = super_elevation->poly3_.Evaluate(ds);
-            *z += tan(*roll) * (t + GetLaneOffset(s));
+            *z += tan(*roll) * t;
             *roadSuperElevationPrim = super_elevation->poly3_.EvaluatePrim(ds);
             return true;
         }
@@ -7556,7 +7556,7 @@ bool OpenDrive::SetRoadOSI()
     return false;
 }
 
-int LaneSection::GetClosestLaneIdx(double s, double t, int side, double& offset, bool noZeroWidth, int laneTypeMask) const
+int LaneSection::GetClosestLaneIdx(double s, double t, double laneOffset, int side, double& offset, bool noZeroWidth, int laneTypeMask) const
 {
     double min_offset         = t;  // Initial offset relates to reference line
     int    candidate_lane_idx = -1;
@@ -7615,7 +7615,7 @@ int Position::GotoClosestDrivingLaneAtCurrentPosition()
     }
 
     double offset;
-    int    lane_idx = lane_section->GetClosestLaneIdx(s_, t_, 0, offset, true, snapToLaneTypes_);
+    int    lane_idx = lane_section->GetClosestLaneIdx(s_, t_, road->GetLaneOffset(s_), 0, offset, true, snapToLaneTypes_);
 
     if (lane_idx == -1)
     {
@@ -7657,7 +7657,8 @@ void Position::Track2Lane()
 
     // Find the closest driving lane within the lane section
     double offset;
-    int    lane_idx = lane_section->GetClosestLaneIdx(s_, t_, 0, offset, true, snapToLaneTypes_);
+    int    lane_idx =
+        lane_section->GetClosestLaneIdx(s_, t_, road->GetLaneOffset(s_), 0, offset, true, snapToLaneTypes_);
 
     if (lane_idx == -1)
     {
@@ -8343,8 +8344,9 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
             fixedLaneOffset = (change_direction ? -1 : 1) * SIGN(lane_id_) * lsec->GetCenterOffset(s_, lane_id_);
 
             // Now find cloest lane at that lateral position, at updated s value
-            double laneOffset;
-            int    lane_idx = lsec->GetClosestLaneIdx(closestS, fixedLaneOffset, 0, laneOffset, true, snapToLaneTypes_);
+            double offset;
+            int    lane_idx =
+                lsec->GetClosestLaneIdx(closestS, fixedLaneOffset, current_road->GetLaneOffset(closestS), 0, offset, true, snapToLaneTypes_);
             fixedLaneId     = lsec->GetLaneIdByIdx(lane_idx);
         }
     }
@@ -8461,8 +8463,8 @@ Position::ReturnCode Position::Track2XYZ(int mode)
     geometry->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_road_);
 
     // Consider lateral t position, perpendicular to track heading
-    double x_local = (t_ + road->GetLaneOffset(s_)) * cos(h_road_ + M_PI_2);
-    double y_local = (t_ + road->GetLaneOffset(s_)) * sin(h_road_ + M_PI_2);
+    double x_local = t_ * cos(h_road_ + M_PI_2);
+    double y_local = t_ * sin(h_road_ + M_PI_2);
 
     x_ += x_local;
     y_ += y_local;
@@ -8483,7 +8485,9 @@ void Position::LaneBoundary2Track()
 
         if (lane_section != 0 && lane_id_ != 0)
         {
-            t_        = offset_ + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+
+            t_ = offset_ + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1)
+                 + Position::GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLaneOffset(s_);
             h_offset_ = lane_section->GetOuterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
         }
     }
@@ -9072,16 +9076,6 @@ double Position::DistanceToDS(double ds)
     double curvature = GetCurvature();
     double offset    = GetT();
 
-    // Also compensate for any lane offset at current road position (if available)
-    if (GetOpenDrive())
-    {
-        roadmanager::Road* road = GetOpenDrive()->GetRoadById(GetTrackId());
-        if (road != nullptr)
-        {
-            offset += road->GetLaneOffset(GetS());
-        }
-    }
-
     if (abs(curvature) > SMALL_NUMBER)
     {
         // Approximate delta length by sampling curvature in current position
@@ -9244,7 +9238,7 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
                 double offset       = 0;
                 int    old_lane_id  = lane_id_;
                 int    new_lane_idx = road->GetLaneSectionByIdx(li.lane_section_idx_)
-                                       ->GetClosestLaneIdx(GetS(), GetT(), SIGN(lane_id_), offset, true, snapToLaneTypes_);
+                        ->GetClosestLaneIdx(GetS(), GetT(), road->GetLaneOffset(GetS()), SIGN(lane_id_), offset, true, snapToLaneTypes_);
                 if (new_lane_idx < 0)
                 {
                     ret_val = ReturnCode::ERROR_GENERIC;
@@ -10948,7 +10942,7 @@ int Position::GetLaneGlobalId() const
     }
 
     double offset;
-    int    lane_idx = lane_section->GetClosestLaneIdx(s_, t_, 0, offset, false, Lane::LaneType::LANE_TYPE_ANY);
+    int    lane_idx = lane_section->GetClosestLaneIdx(s_, t_, road->GetLaneOffset(s_), 0, offset, false, Lane::LaneType::LANE_TYPE_ANY);
 
     if (lane_idx == -1)
     {

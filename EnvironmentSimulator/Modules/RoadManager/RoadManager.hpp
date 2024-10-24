@@ -1128,6 +1128,7 @@ namespace roadmanager
         */
         int GetClosestLaneIdx(double  s,
                               double  t,
+                              double  laneOffset,
                               int     side,
                               double &offset,
                               bool    noZeroWidth,
