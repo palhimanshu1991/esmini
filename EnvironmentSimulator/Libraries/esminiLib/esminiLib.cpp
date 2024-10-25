@@ -2788,14 +2788,14 @@ extern "C"
         roadmanager::Route *route = obj->pos_.GetRoute();
 
         if (route == nullptr)
-        {            
+        {
             LOG_ERROR("Object {} (id {}) has currently no assigned route", obj->GetName(), object_id);
             return -1;
         }
 
         if (route_index < 0 || route_index >= static_cast<int>(route->all_waypoints_.size()))
         {
-            LOG("Requested waypoint index %d invalid, only %d registered", route_index, route->all_waypoints_.size());
+            LOG_INFO("Requested waypoint index {} invalid, only {} registered", route_index, route->all_waypoints_.size());
             return -1;
         }
 

@@ -1372,7 +1372,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     {
         // Viewer failed to create graphics context. Probably Anti Aliasing is not supported on executing platform.
         // Make another attempt without AA
-        LOG_ERROR("Failed to create window {} {} {} {}. Maybe the Anti Aliasing setting ({} multisamples) is not supported. Making another attempt without Anti-Alias and on first screen.",
+        LOG_ERROR(
+            "Failed to create window {} {} {} {}. Maybe the Anti Aliasing setting ({} multisamples) is not supported. Making another attempt without Anti-Alias and on first screen.",
             winDim_.x,
             winDim_.y,
             winDim_.w,
@@ -1393,15 +1394,15 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osgViewer::GraphicsWindow* gw = dynamic_cast<osgViewer::GraphicsWindow*>(gc.get());
     if (!opt->GetOptionSet("headless") && gw == nullptr)
     {
-<<<<<<< HEAD
-        LOG("Failed to create viewer window %d %d %d %d. Try --headless option to run without window", winDim_.x, winDim_.y, winDim_.w, winDim_.h);
-=======
-        LOG_ERROR("Failed to create viewer window. Try --headless option to run without window");
->>>>>>> 8addd449 (Add new logger features based on spdlog)
+        LOG_ERROR("Failed to create viewer window {} {} {} {}. Try --headless option to run without window",
+                  winDim_.x,
+                  winDim_.y,
+                  winDim_.w,
+                  winDim_.h);
         return;
     }
 
-    LOG("Window created at %d,%d with size %d,%d", MAX(0, traits->x), MAX(0, traits->y), traits->width, traits->height);
+    LOG_INFO("Window created at {},{} with size {},{}", MAX(0, traits->x), MAX(0, traits->y), traits->width, traits->height);
 
     osgViewer_ = new osgViewer::Viewer;
     if (osgViewer_ == nullptr)
