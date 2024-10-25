@@ -3251,7 +3251,7 @@ validates all OpenSCENARIO files starting with "follow_route" and all OpenDRIVE 
 
 Google sanitizers framework is utilized to detect memory related errors, for example memory leaks. It's executed nighly as a GitHub CI actions job on dev branch. The job can also be trigged manually, but will only run checks on dev branch. Sanitizers is currently only applied to Linux builds.
 
-To run the sanitizer checks locally, on Ubuntu:
+You can also run the sanitizer checks locally (on any branch, even uncommitted code) on Ubuntu:
 
 . Set the following environment variables, run from esmini root:
 
