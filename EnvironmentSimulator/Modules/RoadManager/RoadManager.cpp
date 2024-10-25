@@ -5931,7 +5931,7 @@ void OpenDrive::EstablishUniqueIds(pugi::xml_node& parent, std::string name, std
                 if (ids[i].first == id_current)
                 {
                     // conflict: replace previously assigned id with new one
-                    LOG("%s internal ID conflict, updating former %s -> %u with %u", name.c_str(), ids[i].second.c_str(), id_current, id_next);
+                    LOG_WARN("{} internal ID conflict, updating former {} -> {} with {}", name, ids[i].second, id_current, id_next);
                     ids[i].first = id_next++;
                 }
             }
@@ -5956,7 +5956,7 @@ void OpenDrive::EstablishUniqueIds(pugi::xml_node& parent, std::string name, std
 
         if (id_current > ID_MAX)
         {
-            LOG_AND_QUIT("Error: Out of internal IDs while processing %s %s", name.c_str(), id_str.c_str());
+            LOG_ERROR_AND_QUIT("Error: Out of internal IDs while processing {} {}", name, id_str);
         }
 
         ids.push_back(std::make_pair(id_current, id_str));
@@ -10103,7 +10103,7 @@ void Position::SetModeBits(PosModeType type, int bits)
     }
     else
     {
-        LOG("Unexpected Position SetMode type: %d", type);
+        LOG_ERROR("Unexpected Position SetMode type: {}", type);
         return;
     }
 }
@@ -10124,7 +10124,7 @@ const int Position::GetModeDefault(PosModeType type)
     }
     else
     {
-        LOG("Unexpected position mode type: %d", type);
+        LOG_ERROR("Unexpected position mode type: {}", type);
         return 0;
     }
 }
@@ -10402,7 +10402,7 @@ int Position::SetRoute(Route* route)
     {
         if (route_ != nullptr && route != nullptr)
         {
-            LOG("Warning: Overriding route in position object\n");
+            LOG_WARN("Warning: Overriding route in position object");
         }
         route_ = route;
     }
@@ -10415,7 +10415,7 @@ void Position::CopyRoute(const Position& position)
 {
     if (route_ != nullptr && position.route_ != nullptr)
     {
-        LOG("Warning: Overriding route in position object\n");
+        LOG_WARN("Warning: Overriding route in position object");
     }
 
     if (position.route_ != nullptr)
@@ -10557,7 +10557,7 @@ int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceTyp
         {
             if (GetTrajectory() == nullptr)
             {
-                LOG("Dist warning: No trajectory for pos_a. Measuring Euclidian distance.");
+                LOG_INFO("Dist warning: No trajectory for pos_a. Measuring Euclidian distance.");
                 double dx, dy;
                 dist = getRelativeDistance(pos_b->GetX(), pos_b->GetY(), dx, dy);
             }
@@ -10594,7 +10594,7 @@ int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceTyp
                 }
                 else
                 {
-                    LOG("Dist warning: No closest point found on trajectory. Measuring Euclidian distance.");
+                    LOG_WARN("Dist warning: No closest point found on trajectory. Measuring Euclidian distance.");
                     dist = getRelativeDistance(pos_b->GetX(), pos_b->GetY(), dx, dy);
                 }
             }
@@ -10653,7 +10653,7 @@ int Position::Distance(double x, double y, CoordinateSystem cs, RelativeDistance
         {
             if (GetTrajectory() == nullptr)
             {
-                LOG("Dist warning: No trajectory for pos_a. Measuring Euclidian distance.");
+                LOG_INFO("Dist warning: No trajectory for pos_a. Measuring Euclidian distance.");
                 double dx, dy;
                 dist = getRelativeDistance(x, y, dx, dy);
             }
@@ -10678,7 +10678,7 @@ int Position::Distance(double x, double y, CoordinateSystem cs, RelativeDistance
                 }
                 else
                 {
-                    LOG("Dist warning: No closest point found on trajectory. Measuring Euclidian distance.");
+                    LOG_WARN("Dist warning: No closest point found on trajectory. Measuring Euclidian distance.");
                     dist = getRelativeDistance(x, y, dx, dy);
                 }
             }
@@ -12047,11 +12047,11 @@ int ClothoidSplineShape::EvaluateInternal(double s, int segment_idx, TrajVertex&
     {
         if (spirals_.size() == 0)
         {
-            LOG("ClothoidSplineShape has no segments, freeze trajectory first");
+            LOG_INFO("ClothoidSplineShape has no segments, freeze trajectory first");
         }
         else
         {
-            LOG("ClothoidSplineShape segment index %d out of range [0, %d]", segment_idx, static_cast<int>(spirals_.size()) - 1);
+            LOG_INFO("ClothoidSplineShape segment index {} out of range [0, {}]", segment_idx, static_cast<int>(spirals_.size()) - 1);
         }
         return -1;
     }
@@ -12998,11 +12998,11 @@ int Route::AddWaypoint(const Position& wp_pos)
         // Add all waypoints including invalid road ID (retval == -2 indicates invalid road ID)
         all_waypoints_.push_back(wp_pos);
 
-        LOG("Route::AddWaypoint Added waypoint {}: {}, {}, {:.2f}",
-            (int)all_waypoints_.size() - 1,
-            wp_pos.GetTrackId(),
-            wp_pos.GetLaneId(),
-            wp_pos.GetS());
+        LOG_INFO("Route::AddWaypoint Added waypoint {}: {}, {}, {:.2f}",
+                 (int)all_waypoints_.size() - 1,
+                 wp_pos.GetTrackId(),
+                 wp_pos.GetLaneId(),
+                 wp_pos.GetS());
 
         if (retval == 0)
         {
@@ -13017,10 +13017,10 @@ int Route::AddWaypoint(const Position& wp_pos)
     else
     {
         LOG_ERROR("Route::AddWaypoint Failed to add waypoint {}: {}, {}, {:.2f}",
-            (int)minimal_waypoints_.size() - 1,
-            wp_pos.GetTrackId(),
-            wp_pos.GetLaneId(),
-            wp_pos.GetS());
+                  (int)minimal_waypoints_.size() - 1,
+                  wp_pos.GetTrackId(),
+                  wp_pos.GetLaneId(),
+                  wp_pos.GetS());
     }
 
     return 0;
@@ -13159,7 +13159,6 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
 
     if (info_for_closest_wp.wp_index >= 0)
     {
-<<<<<<< HEAD
         path_s_       = CLAMP(info_for_closest_wp.dist_along_route_at_wp, 0.0, GetLength());
         local_s       = info_for_closest_wp.s;
         waypoint_idx_ = info_for_closest_wp.wp_index;
@@ -13175,11 +13174,11 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
             {
                 if (OnRoute() && info_for_closest_wp.retval == Position::ReturnCode::ERROR_END_OF_ROUTE)
                 {
-                    LOG("%s%smoved out of route at roadId=%d, s=%.2f (SetTrackS())",
-                        getObjName().empty() ? "Position " : "Entity ",
-                        getObjName().empty() ? "" : getObjName().c_str(),
-                        trackId,
-                        s);
+                    LOG_INFO("{}{}moved out of route at roadId={}, s={:.2f} (SetTrackS())",
+                             getObjName().empty() ? "Position " : "Entity ",
+                             getObjName().empty() ? "" : getObjName().c_str(),
+                             trackId,
+                             s);
                 }
 
                 on_route_ = false;
@@ -13190,10 +13189,10 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
             if (!OnRoute())
             {
                 LOG_INFO("{}{} on route at roadId={}, s={:.2f}",
-                    getObjName().empty() ? "Position " : "Entity ",
-                    getObjName().empty() ? "" : getObjName(),
-                    trackId,
-                    s);
+                         getObjName().empty() ? "Position " : "Entity ",
+                         getObjName().empty() ? "" : getObjName(),
+                         trackId,
+                         s);
             }
             on_route_ = true;
         }
@@ -13206,11 +13205,11 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
         {
             if (on_route_)
             {
-                LOG("%s%s moved away from route at roadId=%d, s=%.2f",
-                    getObjName().empty() ? "Position " : "Entity ",
-                    getObjName().empty() ? "" : getObjName().c_str(),
-                    trackId,
-                    s);
+                LOG_INFO("{}{} moved away from route at roadId={}, s={:.2f}",
+                         getObjName().empty() ? "Position " : "Entity ",
+                         getObjName().empty() ? "" : getObjName().c_str(),
+                         trackId,
+                         s);
             }
             on_route_ = false;
         }
@@ -13307,10 +13306,10 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
                 if (update_state)
                 {
                     LOG_INFO("{}{}on route at roadId={}, s={:.2f}",
-                        getObjName().empty() ? "Position " : "Entity ",
-                        getObjName().empty() ? "" : getObjName(),
-                        minimal_waypoints_[i].GetTrackId(),
-                        local_s);
+                             getObjName().empty() ? "Position " : "Entity ",
+                             getObjName().empty() ? "" : getObjName(),
+                             minimal_waypoints_[i].GetTrackId(),
+                             local_s);
                     on_route_ = true;
                 }
             }
@@ -13319,10 +13318,10 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
                 if (update_state)
                 {
                     LOG_INFO("{}{}moved out of route at roadId={}, s={:.2f} (SetPathS())",
-                        getObjName().empty() ? "Position " : "Entity ",
-                        getObjName().empty() ? "" : getObjName(),
-                        GetWaypoint(waypoint_idx_)->GetTrackId(),
-                        local_s);
+                             getObjName().empty() ? "Position " : "Entity ",
+                             getObjName().empty() ? "" : getObjName(),
+                             GetWaypoint(waypoint_idx_)->GetTrackId(),
+                             local_s);
                     on_route_ = false;
                 }
             }
