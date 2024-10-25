@@ -29,7 +29,7 @@ macro(set_special_build_flags)
             STREQUAL
             "RelWithDebInfo")
             set(CMAKE_CXX_FLAGS
-                "${CMAKE_CXX_FLAGS} ${CXX_STD_FLAG}-march=native -pthread -fPIC")
+                "${CMAKE_CXX_FLAGS} ${CXX_STD_FLAG} -march=native -pthread -fPIC")
         elseif(
             CMAKE_BUILD_TYPE
             STREQUAL
