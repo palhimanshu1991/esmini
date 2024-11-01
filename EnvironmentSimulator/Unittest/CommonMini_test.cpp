@@ -203,17 +203,19 @@ TEST(MatrixOperations, TestMatrixInvert)
 
 TEST(ProgramOptions, NonPersisted)
 {
-    std::string paramName     = "density";
-    std::string paramValue    = "10";
-    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_3_way_intersection_osi.xosc";
-    const char* Scenario_file = scenario_file.c_str();
-    SE_Init(Scenario_file, 0, 0, 0, 0);
+    std::string paramName  = "density";
+    std::string paramValue = "10";
+    // std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_3_way_intersection_osi.xosc";
+    // const char* Scenario_file = scenario_file.c_str();
+    // SE_Init(Scenario_file, 0, 0, 0, 0);
+    const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     SE_SetOptionValue(paramName.c_str(), paramValue.c_str());
     std::string optionValue = SE_GetOptionValue(paramName.c_str());
     EXPECT_EQ(optionValue, paramValue);
     SE_Close();
 
-    SE_Init(Scenario_file, 0, 0, 0, 0);
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     optionValue = SE_GetOptionValue(paramName.c_str());
     EXPECT_NE(optionValue, paramValue);
     SE_Close();
@@ -221,17 +223,16 @@ TEST(ProgramOptions, NonPersisted)
 
 TEST(ProgramOptions, Persisted)
 {
-    std::string paramValue    = "10";
-    std::string paramName     = "density";
-    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_3_way_intersection_osi.xosc";
-    const char* Scenario_file = scenario_file.c_str();
-    SE_Init(Scenario_file, 0, 0, 0, 0);
+    std::string paramValue = "10";
+    std::string paramName  = "density";
+    const char* args[]     = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     SE_SetOptionValuePersistent(paramName.c_str(), paramValue.c_str());
     std::string optionValue = SE_GetOptionValue(paramName.c_str());
     EXPECT_EQ(optionValue, paramValue);
     SE_Close();
 
-    SE_Init(Scenario_file, 0, 0, 0, 0);
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     optionValue = SE_GetOptionValue(paramName.c_str());
     EXPECT_EQ(optionValue, paramValue);
     // make it non-persistent for cleanup
