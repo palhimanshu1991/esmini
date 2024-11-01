@@ -201,7 +201,41 @@ TEST(MatrixOperations, TestMatrixInvert)
     EXPECT_NEAR(m3[2][2], 1.0, 1E-5);
 }
 
-int main(int argc, char **argv)
+TEST(ProgramOptions, NonPersisted)
+{
+    std::string logFilePath   = "test.log";
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_3_way_intersection_osi.xosc";
+    const char* Scenario_file = scenario_file.c_str();
+    SE_Init(Scenario_file, 0, 0, 0, 0);
+    SE_SetOptionValue("logfile_path", logFilePath.c_str());
+    std::string optionValue = SE_GetOptionValue("logfile_path");
+    EXPECT_EQ(optionValue, logFilePath);
+    SE_Close();
+
+    SE_Init(Scenario_file, 0, 0, 0, 0);
+    optionValue = SE_GetOptionValue("logfile_path");
+    EXPECT_NE(optionValue, logFilePath);
+    SE_Close();
+}
+
+TEST(ProgramOptions, Persisted)
+{
+    std::string logFilePath   = "test.log";
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_3_way_intersection_osi.xosc";
+    const char* Scenario_file = scenario_file.c_str();
+    SE_Init(Scenario_file, 0, 0, 0, 0);
+    SE_SetOptionValuePersistent("logfile_path", logFilePath.c_str());
+    std::string optionValue = SE_GetOptionValue("logfile_path");
+    EXPECT_EQ(optionValue, logFilePath);
+    SE_Close();
+
+    SE_Init(Scenario_file, 0, 0, 0, 0);
+    optionValue = SE_GetOptionValue("logfile_path");
+    EXPECT_EQ(optionValue, logFilePath);
+    SE_Close();
+}
+
+int main(int argc, char** argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";
 

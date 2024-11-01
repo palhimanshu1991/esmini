@@ -85,6 +85,7 @@ unittest(
 unittest(
     CommonMini_test
     CommonMini_test.cpp
+    esminiLib
     CommonMini)
 
 # ############################### Creating executable (FollowRoute_test) ##############################################

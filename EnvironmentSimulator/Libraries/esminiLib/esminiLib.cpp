@@ -510,6 +510,26 @@ extern "C"
         return SE_Env::Inst().GetOptions().SetOptionValue(name, value);
     }
 
+    SE_DLL_API int SE_SetOptionPersistent(const char *name)
+    {
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, "", false, true);
+    }
+
+    SE_DLL_API int SE_SetOptionValuePersistent(const char *name, const char *value)
+    {
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, value, false, true);
+    }
+
+    SE_DLL_API const char *SE_GetOptionValue(const char *name)
+    {
+        const char *ret;
+        if (SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))
+        {
+            ret = SE_Env::Inst().GetOptions().GetOptionArg(name).c_str();
+        }
+        return ret;
+    }
+
     SE_DLL_API int SE_SetParameterDistribution(const char *filename)
     {
         return OSCParameterDistribution::Inst().Load(filename);
