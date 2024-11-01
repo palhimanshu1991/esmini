@@ -203,35 +203,39 @@ TEST(MatrixOperations, TestMatrixInvert)
 
 TEST(ProgramOptions, NonPersisted)
 {
-    std::string logFilePath   = "test.log";
+    std::string paramName = "density";
+    std::string paramValue   = "10";    
     std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_3_way_intersection_osi.xosc";
     const char* Scenario_file = scenario_file.c_str();
     SE_Init(Scenario_file, 0, 0, 0, 0);
-    SE_SetOptionValue("logfile_path", logFilePath.c_str());
-    std::string optionValue = SE_GetOptionValue("logfile_path");
-    EXPECT_EQ(optionValue, logFilePath);
+    SE_SetOptionValue(paramName.c_str(), paramValue.c_str());
+    std::string optionValue = SE_GetOptionValue(paramName.c_str());
+    EXPECT_EQ(optionValue, paramValue);
     SE_Close();
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
-    optionValue = SE_GetOptionValue("logfile_path");
-    EXPECT_NE(optionValue, logFilePath);
+    optionValue = SE_GetOptionValue(paramName.c_str());
+    EXPECT_NE(optionValue, paramValue);
     SE_Close();
 }
 
 TEST(ProgramOptions, Persisted)
 {
-    std::string logFilePath   = "test.log";
+    std::string paramValue   = "10";
+    std::string paramName = "density";
     std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_3_way_intersection_osi.xosc";
     const char* Scenario_file = scenario_file.c_str();
     SE_Init(Scenario_file, 0, 0, 0, 0);
-    SE_SetOptionValuePersistent("logfile_path", logFilePath.c_str());
-    std::string optionValue = SE_GetOptionValue("logfile_path");
-    EXPECT_EQ(optionValue, logFilePath);
+    SE_SetOptionValuePersistent(paramName.c_str(), paramValue.c_str());
+    std::string optionValue = SE_GetOptionValue(paramName.c_str());
+    EXPECT_EQ(optionValue, paramValue);
     SE_Close();
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
-    optionValue = SE_GetOptionValue("logfile_path");
-    EXPECT_EQ(optionValue, logFilePath);
+    optionValue = SE_GetOptionValue(paramName.c_str());
+    EXPECT_EQ(optionValue, paramValue);
+    //make it non-persistent for cleanup
+    SE_SetOptionValue(paramName.c_str(), paramValue.c_str());
     SE_Close();
 }
 
