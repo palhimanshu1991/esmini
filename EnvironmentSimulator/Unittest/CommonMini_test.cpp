@@ -204,8 +204,8 @@ TEST(MatrixOperations, TestMatrixInvert)
 TEST(ProgramOptions, NonPersisted)
 {
     std::string paramName  = "density";
-    std::string paramValue = "10";    
-    const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+    std::string paramValue = "10";
+    const char* args[]     = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     SE_SetOptionValue(paramName.c_str(), paramValue.c_str());
     std::string optionValue = SE_GetOptionValue(paramName.c_str());
