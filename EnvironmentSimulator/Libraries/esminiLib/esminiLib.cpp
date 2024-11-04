@@ -521,7 +521,7 @@ extern "C"
     }
 
     SE_DLL_API const char *SE_GetOptionValue(const char *name)
-    {        
+    {
         if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))
         {
             return "";
