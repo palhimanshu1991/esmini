@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate and test ACC controller -->
+<!-- A white car is driving with constant speed, set by init event -->
+<!-- The white car approaches a red leading car -->
+<!-- The red leading car will perform some maneuvers to exercise the ACC function -->
+
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="2"
+               date="2021-08-24T10:00:00"
+               description="Demonstrate Natural Driver"
+               author="esmini-team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="50"/>
+      <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="50"/>
+      <ParameterDeclaration name="DesiredDistance" parameterType="double" value="5"/>
+      <ParameterDeclaration name="AdjRearDistance" parameterType="double" value="3.0"/>
+      <ParameterDeclaration name="AdjLeadDistance" parameterType="double" value="20.0"/>
+      <ParameterDeclaration name="TargetSpeed" parameterType="double" value="50"/>
+      <ParameterDeclaration name="EgoS" parameterType="double" value="20"/>
+      <ParameterDeclaration name="TargetS" parameterType="double" value="100"/>
+      <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="10"/>
+      <ParameterDeclaration name="kp" parameterType="double" value="0.2"/>
+      <ParameterDeclaration name="kd" parameterType="double" value="0.8"/>
+      <ParameterDeclaration name="MaxAcc" parameterType="double" value="4.0"/>
+      <ParameterDeclaration name="Route" parameterType="integer" value="-2"/>
+      <ParameterDeclaration name="Politeness" parameterType="double" value="0.1"/>
+      <ParameterDeclaration name="LaneChangeDelay" parameterType="double" value="5.0"/>
+      <ParameterDeclaration name="Thw" parameterType="double" value="1.5"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+	     <Directory path="../xosc/Catalogs/Controllers"/>
+	  </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/Hello_world_overtake0.xodr"/>
+      <!-- <LogicFile filepath="../xodr/straight_500m.xodr"/> -->
+      <!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+        <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+         <ObjectController>
+            <Controller name="NaturalDriver">
+                <Properties>
+                    <Property name="desiredDistance" value="$DesiredDistance" />
+                    <Property name="adjRearDistance" value="$AdjRearDistance" />
+                    <Property name="adjLeadDistance" value="$AdjLeadDistance" />
+                    <Property name="mode" value="override" />
+                    <Property name="speedTolerance" value="${$SpeedTolerance / 3.6}" />
+                    <Property name="desiredSpeed" value="${$DesiredSpeed / 3.6}" />
+                    <Property name="maxAcc" value="2" />
+                    <Property name="maxDec" value="-4" />
+                    <Property name="route" value="$Route" />
+                    <Property name="politeness" value="$Politeness" />
+                    <Property name="laneChangeDelay" value="$LaneChangeDelay" />
+                    <Property name="THW" value="$Thw" />
+                </Properties>
+            </Controller>            
+         </ObjectController>         
+      </ScenarioObject>
+      <ScenarioObject name="Target">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+         <ObjectController>
+            <Controller name="NaturalDriver">
+                <Properties>
+                    <Property name="desiredDistance" value="$DesiredDistance" />
+                    <Property name="adjRearDistance" value="$AdjRearDistance" />
+                    <Property name="adjLeadDistance" value="$AdjLeadDistance" />
+                    <Property name="mode" value="override" />
+                    <Property name="speedTolerance" value="${$SpeedTolerance / 3.6}" />
+                    <Property name="desiredSpeed" value="${$DesiredSpeed / 3.6}" />
+                    <Property name="maxAcc" value="2" />
+                    <Property name="maxDec" value="-4" />
+                    <Property name="route" value="$Route" />
+                    <Property name="politeness" value="$Politeness" />
+                    <Property name="laneChangeDelay" value="$LaneChangeDelay" />
+                    <Property name="THW" value="$Thw" />
+                </Properties>
+            </Controller>            
+         </ObjectController>         
+      </ScenarioObject>
+      <ScenarioObject name="Target2">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+         <ObjectController>
+            <Controller name="NaturalDriver">
+                <Properties>
+                    <Property name="desiredDistance" value="$DesiredDistance" />
+                    <Property name="adjRearDistance" value="$AdjRearDistance" />
+                    <Property name="adjLeadDistance" value="$AdjLeadDistance" />
+                    <Property name="mode" value="override" />
+                    <Property name="speedTolerance" value="${$SpeedTolerance / 3.6}" />
+                    <Property name="desiredSpeed" value="${$DesiredSpeed / 3.6}" />
+                    <Property name="maxAcc" value="2" />
+                    <Property name="maxDec" value="-4" />
+                    <Property name="route" value="$Route" />
+                    <Property name="politeness" value="$Politeness" />
+                    <Property name="laneChangeDelay" value="$LaneChangeDelay" />
+                    <Property name="THW" value="$Thw" />
+                </Properties>
+            </Controller>            
+         </ObjectController>         
+      </ScenarioObject>
+      <ScenarioObject name="Target3">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+         <ObjectController>
+            <Controller name="NaturalDriver">
+                <Properties>
+                    <Property name="desiredDistance" value="$DesiredDistance" />
+                    <Property name="adjRearDistance" value="$AdjRearDistance" />
+                    <Property name="adjLeadDistance" value="$AdjLeadDistance" />
+                    <Property name="mode" value="override" />
+                    <Property name="speedTolerance" value="${$SpeedTolerance / 3.6}" />
+                    <Property name="desiredSpeed" value="${$DesiredSpeed / 3.6}" />
+                    <Property name="maxAcc" value="2" />
+                    <Property name="maxDec" value="-4" />
+                    <Property name="route" value="$Route" />
+                    <Property name="politeness" value="$Politeness" />
+                    <Property name="laneChangeDelay" value="$LaneChangeDelay" />
+                    <Property name="THW" value="$Thw" />
+                </Properties>
+            </Controller>            
+         </ObjectController>         
+      </ScenarioObject>
+      <ScenarioObject name="Target4">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+         <ObjectController>
+            <Controller name="NaturalDriver">
+                <Properties>
+                    <Property name="desiredDistance" value="$DesiredDistance" />
+                    <Property name="adjRearDistance" value="$AdjRearDistance" />
+                    <Property name="adjLeadDistance" value="$AdjLeadDistance" />
+                    <Property name="mode" value="override" />
+                    <Property name="speedTolerance" value="${$SpeedTolerance / 3.6}" />
+                    <Property name="desiredSpeed" value="${$DesiredSpeed / 3.6}" />
+                    <Property name="maxAcc" value="2" />
+                    <Property name="maxDec" value="-4" />
+                    <Property name="route" value="$Route" />
+                    <Property name="politeness" value="$Politeness" />
+                    <Property name="laneChangeDelay" value="$LaneChangeDelay" />
+                    <Property name="THW" value="$Thw" />
+                </Properties>
+            </Controller>            
+         </ObjectController>         
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-2" offset="0" s="$EgoS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="rate" value="1"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$EgoSpeed / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <ControllerAction>   
+                  <ActivateControllerAction longitudinal="true" lateral="false" />
+               </ControllerAction>   
+            </Private>
+            <Private entityRef="Target">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="80"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="rate" value="1"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$TargetSpeed / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>               
+               <ControllerAction>   
+                  <ActivateControllerAction longitudinal="true" lateral="false" />
+               </ControllerAction>   
+            </Private>
+            <Private entityRef="Target2">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-2" offset="0" s="115"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="rate" value="1"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$TargetSpeed / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>               
+               <ControllerAction>   
+                  <ActivateControllerAction longitudinal="true" lateral="false" />
+               </ControllerAction>   
+            </Private>
+            <Private entityRef="Target3">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="60"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="rate" value="1"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$TargetSpeed / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>               
+               <ControllerAction>   
+                  <ActivateControllerAction longitudinal="true" lateral="false" />
+               </ControllerAction>   
+            </Private>
+            <Private entityRef="Target4">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-3" offset="0" s="60"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="rate" value="1"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$TargetSpeed / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>               
+               <ControllerAction>   
+                  <ActivateControllerAction longitudinal="true" lateral="false" />
+               </ControllerAction>   
+            </Private>
+         </Actions>
+      </Init>
+      <StopTrigger>
+          <ConditionGroup>
+                <Condition name="stop_trigger " delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="55" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+          </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>
