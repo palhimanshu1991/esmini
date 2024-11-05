@@ -111,10 +111,9 @@ set(CommonMini_test_sources
     ${UNITTEST_COMMON_SRC})
 
 unittest(
-    CommonMini_test
-    CommonMini_test.cpp
-    esminiLib
+    CommonMini_test    
     "${CommonMini_test_sources}"
+    esminiLib
     CommonMini)
 
 # ############################### Creating executable (FollowRoute_test) ##############################################
