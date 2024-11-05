@@ -111,7 +111,7 @@ set(CommonMini_test_sources
     ${UNITTEST_COMMON_SRC})
 
 unittest(
-    CommonMini_test    
+    CommonMini_test
     "${CommonMini_test_sources}"
     esminiLib
     CommonMini)
