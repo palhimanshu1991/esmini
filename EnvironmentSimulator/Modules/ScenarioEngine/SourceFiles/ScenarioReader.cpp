@@ -568,6 +568,14 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
             LOG_AND_QUIT("Unrecognized entity scale mode: %s", scaleModeStr.c_str());
         }
     }
+    // Ref point offset
+    double ref_point_offset = 0;
+    std::string ref_point_value = vehicle->properties_.GetValueStr("refPoint");
+    if (!ref_point_value.empty())
+    {
+        ref_point_offset = std::stod(ref_point_value);
+        vehicle->ref_point_offset = ref_point_offset;
+    }
 
     // Parse Performance element
     pugi::xml_node performance_node = vehicleNode.child("Performance");
@@ -628,6 +636,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
             else if (axle_name == "RearAxle")
             {
                 axle = &vehicle->rear_axle_;
+
             }
 
             if (axle != nullptr)
