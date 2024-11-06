@@ -45,26 +45,27 @@ namespace scenarioengine
 
         void Init();
         void InitPostPlayer();
-        void Step(double timeStep);
+        void Step(double dt);
         int  Activate(ControlActivationMode lat_activation_mode,
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
         void ReportKeyEvent(int key, bool down);
-        void SetSetSpeed(double setSpeed)
+        void SetDesiredSpeed(double desired_speed)
         {
-            setSpeed_ = setSpeed;
+            desired_speed_ = desired_speed;
         }
 
     private:
         vehicle::Vehicle vehicle_;
         bool             active_;
-        double           timeGap_;  // target headway time
-        double           setSpeed_;
-        double           lateralDist_;
-        double           currentSpeed_;
-        bool             setSpeedSet_;
-        bool             virtual_;
+        double           thw_;  // target headway time
+        double           thw_adjustment_t_;
+        double           desired_speed_;
+        double           current_speed_;
+        double           speed_tolerance_;
+        double           lane_change_duration_;
+        double           lateral_dist_;
     };
 
     Controller* InstantiateNaturalDriver(void* args);
