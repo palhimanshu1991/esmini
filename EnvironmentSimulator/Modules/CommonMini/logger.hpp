@@ -39,8 +39,7 @@ enum class LOG_PERSISTANCE_STATE
 struct LoggerConfig
 {
     static LoggerConfig&            Inst();
-    LOG_PERSISTANCE_STATE           persistedState_ = LOG_PERSISTANCE_STATE::LPS_UNDEFINED;
-    std::string                     logFilePath_    = "log.txt";
+    std::string                     logFilePath_ = "log.txt";
     std::unordered_set<std::string> enabledFiles_;
     std::unordered_set<std::string> disabledFiles_;
     double*                         time_ = nullptr;

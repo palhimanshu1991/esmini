@@ -385,9 +385,13 @@ extern "C"
     SE_DLL_API void SE_SetSeed(unsigned int seed);
 
     SE_DLL_API int SE_SetOption(const char *name);
+
+    SE_DLL_API int SE_UnsetOption(const char *name);
+
     SE_DLL_API int SE_SetOptionValue(const char *name, const char *value);
 
     SE_DLL_API int SE_SetOptionPersistent(const char *name);
+
     SE_DLL_API int SE_SetOptionValuePersistent(const char *name, const char *value);
 
     SE_DLL_API const char *SE_GetOptionValue(const char *name);
@@ -519,18 +523,11 @@ extern "C"
 
     /**
             Enable or disable log to stdout/console
-            Deprecated, please use SE_EnableConsoleLogging instead
+            Deprecated, use SE_SetOption() / SE_UnsetOption() with "disable_stdout" instead
+            which also allows for persistant setting
             @param mode true=enable, false=disable
     */
     SE_DLL_API void SE_LogToConsole(bool mode);
-
-    /**
-            Enable or disable log to stdout/console
-            Persistant or non-persistant (reset to default value by next init)
-            @param mode true=enable, false=disable
-            @param persistant true=persistant, false=non-persistant
-    */
-    SE_DLL_API void SE_EnableConsoleLogging(bool state, bool persistant);
 
     /**
     Enable or disable global collision detection

@@ -78,8 +78,7 @@ void CreateFileLogger(const std::string& path)
 
 bool LogConsole()
 {
-    bool stdoutDisabled = SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout");
-    bool shouldLog      = LoggerConfig::Inst().persistedState_ != LOG_PERSISTANCE_STATE::LPS_FALSE && !stdoutDisabled;
+    bool shouldLog = !SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout");
     if (shouldLog && !consoleLogger)
     {
         consoleLogger = spdlog::stdout_color_mt("console");
@@ -158,15 +157,12 @@ void CreateNewFileForLogging(const std::string& filePath)
 
 void StopFileLogging()
 {
-    //    if (fileLogger && !SE_Env::Inst().GetOptions().GetOptionSet("log_append"))
-    {
-        spdlog::drop("file");
-        fileLogger.reset();
-        currentLogFileName = "";
-        spdlog::shutdown();
-        LoggerConfig::Inst().enabledFiles_.clear();
-        LoggerConfig::Inst().disabledFiles_.clear();
-    }
+    spdlog::drop("file");
+    fileLogger.reset();
+    currentLogFileName = "";
+    spdlog::shutdown();
+    LoggerConfig::Inst().enabledFiles_.clear();
+    LoggerConfig::Inst().disabledFiles_.clear();
 }
 
 void StopConsoleLogging()
@@ -291,34 +287,5 @@ void LogTimeOnly()
         fileLogger->set_pattern("[%Y-%m-%d %H:%M:%S]");
         fileLogger->info("");
         fileLogger->set_pattern("%v");
-    }
-}
-
-// we will override program option, discuss if there can be any issue in it
-void EnableConsoleLogging(bool state, bool persistant)
-{
-    if (persistant)
-    {
-        if (state == true)
-        {
-            LoggerConfig::Inst().persistedState_ = LOG_PERSISTANCE_STATE::LPS_TRUE;
-        }
-        else
-        {
-            LoggerConfig::Inst().persistedState_ = LOG_PERSISTANCE_STATE::LPS_FALSE;
-        }
-    }
-    else
-    {
-        LoggerConfig::Inst().persistedState_ = LOG_PERSISTANCE_STATE::LPS_UNDEFINED;
-    }
-
-    if (state)
-    {
-        SE_Env::Inst().GetOptions().UnsetOption("disable_stdout");
-    }
-    else
-    {
-        SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "");
     }
 }

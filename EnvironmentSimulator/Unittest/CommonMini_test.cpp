@@ -2,7 +2,7 @@
 
 #include "CommonMini.hpp"
 #include "esminiLib.hpp"
-#include "TestHelper.hpp"
+
 struct Coordinate2D
 {
     double x;
@@ -208,13 +208,15 @@ TEST(ProgramOptions, NonPersisted)
     const char* args[]     = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     SE_SetOptionValue(paramName.c_str(), paramValue.c_str());
-    std::string optionValue = SE_GetOptionValue(paramName.c_str());
-    EXPECT_EQ(optionValue, paramValue);
+    const char* value = SE_GetOptionValue(paramName.c_str());
+    ASSERT_NE(value, nullptr);
+    std::string strValue(value);
+    EXPECT_EQ(strValue, paramValue);
     SE_Close();
 
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-    optionValue = SE_GetOptionValue(paramName.c_str());
-    EXPECT_NE(optionValue, paramValue);
+    value = SE_GetOptionValue(paramName.c_str());
+    ASSERT_EQ(value, nullptr);
     SE_Close();
 }
 
@@ -225,7 +227,9 @@ TEST(ProgramOptions, Persisted)
     const char* args[]     = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     SE_SetOptionValuePersistent(paramName.c_str(), paramValue.c_str());
-    std::string optionValue = SE_GetOptionValue(paramName.c_str());
+    const char* value = SE_GetOptionValue(paramName.c_str());
+    ASSERT_NE(value, nullptr);
+    std::string optionValue(value);
     EXPECT_EQ(optionValue, paramValue);
     SE_Close();
 
@@ -242,9 +246,21 @@ int main(int argc, char** argv)
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";
     testing::InitGoogleTest(&argc, argv);
 
-    if (ParseAndSetLoggerOptions(argc, argv) != 0)
+    if (argc > 1)
     {
-        return -1;
+        if (!strcmp(argv[1], "--disable_stdout"))
+        {
+            // disable logging to stdout from the esminiLib
+            SE_SetOptionPersistent("disable_stdout");
+
+            // disable logging to stdout from the test cases
+            SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "", false, true);
+        }
+        else
+        {
+            printf("Usage: %s [--disable_stout] [google test options...]\n", argv[0]);
+            return -1;
+        }
     }
 
     return RUN_ALL_TESTS();

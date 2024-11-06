@@ -169,14 +169,6 @@ extern "C"
     RM_DLL_API void RM_SetLogFilePath(const char* logFilePath);
 
     /**
-    Enable or disable log to stdout/console
-    Persistant or non-persistant (reset to default value by next init)
-    @param mode true=enable, false=disable
-    @param persistant true=persistant, false=non-persistant
-    */
-    RM_DLL_API void RM_EnableConsoleLogging(bool state, bool persistant);
-
-    /**
     Create a position object
     @return Handle >= 0 to the position object to use for operations or -1 on error
     */
@@ -552,6 +544,18 @@ extern "C"
             Get the xodr road file georeference
     */
     RM_DLL_API int RM_GetOpenDriveGeoReference(RM_GeoReference* rmGeoReference);
+
+    RM_DLL_API int RM_SetOption(const char* name);
+
+    RM_DLL_API int RM_UnsetOption(const char* name);
+
+    RM_DLL_API int RM_SetOptionValue(const char* name, const char* value);
+
+    RM_DLL_API int RM_SetOptionPersistent(const char* name);
+
+    RM_DLL_API int RM_SetOptionValuePersistent(const char* name, const char* value);
+
+    RM_DLL_API const char* RM_GetOptionValue(const char* name);
 
 #ifdef __cplusplus
 }

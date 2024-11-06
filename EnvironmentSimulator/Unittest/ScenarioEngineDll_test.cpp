@@ -18,8 +18,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#include "TestHelper.hpp"
-
 class GetNumberOfObjectsTest : public ::testing::TestWithParam<std::tuple<std::string, int>>
 {
 };
@@ -4690,10 +4688,15 @@ int main(int argc, char** argv)
     {
         if (!strcmp(argv[1], "--disable_stdout"))
         {
-            SE_EnableConsoleLogging(false, true);
+            //  disable logging to stdout from the esminiLib
+            SE_SetOptionPersistent("disable_stdout");
+
+            // disable logging to stdout from the test cases
+            SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "", false, true);
         }
-        if (ParseAndSetLoggerOptions(argc, argv) != 0)
+        else
         {
+            printf("Usage: %s [--disable_stout] [google test options...]\n", argv[0]);
             return -1;
         }
     }

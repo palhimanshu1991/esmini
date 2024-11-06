@@ -375,8 +375,6 @@ int main(int argc, char **argv)
     SE_Options &opt = SE_Env::Inst().GetOptions();
     opt.Reset();
 
-    EnableConsoleLogging(true, true);
-
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
     std::vector<std::string> args;

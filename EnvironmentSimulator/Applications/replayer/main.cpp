@@ -357,10 +357,8 @@ int main(int argc, char** argv)
     static char             info_str_buf[256];
     std::string             arg_str;
 
-    EnableConsoleLogging(true, true);
-    // LoggerConfig logConfig;
-    // SetupLogger(logConfig);
-    //  Logger::Inst().LogVersion();
+    // EnableConsoleLogging(true, true);
+
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
     // use common options parser to manage the program arguments
