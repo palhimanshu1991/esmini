@@ -187,11 +187,6 @@ extern "C"
         CreateNewFileForLogging(logFilePath);
     }
 
-    RM_DLL_API void RM_EnableConsoleLogging(bool state, bool persistant)
-    {
-        EnableConsoleLogging(state, persistant);
-    }
-
     RM_DLL_API int RM_CreatePosition()
     {
         if (odrManager == nullptr)
@@ -986,5 +981,40 @@ extern "C"
         }
 
         return -1;
+    }
+
+    RM_DLL_API int RM_SetOption(const char* name)
+    {
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, "");
+    }
+
+    RM_DLL_API int RM_UnsetOption(const char* name)
+    {
+        return SE_Env::Inst().GetOptions().UnsetOption(name);
+    }
+
+    RM_DLL_API int RM_SetOptionValue(const char* name, const char* value)
+    {
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, value);
+    }
+
+    RM_DLL_API int RM_SetOptionPersistent(const char* name)
+    {
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, "", false, true);
+    }
+
+    RM_DLL_API int RM_SetOptionValuePersistent(const char* name, const char* value)
+    {
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, value, false, true);
+    }
+
+    RM_DLL_API const char* RM_GetOptionValue(const char* name)
+    {
+        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))
+        {
+            return 0;
+        }
+        static std::string val = SE_Env::Inst().GetOptions().GetOptionArg(name);
+        return val.c_str();
     }
 }

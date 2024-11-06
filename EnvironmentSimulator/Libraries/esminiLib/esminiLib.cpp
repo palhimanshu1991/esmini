@@ -519,6 +519,11 @@ extern "C"
         return SE_Env::Inst().GetOptions().SetOptionValue(name, "");
     }
 
+    SE_DLL_API int SE_UnsetOption(const char *name)
+    {
+        return SE_Env::Inst().GetOptions().UnsetOption(name);
+    }
+
     SE_DLL_API int SE_SetOptionValue(const char *name, const char *value)
     {
         return SE_Env::Inst().GetOptions().SetOptionValue(name, value);
@@ -538,10 +543,9 @@ extern "C"
     {
         if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))
         {
-            return "";
+            return 0;
         }
-        static std::string val;
-        val = SE_Env::Inst().GetOptions().GetOptionArg(name);
+        static std::string val = SE_Env::Inst().GetOptions().GetOptionArg(name);
         return val.c_str();
     }
 
@@ -980,12 +984,14 @@ extern "C"
 
     SE_DLL_API void SE_LogToConsole(bool mode)
     {
-        SE_EnableConsoleLogging(mode, false);
-    }
-
-    SE_DLL_API void SE_EnableConsoleLogging(bool state, bool persistant)
-    {
-        EnableConsoleLogging(state, persistant);
+        if (mode)
+        {
+            SE_Env::Inst().GetOptions().UnsetOption("disable_stdout");
+        }
+        else
+        {
+            SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "");
+        }
     }
 
     SE_DLL_API void SE_CollisionDetection(bool mode)
