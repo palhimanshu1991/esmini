@@ -84,12 +84,23 @@ void ControllerNaturalDriver::InitPostPlayer()
     // player_->AddObjectSensor(object_, 4.0, 0.0, 0.5, 0.0, 1.0, 50.0, 1.2, 100);
 }
 
-void ControllerNaturalDriver::Step(double timeStep)
+void ControllerNaturalDriver::Step(double dt)
 {
+    AdjustToLead(thw_);
+    if (current_speed_ + speed_tolerance_ >= desired_speed_)
+    {
+        object_->MoveAlongS(current_speed_ * dt);
+        gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
+        gateway_->updateObjectSpeed(object_->GetId(), 0.0, current_speed_);
+    }
+    else
+    {
+
+    }
 
 
 
-    Controller::Step(timeStep);
+    Controller::Step(dt);
 }
 
 int ControllerNaturalDriver::Activate(ControlActivationMode lat_activation_mode,
@@ -102,7 +113,7 @@ int ControllerNaturalDriver::Activate(ControlActivationMode lat_activation_mode,
     {
         // desired_speed_ = object_->GetSpeed();
     }
-    
+
 
     Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 
@@ -124,4 +135,59 @@ void ControllerNaturalDriver::ReportKeyEvent(int key, bool down)
 {
     (void)key;
     (void)down;
+}
+
+
+void ControllerNaturalDriver::AdjustToLead(double thw_)
+{
+    if (entities_->object_.size() == 1)
+    {
+        return; // Only ego in scenario
+    }
+
+    auto objects = VehiclesInEgoLane();
+    
+    if (objects.empty())
+    {
+        return; // No vehicles in ego lane
+    }
+
+    scenarioengine::Object* closest_lead = nullptr;
+    double dist_to_lead = -1.0;
+    for (const auto& object : objects)
+    {
+        roadmanager::PositionDiff diff;
+        entities_->object_[0]->pos_.Delta(&object->pos_, diff, false, 300.0);
+        
+        if (diff.ds > dist_to_lead)
+        {
+            dist_to_lead = diff.ds;
+            closest_lead = object;
+        }
+    }
+
+    if (!closest_lead)
+    {
+        return; // No lead
+    }
+
+    std::cout << dist_to_lead << "\n";
+
+}
+
+
+std::vector<scenarioengine::Object*> ControllerNaturalDriver::VehiclesInEgoLane()
+{
+    std::vector<scenarioengine::Object*> objects = {};
+
+    const int ego_lane_id = entities_->object_[0]->pos_.GetLaneId();
+    for (size_t i = 1; i < entities_->object_.size(); i++)
+    {
+        if (entities_->object_[i]->pos_.GetLaneId() == ego_lane_id)
+        {
+            objects.push_back(entities_->object_[i]); // Candidates for lead vehicle
+        }
+    }
+
+    return objects;
 }

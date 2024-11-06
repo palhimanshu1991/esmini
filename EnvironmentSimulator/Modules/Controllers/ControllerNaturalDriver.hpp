@@ -50,6 +50,8 @@ namespace scenarioengine
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
+        void AdjustToLead(double thw_);
+        std::vector<scenarioengine::Object*> VehiclesInEgoLane();
         void ReportKeyEvent(int key, bool down);
         void SetDesiredSpeed(double desired_speed)
         {
