@@ -1336,13 +1336,13 @@ int ScenarioPlayer::Init()
 
     if (opt.IsOptionArgumentSet("disable_stdout"))
     {
-        opt.SetOptionValue("--disable_stdout", opt.GetOptionArg("disable_stdout"));
+        opt.SetOptionValue("disable_stdout", opt.GetOptionArg("disable_stdout"));
     }
     else
     {
         // default there will be no console logging by logger itself
         // player activates it explicitly
-        opt.SetOptionValue("--disable_stdout", "no");
+        opt.SetOptionValue("disable_stdout", "no");
     }
 
     // Setup logger
@@ -1351,7 +1351,7 @@ int ScenarioPlayer::Init()
     if (opt.GetOptionSet("disable_log"))
     {
         log_filename = "";
-        printf("Disable logfile\n");
+        // printf("Disable logfile\n");
     }
     else if (opt.IsOptionArgumentSet("logfile_path"))
     {

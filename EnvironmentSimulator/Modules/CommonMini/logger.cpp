@@ -67,7 +67,7 @@ void CreateFileLogger(const std::string& path)
         fileLogger             = spdlog::basic_logger_mt("file", filePath, !appendFile);
         SetLoggerLevel(fileLogger);
         fileLogger->set_pattern("%v");
-        fileLogger->info(GetVersionInfoForLog());
+        fileLogger->error(GetVersionInfoForLog());
         currentLogFileName = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
     }
     else
@@ -84,7 +84,7 @@ bool LogConsole()
         consoleLogger = spdlog::stdout_color_mt("console");
         SetLoggerLevel(consoleLogger);
         consoleLogger->set_pattern("%v");
-        consoleLogger->info(GetVersionInfoForLog());
+        consoleLogger->error(GetVersionInfoForLog());
     }
     return shouldLog;
 }
@@ -266,11 +266,11 @@ void LogVersion()
     std::string esminiVersion = GetVersionInfoForLog();
     if (LogConsole())
     {
-        consoleLogger->info(esminiVersion);
+        consoleLogger->error(esminiVersion);
     }
     if (LogFile())
     {
-        fileLogger->info(esminiVersion);
+        fileLogger->error(esminiVersion);
     }
 }
 
@@ -279,13 +279,13 @@ void LogTimeOnly()
     if (LogConsole())
     {
         consoleLogger->set_pattern("[%Y-%m-%d %H:%M:%S]");
-        consoleLogger->info("");
+        consoleLogger->error("");
         consoleLogger->set_pattern("%v");
     }
     if (LogFile())
     {
         fileLogger->set_pattern("[%Y-%m-%d %H:%M:%S]");
-        fileLogger->info("");
+        fileLogger->error("");
         fileLogger->set_pattern("%v");
     }
 }

@@ -446,13 +446,14 @@ int main(int argc, char **argv)
     if ((arg_str = opt.GetOptionArg("fixed_timestep")) != "")
     {
         fixed_timestep = atof(arg_str.c_str());
-        printf("Run simulation decoupled from realtime, with fixed timestep: %.2f", fixed_timestep);
+        // printf("Run simulation decoupled from realtime, with fixed timestep: %.2f", fixed_timestep);
+        LOG_INFO("Run simulation decoupled from realtime, with fixed timestep: {:.3f}", fixed_timestep);
     }
     // LoggerConfig logConfig;
 
     if (opt.GetOptionSet("disable_log"))
     {
-        printf("Disable logfile\n");
+        // printf("Disable logfile\n");
     }
     else if (opt.IsOptionArgumentSet("logfile_path"))
     {
