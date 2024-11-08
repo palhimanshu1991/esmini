@@ -1207,12 +1207,6 @@ void ScenarioPlayer::PrintUsage()
 
 int ScenarioPlayer::Init()
 {
-    // Use logger callback
-    // if (!(Logger::Inst().IsCallbackSet()))
-    // {
-    //     Logger::Inst().SetCallback(log_callback);
-    // }
-
     std::string arg_str;
 
     SE_Options& opt = SE_Env::Inst().GetOptions();
@@ -1300,7 +1294,7 @@ int ScenarioPlayer::Init()
         PrintUsage();
         return -2;
     }
-    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
+    CreateNewFileForLogging(opt.GetOptionArg("logfile_path"));
     LogTimeOnly();
 
     std::string strAllSetOptions;
@@ -1334,24 +1328,10 @@ int ScenarioPlayer::Init()
         Logger::Inst().SetCallback(0);
     }
 
-    if (opt.IsOptionArgumentSet("disable_stdout"))
-    {
-        opt.SetOptionValue("disable_stdout", opt.GetOptionArg("disable_stdout"));
-    }
-    else
-    {
-        // default there will be no console logging by logger itself
-        // player activates it explicitly
-        opt.SetOptionValue("disable_stdout", "no");
-    }
-
-    // Setup logger
     std::string log_filename = SE_Env::Inst().GetLogFilePath();
-    // LoggerConfig logConfig;
     if (opt.GetOptionSet("disable_log"))
     {
         log_filename = "";
-        // printf("Disable logfile\n");
     }
     else if (opt.IsOptionArgumentSet("logfile_path"))
     {
@@ -1397,11 +1377,8 @@ int ScenarioPlayer::Init()
         }
     }
 
-    // SetupLogger(logConfig);
-
     if (opt.GetOptionSet("version"))
     {
-        // Logger::Inst().LogVersion();
         LogVersion();
         return -2;
     }

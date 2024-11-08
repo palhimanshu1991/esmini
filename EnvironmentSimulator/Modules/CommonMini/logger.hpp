@@ -29,13 +29,6 @@ struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::forma
     }
 };
 
-enum class LOG_PERSISTANCE_STATE
-{
-    LPS_UNDEFINED,
-    LPS_TRUE,
-    LPS_FALSE
-};
-
 struct LoggerConfig
 {
     static LoggerConfig&            Inst();
@@ -59,7 +52,6 @@ bool                      LogFile(const std::string& filePath = "");
 void                      StopFileLogging();
 void                      StopConsoleLogging();
 void                      CreateNewFileForLogging(const std::string&);
-void                      EnableConsoleLogging(bool mode, bool persistant);
 
 extern std::shared_ptr<spdlog::logger> consoleLogger;
 extern std::shared_ptr<spdlog::logger> fileLogger;

@@ -70,10 +70,6 @@ void CreateFileLogger(const std::string& path)
         fileLogger->error(GetVersionInfoForLog());
         currentLogFileName = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
     }
-    else
-    {
-        std::cout << "not creating log file" << std::endl;
-    }
 }
 
 bool LogConsole()
