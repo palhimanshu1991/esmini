@@ -32,19 +32,22 @@ Controller* scenarioengine::InstantiateNaturalDriver(void* args)
 ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
     : Controller(args),
       active_(false),
-      thw_(1.5),
-      thw_adjustment_t_(3.0),
+      desired_distance_(1.5),
+      actual_distance_(-1.0),
+      distance_adjustment_t_(3.0),
       desired_speed_(15.0), // TODO: Take from road speed
       current_speed_(desired_speed_),
       speed_tolerance_(2.0),
       lane_change_duration_(3.0),
-      lateral_dist_(5.0)
+      lateral_dist_(5.0),
+      lookahead_dist_(115.0),
+      max_deceleration_(-4.0)
 {
     operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
 
-    if (args && args->properties && args->properties->ValueExists("thw"))
+    if (args && args->properties && args->properties->ValueExists("desiredDistance"))
     {
-        thw_ = strtod(args->properties->GetValueStr("thw"));
+        desired_distance_ = strtod(args->properties->GetValueStr("desiredDistance"));
     }
     if (args && args->properties && args->properties->ValueExists("desiredSpeed"))
     {
@@ -86,18 +89,20 @@ void ControllerNaturalDriver::InitPostPlayer()
 
 void ControllerNaturalDriver::Step(double dt)
 {
-    AdjustToLead(thw_);
-    if (current_speed_ + speed_tolerance_ >= desired_speed_)
+    DistanceToLeadVehicle();
+    AdjacentLaneAvailable();
+    if (actual_distance_ > 0 && actual_distance_ < desired_distance_)
     {
-        object_->MoveAlongS(current_speed_ * dt);
-        gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
-        gateway_->updateObjectSpeed(object_->GetId(), 0.0, current_speed_);
+        current_speed_ += max_deceleration_ * dt;
     }
-    else
+    else if (actual_distance_ > desired_distance_ && current_speed_ + speed_tolerance_ < desired_speed_)
     {
-
+        current_speed_ += 4.0 * dt;
     }
 
+    object_->MoveAlongS(current_speed_ * dt);
+    gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
+    gateway_->updateObjectSpeed(object_->GetId(), 0.0, current_speed_);
 
 
     Controller::Step(dt);
@@ -138,7 +143,7 @@ void ControllerNaturalDriver::ReportKeyEvent(int key, bool down)
 }
 
 
-void ControllerNaturalDriver::AdjustToLead(double thw_)
+void ControllerNaturalDriver::DistanceToLeadVehicle()
 {
     if (entities_->object_.size() == 1)
     {
@@ -153,15 +158,15 @@ void ControllerNaturalDriver::AdjustToLead(double thw_)
     }
 
     scenarioengine::Object* closest_lead = nullptr;
-    double dist_to_lead = -1.0;
+    double distance = lookahead_dist_;
     for (const auto& object : objects)
     {
-        roadmanager::PositionDiff diff;
-        entities_->object_[0]->pos_.Delta(&object->pos_, diff, false, 300.0);
-        
-        if (diff.ds > dist_to_lead)
+        double temp_distance;
+        entities_->object_[0]->Distance(object, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, temp_distance, lookahead_dist_);
+
+        if (temp_distance < distance)
         {
-            dist_to_lead = diff.ds;
+            distance = temp_distance;
             closest_lead = object;
         }
     }
@@ -171,10 +176,51 @@ void ControllerNaturalDriver::AdjustToLead(double thw_)
         return; // No lead
     }
 
-    std::cout << dist_to_lead << "\n";
-
+    actual_distance_ = distance;
 }
 
+void ControllerNaturalDriver::AdjacentLaneAvailable()
+{
+    double current_s = entities_->object_[0]->pos_.GetS();
+    int current_lane = entities_->object_[0]->pos_.GetLaneId();
+
+    id_t road_id = entities_->object_[0]->pos_.GetTrackId();
+    auto road = entities_->object_[0]->pos_.GetRoadById(road_id);
+
+    auto ls = road->GetLaneSectionByS(current_s);
+    auto driving_lanes_available = ls->GetNumberOfDrivingLanesSide(current_lane);
+
+    if (driving_lanes_available == 1)
+    {
+        // Only 1 lane in current direction
+        lane_ids_available_[0] = 0; 
+        lane_ids_available_[1] = 0;
+
+        return;
+    }
+
+    switch (abs(current_lane))
+    {
+        case 1:
+            lane_ids_available_[0] = 0;
+            lane_ids_available_[1] = current_lane + SIGN(current_lane);
+            break;
+        default:
+            if (driving_lanes_available > abs(current_lane))
+            {
+                lane_ids_available_[0] = current_lane - SIGN(current_lane);
+                lane_ids_available_[1] = current_lane + SIGN(current_lane);
+            }
+            else
+            {
+                lane_ids_available_[0] = current_lane - SIGN(current_lane);
+                lane_ids_available_[1] = 0;
+            }
+            break;
+    }
+
+    return;
+}
 
 std::vector<scenarioengine::Object*> ControllerNaturalDriver::VehiclesInEgoLane()
 {

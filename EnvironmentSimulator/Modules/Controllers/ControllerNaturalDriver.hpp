@@ -13,6 +13,7 @@
 #pragma once
 
 #include <string>
+#include <array>
 #include "Controller.hpp"
 #include "Entities.hpp"
 #include "vehicle.hpp"
@@ -50,7 +51,10 @@ namespace scenarioengine
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        void AdjustToLead(double thw_);
+        void DistanceToLeadVehicle();
+        void DistanceToLeadInAdjacentLane();
+        void DistanceToRearVehicle();
+        void AdjacentLaneAvailable();
         std::vector<scenarioengine::Object*> VehiclesInEgoLane();
         void ReportKeyEvent(int key, bool down);
         void SetDesiredSpeed(double desired_speed)
@@ -61,13 +65,17 @@ namespace scenarioengine
     private:
         vehicle::Vehicle vehicle_;
         bool             active_;
-        double           thw_;  // target headway time
-        double           thw_adjustment_t_;
+        double           desired_distance_;  // target headway time
+        double           actual_distance_;
+        double           distance_adjustment_t_;
         double           desired_speed_;
         double           current_speed_;
         double           speed_tolerance_;
         double           lane_change_duration_;
         double           lateral_dist_;
+        double           lookahead_dist_;
+        double           max_deceleration_;
+        std::array<int, 2> lane_ids_available_ = {0, 0}; // Left, Right side available 
     };
 
     Controller* InstantiateNaturalDriver(void* args);
