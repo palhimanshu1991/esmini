@@ -67,7 +67,7 @@ namespace scenarioengine
                       ControlActivationMode anim_activation_mode);
         void LeadVehicle();
         void LeadInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
-        void FollowInAdjacentLane();
+        void FollowInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
         bool AdjacentLanesAvailable();
         std::vector<scenarioengine::Object*> VehiclesInEgoLane();
         std::vector<scenarioengine::Object*> VehiclesInAdjacentLane();
