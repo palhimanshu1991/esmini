@@ -15,7 +15,7 @@
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
       <ParameterDeclaration name="EgoSpeed" parameterType="double" value="60"/>
       <ParameterDeclaration name="TargetSpeed" parameterType="double" value="30"/>
-      <ParameterDeclaration name="EgoS" parameterType="double" value="20"/>
+      <ParameterDeclaration name="EgoS" parameterType="double" value="70"/>
       <ParameterDeclaration name="TargetS" parameterType="double" value="100"/>
       <ParameterDeclaration name="DesiredDistance" parameterType="double" value="50"/>
    </ParameterDeclarations>

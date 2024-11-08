@@ -89,8 +89,22 @@ void ControllerNaturalDriver::InitPostPlayer()
 
 void ControllerNaturalDriver::Step(double dt)
 {
-    DistanceToLeadVehicle();
-    AdjacentLaneAvailable();
+    LeadVehicle();
+    bool lanes_available = AdjacentLanesAvailable();
+    if (lanes_available)
+    {
+        auto adjacent_lane_vehicles = VehiclesInAdjacentLane();
+        if (!adjacent_lane_vehicles.empty())
+        {
+            LeadInAdjacentLane(adjacent_lane_vehicles);
+
+            if (vehicles_of_interest_[VehicleOfInterestType::ADJACENT_LEAD].vehicle)
+            {
+                std::cout << vehicles_of_interest_[VehicleOfInterestType::ADJACENT_LEAD].relative_distance << "\n";
+            }
+        }
+
+    }
     if (actual_distance_ > 0 && actual_distance_ < desired_distance_)
     {
         current_speed_ += max_deceleration_ * dt;
@@ -143,7 +157,7 @@ void ControllerNaturalDriver::ReportKeyEvent(int key, bool down)
 }
 
 
-void ControllerNaturalDriver::DistanceToLeadVehicle()
+void ControllerNaturalDriver::LeadVehicle()
 {
     if (entities_->object_.size() == 1)
     {
@@ -173,13 +187,51 @@ void ControllerNaturalDriver::DistanceToLeadVehicle()
 
     if (!closest_lead)
     {
+        ClearVehicleOfInterest(VehicleOfInterestType::LEAD);
         return; // No lead
     }
 
-    actual_distance_ = distance;
+    vehicles_of_interest_[VehicleOfInterestType::LEAD] = VehiclesOfInterest{closest_lead, distance};
 }
 
-void ControllerNaturalDriver::AdjacentLaneAvailable()
+void ControllerNaturalDriver::LeadInAdjacentLane(std::vector<scenarioengine::Object*> vehicles)
+{
+    if (entities_->object_.size() == 1)
+    {
+        return; // Only ego in scenario
+    }
+
+    scenarioengine::Object* closest_lead = nullptr;
+    double distance = lookahead_dist_;
+    for (const auto& vehicle : vehicles)
+    {
+        double temp_distance;
+        entities_->object_[0]->Distance(vehicle, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, temp_distance, lookahead_dist_);
+
+        if (temp_distance < distance)
+        {
+            distance = temp_distance;
+            closest_lead = vehicle;
+        }
+    }
+
+    if (!closest_lead)
+    {
+        ClearVehicleOfInterest(VehicleOfInterestType::ADJACENT_LEAD);
+        return; // No lead
+    }
+    
+    vehicles_of_interest_[VehicleOfInterestType::ADJACENT_LEAD] = VehiclesOfInterest{closest_lead, distance};
+
+}
+
+void ControllerNaturalDriver::ClearVehicleOfInterest(VehicleOfInterestType type)
+{
+    vehicles_of_interest_[type].vehicle = nullptr;
+    vehicles_of_interest_[type].relative_distance = -1.0;
+}
+
+bool ControllerNaturalDriver::AdjacentLanesAvailable()
 {
     double current_s = entities_->object_[0]->pos_.GetS();
     int current_lane = entities_->object_[0]->pos_.GetLaneId();
@@ -196,7 +248,7 @@ void ControllerNaturalDriver::AdjacentLaneAvailable()
         lane_ids_available_[0] = 0; 
         lane_ids_available_[1] = 0;
 
-        return;
+        return false;
     }
 
     switch (abs(current_lane))
@@ -219,7 +271,7 @@ void ControllerNaturalDriver::AdjacentLaneAvailable()
             break;
     }
 
-    return;
+    return true;
 }
 
 std::vector<scenarioengine::Object*> ControllerNaturalDriver::VehiclesInEgoLane()
@@ -232,6 +284,31 @@ std::vector<scenarioengine::Object*> ControllerNaturalDriver::VehiclesInEgoLane(
         if (entities_->object_[i]->pos_.GetLaneId() == ego_lane_id)
         {
             objects.push_back(entities_->object_[i]); // Candidates for lead vehicle
+        }
+    }
+
+    return objects;
+}
+
+std::vector<scenarioengine::Object*> ControllerNaturalDriver::VehiclesInAdjacentLane()
+{
+    double lane_id;
+    if (lane_ids_available_[0] != 0) // Prefer left lane
+    {
+        lane_id = lane_ids_available_[0];
+    }
+    else
+    {
+        lane_id = lane_ids_available_[1];
+    }
+
+    std::vector<scenarioengine::Object*> objects = {};
+
+    for (size_t i = 1; i < entities_->object_.size(); i++)
+    {
+        if (entities_->object_[i]->pos_.GetLaneId() == lane_id)
+        {
+            objects.push_back(entities_->object_[i]); // Exist in adjacent lane
         }
     }
 

@@ -14,6 +14,7 @@
 
 #include <string>
 #include <array>
+#include <unordered_map>
 #include "Controller.hpp"
 #include "Entities.hpp"
 #include "vehicle.hpp"
@@ -22,6 +23,19 @@
 
 namespace scenarioengine
 {
+    enum VehicleOfInterestType
+    {
+        LEAD = 0,
+        ADJACENT_LEAD,
+        ADJACENT_FOLLOW,
+    };
+
+    struct VehiclesOfInterest 
+    {
+        scenarioengine::Object* vehicle;
+        double relative_distance;
+    };
+
     class ControllerNaturalDriver : public Controller
     {
     public:
@@ -51,11 +65,13 @@ namespace scenarioengine
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        void DistanceToLeadVehicle();
-        void DistanceToLeadInAdjacentLane();
-        void DistanceToRearVehicle();
-        void AdjacentLaneAvailable();
+        void LeadVehicle();
+        void LeadInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
+        void FollowInAdjacentLane();
+        bool AdjacentLanesAvailable();
         std::vector<scenarioengine::Object*> VehiclesInEgoLane();
+        std::vector<scenarioengine::Object*> VehiclesInAdjacentLane();
+        void ClearVehicleOfInterest(VehicleOfInterestType type);
         void ReportKeyEvent(int key, bool down);
         void SetDesiredSpeed(double desired_speed)
         {
@@ -76,6 +92,9 @@ namespace scenarioengine
         double           lookahead_dist_;
         double           max_deceleration_;
         std::array<int, 2> lane_ids_available_ = {0, 0}; // Left, Right side available 
+        std::unordered_map<VehicleOfInterestType, VehiclesOfInterest> vehicles_of_interest_;
+        double           distance_to_adjacent_lead_ = -1.0;
+
     };
 
     Controller* InstantiateNaturalDriver(void* args);
