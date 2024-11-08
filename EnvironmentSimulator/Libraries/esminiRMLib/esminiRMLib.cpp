@@ -159,8 +159,6 @@ extern "C"
             RM_Close();
         }
 
-        CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
-
         // Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
         std::setlocale(LC_ALL, "C.UTF-8");
 
@@ -184,7 +182,7 @@ extern "C"
 
     RM_DLL_API void RM_SetLogFilePath(const char* logFilePath)
     {
-        CreateNewFileForLogging(logFilePath);
+        TxtLogger::Inst().SetLogFilePath(logFilePath);
     }
 
     RM_DLL_API int RM_CreatePosition()

@@ -357,8 +357,6 @@ int main(int argc, char** argv)
     static char             info_str_buf[256];
     std::string             arg_str;
 
-    // EnableConsoleLogging(true, true);
-
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
     // use common options parser to manage the program arguments
@@ -386,6 +384,7 @@ int main(int argc, char** argv)
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
+    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", "");
     opt.AddOption("no_ghost", "Remove ghost entities");
     opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");

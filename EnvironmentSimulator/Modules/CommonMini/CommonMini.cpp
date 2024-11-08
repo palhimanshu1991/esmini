@@ -1844,6 +1844,18 @@ std::string SE_Options::GetOptionArg(std::string opt, int index)
     }
 }
 
+std::string SE_Options::GetOptionDefaultValue(const std::string& opt)
+{
+    SE_Option* option = GetOption(opt);
+
+    if (option == nullptr)
+    {
+        return "";
+    }
+
+    return option->default_value_;
+}
+
 static constexpr std::array<const char*, 10> OSG_ARGS = {"--clear-color",
                                                          "--screen",
                                                          "--window",

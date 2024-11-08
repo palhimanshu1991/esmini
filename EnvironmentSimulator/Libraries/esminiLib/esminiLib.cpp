@@ -421,7 +421,6 @@ static int InitScenario()
     // Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
     std::setlocale(LC_ALL, "C.UTF-8");
 
-    // LoggerConfig logConfig;
     SE_Options &opt = SE_Env::Inst().GetOptions();
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
@@ -429,7 +428,8 @@ static int InitScenario()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            LoggerConfig::Inst().enabledFiles_.insert(splitted.begin(), splitted.end());
+            std::unordered_set<std::string> logOnlyModules{splitted.begin(), splitted.end()};
+            TxtLogger::Inst().SetLogOnlyModules(logOnlyModules);
         }
     }
 
@@ -439,11 +439,10 @@ static int InitScenario()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
+            std::unordered_set<std::string> logSkipModules{splitted.begin(), splitted.end()};
+            TxtLogger::Inst().SetLogSkipModules(logSkipModules);
         }
     }
-
-    // SetupLogger(logConfig);
 
     ConvertArguments();
 
@@ -493,10 +492,8 @@ extern "C"
 
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
     {
-        // SE_Env::Inst().SetLogFilePath(logFilePath);
-        // LOG_INFO("calling CreateNewFileForLogging");
-        SE_SetOptionValue("--logfile_path", logFilePath);
-        CreateNewFileForLogging(logFilePath);
+        SE_SetOptionValuePersistent("logfile_path", logFilePath);
+        TxtLogger::Inst().SetLogFilePath(logFilePath);
     }
 
     SE_DLL_API void SE_SetDatFilePath(const char *datFilePath)
@@ -979,7 +976,7 @@ extern "C"
     {
         resetScenario();
         RegisterParameterDeclarationCallback(nullptr, nullptr);
-        StopFileLogging();
+        TxtLogger::Inst().StopFileLogging();
     }
 
     SE_DLL_API void SE_LogToConsole(bool mode)
@@ -1829,7 +1826,7 @@ extern "C"
     SE_DLL_API void SE_CloseLogFile()
     {
         // Logger::Inst().CloseLogFile();
-        StopFileLogging();
+        TxtLogger::Inst().StopFileLogging();
     }
 
     SE_DLL_API int SE_ObjectHasGhost(int object_id)
