@@ -60,13 +60,13 @@ void SetLoggerLevel(std::shared_ptr<spdlog::logger>& logger)
 
 std::string HandleDirectoryAndWrongPath(const std::string& path)
 {
-    std::filesystem::path filePath = path;
-    if (filePath.has_parent_path() && !std::filesystem::exists(filePath.parent_path()))
+    fs::path filePath = path;
+    if (filePath.has_parent_path() && !fs::exists(filePath.parent_path()))
     {
         std::cout << "Invalid log file path, parent directory does not exist : " << filePath.string() << '\n';
         exit(-1);
     }
-    if (std::filesystem::is_directory(filePath))
+    if (fs::is_directory(filePath))
     {
         filePath = fmt::format("{}{}", path, defaultLogFileName);
     }
