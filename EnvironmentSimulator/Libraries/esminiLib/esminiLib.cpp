@@ -489,10 +489,8 @@ extern "C"
     }
 
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
-    {
-        // SE_Env::Inst().SetLogFilePath(logFilePath);
-        // LOG_INFO("calling CreateNewFileForLogging");
-        SE_SetOptionValue("--logfile_path", logFilePath);
+    {        
+        SE_SetOptionValuePersistent("logfile_path", logFilePath);
         CreateNewFileForLogging(logFilePath);
     }
 
