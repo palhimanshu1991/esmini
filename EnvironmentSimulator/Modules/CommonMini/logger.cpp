@@ -58,18 +58,17 @@ void SetLoggerLevel(std::shared_ptr<spdlog::logger>& logger)
     }
 }
 
-
 std::string HandleDirectoryAndWrongPath(const std::string& path)
 {
     std::filesystem::path filePath = path;
-    if (filePath.has_parent_path() && !std::filesystem::exists(filePath.parent_path())) 
+    if (filePath.has_parent_path() && !std::filesystem::exists(filePath.parent_path()))
     {
-        std::cout << "Invalid log file path, parent directory does not exist : " << filePath.string() <<'\n';
+        std::cout << "Invalid log file path, parent directory does not exist : " << filePath.string() << '\n';
         exit(-1);
     }
-    if(std::filesystem::is_directory(filePath))
+    if (std::filesystem::is_directory(filePath))
     {
-        filePath = fmt::format("{}{}", path, defaultLogFileName);                
+        filePath = fmt::format("{}{}", path, defaultLogFileName);
     }
     return filePath.string();
 }
@@ -82,7 +81,7 @@ void CreateFileLogger(const std::string& path)
         {
             bool        appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
             std::string filePath   = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
-            filePath = HandleDirectoryAndWrongPath(filePath);            
+            filePath               = HandleDirectoryAndWrongPath(filePath);
             fileLogger             = spdlog::basic_logger_mt("file", filePath, !appendFile);
             SetLoggerLevel(fileLogger);
             fileLogger->set_pattern("%v");
@@ -90,7 +89,7 @@ void CreateFileLogger(const std::string& path)
             currentLogFileName = filePath.empty() ? LoggerConfig::Inst().logFilePath_ : filePath;
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception& e)
     {
         std::cerr << e.what() << '\n';
     }
