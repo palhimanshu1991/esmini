@@ -33,7 +33,7 @@ namespace scenarioengine
     struct VehiclesOfInterest 
     {
         scenarioengine::Object* vehicle;
-        double relative_distance;
+        roadmanager::PositionDiff position_diff;
     };
 
     class ControllerNaturalDriver : public Controller
@@ -65,7 +65,8 @@ namespace scenarioengine
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        void LeadVehicle();
+        void FindVehicleAhead(std::vector<scenarioengine::Object*> vehicles, VehicleOfInterestType type);
+        void FindVehicleBehind(std::vector<scenarioengine::Object*> vehicles, VehicleOfInterestType type);
         void LeadInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
         void FollowInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
         bool AdjacentLanesAvailable();
@@ -92,7 +93,7 @@ namespace scenarioengine
         double           lookahead_dist_;
         double           max_deceleration_;
         std::array<int, 2> lane_ids_available_ = {0, 0}; // Left, Right side available 
-        std::unordered_map<VehicleOfInterestType, VehiclesOfInterest> vehicles_of_interest_;
+        std::unordered_map<VehicleOfInterestType, VehiclesOfInterest> vehicles_of_interest_ = {};
         double           distance_to_adjacent_lead_ = -1.0;
 
     };

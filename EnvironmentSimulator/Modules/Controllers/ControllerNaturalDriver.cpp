@@ -89,10 +89,11 @@ void ControllerNaturalDriver::InitPostPlayer()
 
 void ControllerNaturalDriver::Step(double dt)
 {
-    LeadVehicle();
-    if (vehicles_of_interest_[VehicleOfInterestType::LEAD].vehicle)
+    auto vehicles_in_lane = VehiclesInEgoLane();
+    if (!vehicles_in_lane.empty())
     {
-        std::cout << "Lead: " << vehicles_of_interest_[VehicleOfInterestType::LEAD].relative_distance << "\n";
+        FindVehicleAhead(vehicles_in_lane, VehicleOfInterestType::LEAD);
+        std::cout << "Lane lead: " << vehicles_of_interest_[VehicleOfInterestType::LEAD].position_diff.ds << "\n";
     }
 
     bool lanes_available = AdjacentLanesAvailable();
@@ -101,18 +102,13 @@ void ControllerNaturalDriver::Step(double dt)
         auto adjacent_lane_vehicles = VehiclesInAdjacentLane();
         if (!adjacent_lane_vehicles.empty())
         {
-            LeadInAdjacentLane(adjacent_lane_vehicles);
-            FollowInAdjacentLane(adjacent_lane_vehicles);
+            FindVehicleAhead(adjacent_lane_vehicles, VehicleOfInterestType::ADJACENT_LEAD);
+            FindVehicleBehind(adjacent_lane_vehicles, VehicleOfInterestType::ADJACENT_FOLLOW);
 
             if (vehicles_of_interest_[VehicleOfInterestType::ADJACENT_LEAD].vehicle)
-            {
-                std::cout << "Adjacent Lead: " << vehicles_of_interest_[VehicleOfInterestType::ADJACENT_LEAD].relative_distance << "\n";
-            }
+                std::cout << "Adj lead: " << vehicles_of_interest_[VehicleOfInterestType::ADJACENT_LEAD].position_diff.ds << "\n";
             if (vehicles_of_interest_[VehicleOfInterestType::ADJACENT_FOLLOW].vehicle)
-            {
-                std::cout << "Adjacent Follow: " << vehicles_of_interest_[VehicleOfInterestType::ADJACENT_FOLLOW].relative_distance << "\n";
-            }
-
+                std::cout << "Adj follow: " << vehicles_of_interest_[VehicleOfInterestType::ADJACENT_FOLLOW].position_diff.ds << "\n";
         }
 
     }
@@ -168,107 +164,69 @@ void ControllerNaturalDriver::ReportKeyEvent(int key, bool down)
 }
 
 
-void ControllerNaturalDriver::LeadVehicle()
+void ControllerNaturalDriver::FindVehicleAhead(std::vector<scenarioengine::Object*> vehicles, VehicleOfInterestType type)
 {
-    if (entities_->object_.size() == 1)
-    {
-        return; // Only ego in scenario
-    }
-
-    auto objects = VehiclesInEgoLane();
-    
-    if (objects.empty())
-    {
-        return; // No vehicles in ego lane
-    }
-
     scenarioengine::Object* closest_lead = nullptr;
     double distance = lookahead_dist_;
-    for (const auto& object : objects)
-    {
-        double temp_distance;
-        entities_->object_[0]->Distance(object, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, temp_distance, lookahead_dist_);
-
-        if (temp_distance > 0 && temp_distance < distance)
-        {
-            distance = temp_distance;
-            closest_lead = object;
-        }
-    }
-
-    if (!closest_lead)
-    {
-        ClearVehicleOfInterest(VehicleOfInterestType::LEAD);
-        return; // No lead
-    }
-
-    vehicles_of_interest_[VehicleOfInterestType::LEAD] = VehiclesOfInterest{closest_lead, distance};
-}
-
-void ControllerNaturalDriver::LeadInAdjacentLane(std::vector<scenarioengine::Object*> vehicles)
-{
-    if (entities_->object_.size() == 1)
-    {
-        return; // Only ego in scenario
-    }
-
-    scenarioengine::Object* closest_lead = nullptr;
-    double distance = lookahead_dist_;
+    roadmanager::PositionDiff diff;
     for (const auto& vehicle : vehicles)
     {
-        double temp_distance;
-        entities_->object_[0]->Distance(vehicle, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, temp_distance, lookahead_dist_);
+        roadmanager::PositionDiff temp_diff;
+        entities_->object_[0]->pos_.Delta(&vehicle->pos_, temp_diff, false, lookahead_dist_); // Lookahead dist false not working?
 
-        if (temp_distance > 0 && temp_distance < distance)
+        if (temp_diff.ds > 0 && temp_diff.ds < distance)
         {
-            distance = temp_distance;
+            distance = temp_diff.ds;
+            diff = temp_diff;
             closest_lead = vehicle;
         }
     }
 
     if (!closest_lead)
     {
-        ClearVehicleOfInterest(VehicleOfInterestType::ADJACENT_LEAD);
+        ClearVehicleOfInterest(type);
         return; // No lead
     }
-    
-    vehicles_of_interest_[VehicleOfInterestType::ADJACENT_LEAD] = VehiclesOfInterest{closest_lead, distance};
+
+    vehicles_of_interest_[type] = VehiclesOfInterest{closest_lead, diff};
 }
 
-void ControllerNaturalDriver::FollowInAdjacentLane(std::vector<scenarioengine::Object*> vehicles)
+void ControllerNaturalDriver::FindVehicleBehind(std::vector<scenarioengine::Object*> vehicles, VehicleOfInterestType type)
 {
     if (entities_->object_.size() == 1)
     {
         return; // Only ego in scenario
     }
 
-    scenarioengine::Object* closest_follow = nullptr;
+    scenarioengine::Object* closest_lead = nullptr;
     double distance = -lookahead_dist_;
+    roadmanager::PositionDiff diff;
     for (const auto& vehicle : vehicles)
     {
-        double temp_distance;
-        entities_->object_[0]->Distance(vehicle, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, temp_distance, lookahead_dist_);
+        roadmanager::PositionDiff temp_diff;
+        entities_->object_[0]->pos_.Delta(&vehicle->pos_, temp_diff, true, lookahead_dist_);
 
-        if (temp_distance < 0 && temp_distance > distance)
+        if (temp_diff.ds < 0 && temp_diff.ds > distance)
         {
-            distance = temp_distance;
-            closest_follow = vehicle;
+            distance = temp_diff.ds;
+            diff = temp_diff;
+            closest_lead = vehicle;
         }
     }
 
-    if (!closest_follow)
+    if (!closest_lead)
     {
-        ClearVehicleOfInterest(VehicleOfInterestType::ADJACENT_FOLLOW);
+        ClearVehicleOfInterest(type);
         return; // No lead
     }
-    
-    vehicles_of_interest_[VehicleOfInterestType::ADJACENT_FOLLOW] = VehiclesOfInterest{closest_follow, distance};
+
+    vehicles_of_interest_[type] = VehiclesOfInterest{closest_lead, diff};
 }
 
 void ControllerNaturalDriver::ClearVehicleOfInterest(VehicleOfInterestType type)
 {
     vehicles_of_interest_[type].vehicle = nullptr;
-    vehicles_of_interest_[type].relative_distance = -1.0;
+    vehicles_of_interest_[type].position_diff = {};
 }
 
 bool ControllerNaturalDriver::AdjacentLanesAvailable()
@@ -332,6 +290,7 @@ std::vector<scenarioengine::Object*> ControllerNaturalDriver::VehiclesInEgoLane(
 
 std::vector<scenarioengine::Object*> ControllerNaturalDriver::VehiclesInAdjacentLane()
 {
+    // TODO: Populate both left and right lanes
     double lane_id;
     if (lane_ids_available_[0] != 0) // Prefer left lane
     {

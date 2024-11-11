@@ -106,7 +106,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-2" offset="0" s="$TargetS"/>
+                        <LanePosition roadId="1" laneId="-2" offset="0" s="95"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
