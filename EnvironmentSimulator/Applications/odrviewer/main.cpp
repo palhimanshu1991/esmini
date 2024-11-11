@@ -491,9 +491,7 @@ int main(int argc, char **argv)
     if (!SE_Env::Inst().GetLogFilePath().empty())
     {
         LoggerConfig::Inst().logFilePath_ = SE_Env::Inst().GetLogFilePath();
-    }
-    // vSetupLogger(logConfig);
-    // LOG_INFO("calling CreateNewFileForLogging");
+    }        
     CreateNewFileForLogging(opt.GetOptionArg("logfile_path"));
     if ((arg_str = opt.GetOptionArg("path")) != "")
     {

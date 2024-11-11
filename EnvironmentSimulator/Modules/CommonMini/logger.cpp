@@ -58,17 +58,41 @@ void SetLoggerLevel(std::shared_ptr<spdlog::logger>& logger)
     }
 }
 
+
+std::string HandleDirectoryAndWrongPath(const std::string& path)
+{
+    std::filesystem::path filePath = path;
+    if (filePath.has_parent_path() && !std::filesystem::exists(filePath.parent_path())) 
+    {
+        std::cout << "Invalid log file path, parent directory does not exist : " << filePath.string() <<'\n';
+        exit(-1);
+    }
+    if(std::filesystem::is_directory(filePath))
+    {
+        filePath = fmt::format("{}{}", path, defaultLogFileName);                
+    }
+    return filePath.string();
+}
+
 void CreateFileLogger(const std::string& path)
 {
-    if ((path.empty() && currentLogFileName.empty()) || path != currentLogFileName)
+    try
     {
-        bool        appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
-        std::string filePath   = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
-        fileLogger             = spdlog::basic_logger_mt("file", filePath, !appendFile);
-        SetLoggerLevel(fileLogger);
-        fileLogger->set_pattern("%v");
-        fileLogger->error(GetVersionInfoForLog());
-        currentLogFileName = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
+        if ((path.empty() && currentLogFileName.empty()) || path != currentLogFileName)
+        {
+            bool        appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
+            std::string filePath   = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
+            filePath = HandleDirectoryAndWrongPath(filePath);            
+            fileLogger             = spdlog::basic_logger_mt("file", filePath, !appendFile);
+            SetLoggerLevel(fileLogger);
+            fileLogger->set_pattern("%v");
+            fileLogger->error(GetVersionInfoForLog());
+            currentLogFileName = filePath.empty() ? LoggerConfig::Inst().logFilePath_ : filePath;
+        }
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
     }
 }
 
@@ -133,11 +157,11 @@ bool LogFile(const std::string& providedPath)
     return true;
 }
 
-void CreateNewFileForLogging(const std::string& filePath)
+void CreateNewFileForLogging(const std::string& path)
 {
     SetLoggerLevel(fileLogger);
     SetLoggerLevel(consoleLogger);
-
+    std::string filePath = HandleDirectoryAndWrongPath(path);
     if (filePath.empty() || currentLogFileName == filePath)
     {
         return;
