@@ -4683,7 +4683,7 @@ int main(int argc, char** argv)
 	// Or make use of launch argument, e.g. --gtest_filter=TestFetchImage*
 #else
     CreateNewFileForLogging("log-test.txt");
-    // SE_SetLogFilePath("log-test.txt");
+    
     if (argc > 1)
     {
         if (!strcmp(argv[1], "--disable_stdout"))

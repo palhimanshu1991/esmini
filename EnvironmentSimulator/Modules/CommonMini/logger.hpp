@@ -35,11 +35,16 @@ struct LoggerConfig
     std::string                     logFilePath_ = "log.txt";
     std::unordered_set<std::string> enabledFiles_;
     std::unordered_set<std::string> disabledFiles_;
+    bool metaDataEnabled_ = false;
     double*                         time_ = nullptr;
 
 private:
     LoggerConfig() = default;
 };
+extern LoggerConfig loggerConfig;
+
+extern std::shared_ptr<spdlog::logger> consoleLogger;
+extern std::shared_ptr<spdlog::logger> fileLogger;
 
 bool                      ShouldLogModule(char const* file);
 void                      LogVersion();
@@ -52,11 +57,6 @@ bool                      LogFile(const std::string& filePath = "");
 void                      StopFileLogging();
 void                      StopConsoleLogging();
 void                      CreateNewFileForLogging(const std::string&);
-
-extern std::shared_ptr<spdlog::logger> consoleLogger;
-extern std::shared_ptr<spdlog::logger> fileLogger;
-
-extern LoggerConfig loggerConfig;
 
 template <class... ARGS>
 void __LOG_DEBUG__(char const* function, char const* file, long line, const std::string& log, ARGS... args)

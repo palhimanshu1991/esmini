@@ -402,7 +402,7 @@ int main(int argc, char **argv)
     opt.AddOption("ground_plane", "Add a large flat ground surface");
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("log_append", "log all scenarios in the same txt file");
-    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
+    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", "log.txt");
     opt.AddOption("log_meta_data", "log file name, function name and line number");
     opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
     opt.AddOption("log_only_modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
@@ -449,7 +449,6 @@ int main(int argc, char **argv)
         // printf("Run simulation decoupled from realtime, with fixed timestep: %.2f", fixed_timestep);
         LOG_INFO("Run simulation decoupled from realtime, with fixed timestep: {:.3f}", fixed_timestep);
     }
-    // LoggerConfig logConfig;
 
     if (opt.GetOptionSet("disable_log"))
     {
@@ -468,7 +467,9 @@ int main(int argc, char **argv)
         }
         LoggerConfig::Inst().logFilePath_ = arg_str;
     }
-
+    
+    LoggerConfig::Inst().metaDataEnabled_ = opt.IsOptionArgumentSet("log_meta_data");
+    
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         arg_str             = opt.GetOptionArg("log_only_modules");
@@ -488,11 +489,19 @@ int main(int argc, char **argv)
             LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
-    if (!SE_Env::Inst().GetLogFilePath().empty())
+    // if (!SE_Env::Inst().GetLogFilePath().empty())
+    // {
+    //     LoggerConfig::Inst().logFilePath_ = SE_Env::Inst().GetLogFilePath();
+    // }
+    if( opt.IsOptionArgumentSet("logfile_path") && opt.GetOptionArg("logfile_path").empty() )
+    {
+        opt.SetOptionValue("disable_log", "");        
+    }
+    else
     {
         LoggerConfig::Inst().logFilePath_ = SE_Env::Inst().GetLogFilePath();
-    }
-    CreateNewFileForLogging(opt.GetOptionArg("logfile_path"));
+        CreateNewFileForLogging(opt.GetOptionArg("logfile_path"));
+    }    
     if ((arg_str = opt.GetOptionArg("path")) != "")
     {
         SE_Env::Inst().AddPath(arg_str);

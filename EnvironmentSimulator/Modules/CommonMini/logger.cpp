@@ -95,6 +95,24 @@ void CreateFileLogger(const std::string& path)
     }
 }
 
+void CreateNewFileForLogging(const std::string& path)
+{
+    SetLoggerLevel(fileLogger);
+    SetLoggerLevel(consoleLogger);
+    std::string filePath = HandleDirectoryAndWrongPath(path);
+    if (filePath.empty() || currentLogFileName == filePath)
+    {
+        return;
+    }
+    if (fileLogger)
+    {
+        spdlog::drop("file");
+        fileLogger.reset();
+        currentLogFileName = "";
+    }
+    LogFile(filePath);
+}
+
 bool LogConsole()
 {
     bool shouldLog = !SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout");
@@ -141,7 +159,11 @@ bool LogFile(const std::string& providedPath)
             {
                 filePath = SE_Env::Inst().GetOptions().GetOptionArg("logfile_path");
 
-                if (!filePath.empty())
+                if (filePath.empty())
+                {
+                    return false;
+                }
+                else
                 {
                     printf("Custom logfile path: %s\n", filePath.c_str());
                     CreateFileLogger(filePath);
@@ -154,24 +176,6 @@ bool LogFile(const std::string& providedPath)
         }
     }
     return true;
-}
-
-void CreateNewFileForLogging(const std::string& path)
-{
-    SetLoggerLevel(fileLogger);
-    SetLoggerLevel(consoleLogger);
-    std::string filePath = HandleDirectoryAndWrongPath(path);
-    if (filePath.empty() || currentLogFileName == filePath)
-    {
-        return;
-    }
-    if (fileLogger)
-    {
-        spdlog::drop("file");
-        fileLogger.reset();
-        currentLogFileName = "";
-    }
-    LogFile(filePath);
 }
 
 void StopFileLogging()
@@ -261,8 +265,7 @@ std::string AddTimeAndMetaData(char const* function, char const* file, long line
     {
         strTime = "[]";
     }
-
-    if (SE_Env::Inst().GetOptions().GetOptionSet("log_meta_data"))
+    if( LoggerConfig::Inst().metaDataEnabled_)
     {
         std::string fileName = fs::path(file).filename().string();
         std::string logWithTimeAndMeta{fmt::format("{} [{}] [{}::{}::{}] {}", strTime, level, fileName, function, line, log)};
