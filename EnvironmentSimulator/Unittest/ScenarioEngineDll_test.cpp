@@ -70,7 +70,6 @@ TEST(LoggerTests, check_verbosity_level_warn)
     }
 
     SE_Close();
-    StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
@@ -102,7 +101,6 @@ TEST(LoggerTests, check_verbosity_level_info)
     }
 
     SE_Close();
-    StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
@@ -131,7 +129,7 @@ TEST(LoggerTests, check_meta_data)
     }
 
     SE_Close();
-    StopFileLogging();
+    // TxtLogger::Inst().StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
@@ -162,7 +160,7 @@ TEST(LoggerTests, check_log_skip_modules)
     }
 
     SE_Close();
-    StopFileLogging();
+    // TxtLogger::Inst().StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
@@ -4682,8 +4680,8 @@ int main(int argc, char** argv)
 	testing::GTEST_FLAG(filter) = "*AssignRoleTest*";
 	// Or make use of launch argument, e.g. --gtest_filter=TestFetchImage*
 #else
-    CreateNewFileForLogging("log-test.txt");
-    
+    // TxtLogger::Inst().SetLogFilePath("log-test.txt");
+
     if (argc > 1)
     {
         if (!strcmp(argv[1], "--disable_stdout"))

@@ -411,10 +411,6 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    if (!opt.GetOptionArg("logfile_path").empty())
-    {
-        CreateNewFileForLogging(opt.GetOptionArg("logfile_path"));
-    }
     if (opt.GetOptionArg("file").empty())
     {
         printf("Missing file argument\n");

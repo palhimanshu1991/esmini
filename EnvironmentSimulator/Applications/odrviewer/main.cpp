@@ -404,7 +404,7 @@ int main(int argc, char **argv)
     opt.AddOption("log_append", "log all scenarios in the same txt file");
     opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", "log.txt");
     opt.AddOption("log_meta_data", "log file name, function name and line number");
-    opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
+    opt.AddOption("log_level", "log level debug, info, warn, error", "mode", "info");
     opt.AddOption("log_only_modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
     opt.AddOption("log_skip_modules", "skip log from these modules, all remaining modules will be logged.", "modulename(s)");
     opt.AddOption("model", "3D Model filename", "model_filename");
@@ -465,18 +465,19 @@ int main(int argc, char **argv)
         {
             printf("Custom logfile path: %s\n", arg_str.c_str());
         }
-        LoggerConfig::Inst().logFilePath_ = arg_str;
     }
-    
-    LoggerConfig::Inst().metaDataEnabled_ = opt.IsOptionArgumentSet("log_meta_data");
-    
+
+    TxtLogger::Inst().SetMetaData(opt.IsOptionArgumentSet("log_meta_data"));
+
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         arg_str             = opt.GetOptionArg("log_only_modules");
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            LoggerConfig::Inst().enabledFiles_.insert(splitted.begin(), splitted.end());
+            std::unordered_set<std::string> logOnlyModules;
+            logOnlyModules.insert(splitted.begin(), splitted.end());
+            TxtLogger::Inst().SetLogOnlyModules(logOnlyModules);
         }
     }
 
@@ -486,22 +487,12 @@ int main(int argc, char **argv)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
+            std::unordered_set<std::string> logSkipModules;
+            logSkipModules.insert(splitted.begin(), splitted.end());
+            TxtLogger::Inst().SetLogSkipModules(logSkipModules);
         }
     }
-    // if (!SE_Env::Inst().GetLogFilePath().empty())
-    // {
-    //     LoggerConfig::Inst().logFilePath_ = SE_Env::Inst().GetLogFilePath();
-    // }
-    if( opt.IsOptionArgumentSet("logfile_path") && opt.GetOptionArg("logfile_path").empty() )
-    {
-        opt.SetOptionValue("disable_log", "");        
-    }
-    else
-    {
-        LoggerConfig::Inst().logFilePath_ = SE_Env::Inst().GetLogFilePath();
-        CreateNewFileForLogging(opt.GetOptionArg("logfile_path"));
-    }    
+
     if ((arg_str = opt.GetOptionArg("path")) != "")
     {
         SE_Env::Inst().AddPath(arg_str);

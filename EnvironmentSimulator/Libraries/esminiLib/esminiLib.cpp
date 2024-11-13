@@ -428,7 +428,8 @@ static int InitScenario()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            LoggerConfig::Inst().enabledFiles_.insert(splitted.begin(), splitted.end());
+            std::unordered_set<std::string> logOnlyModules{splitted.begin(), splitted.end()};
+            TxtLogger::Inst().SetLogOnlyModules(logOnlyModules);
         }
     }
 
@@ -438,7 +439,8 @@ static int InitScenario()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
+            std::unordered_set<std::string> logSkipModules{splitted.begin(), splitted.end()};
+            TxtLogger::Inst().SetLogSkipModules(logSkipModules);
         }
     }
 
@@ -491,7 +493,7 @@ extern "C"
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
     {
         SE_SetOptionValuePersistent("logfile_path", logFilePath);
-        CreateNewFileForLogging(logFilePath);
+        TxtLogger::Inst().SetLogFilePath(logFilePath);
     }
 
     SE_DLL_API void SE_SetDatFilePath(const char *datFilePath)
@@ -974,7 +976,7 @@ extern "C"
     {
         resetScenario();
         RegisterParameterDeclarationCallback(nullptr, nullptr);
-        StopFileLogging();
+        TxtLogger::Inst().StopFileLogging();
     }
 
     SE_DLL_API void SE_LogToConsole(bool mode)
@@ -1824,7 +1826,7 @@ extern "C"
     SE_DLL_API void SE_CloseLogFile()
     {
         // Logger::Inst().CloseLogFile();
-        StopFileLogging();
+        TxtLogger::Inst().StopFileLogging();
     }
 
     SE_DLL_API int SE_ObjectHasGhost(int object_id)

@@ -110,7 +110,7 @@ ScenarioPlayer::~ScenarioPlayer()
     {
         delete s;
     }
-    SetLoggerTime(0);
+    TxtLogger::Inst().SetLoggerTime(0);
     if (scenarioEngine)
     {
         delete scenarioEngine;
@@ -1294,15 +1294,10 @@ int ScenarioPlayer::Init()
         PrintUsage();
         return -2;
     }
-    if( opt.IsOptionArgumentSet("logfile_path") && opt.GetOptionArg("logfile_path").empty() )
-    {
-        opt.SetOptionValue("disable_log", "");        
-    }
-    else
-    {
-        CreateNewFileForLogging(opt.GetOptionArg("logfile_path"));
-        LogTimeOnly();
-    }
+
+    TxtLogger::Inst().SetLogFilePath(opt.GetOptionArg("logfile_path"));
+    TxtLogger::Inst().LogTimeOnly();
+
     std::string strAllSetOptions;
 
     for (const auto& option : opt.GetAllOptions())
@@ -1334,7 +1329,7 @@ int ScenarioPlayer::Init()
         Logger::Inst().SetCallback(0);
     }
 
-    std::string log_filename = SE_Env::Inst().GetLogFilePath();
+    std::string log_filename;
     if (opt.GetOptionSet("disable_log"))
     {
         log_filename = "";
@@ -1364,14 +1359,20 @@ int ScenarioPlayer::Init()
             printf("Custom logfile path: %s\n", log_filename.c_str());
         }
     }
-    LoggerConfig::Inst().metaDataEnabled_ = opt.IsOptionArgumentSet("log_meta_data");
+    else
+    {
+        log_filename = opt.GetOptionDefaultValue("logfile_path");
+    }
+
+    TxtLogger::Inst().SetMetaData(opt.IsOptionArgumentSet("log_meta_data"));
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         arg_str             = opt.GetOptionArg("log_only_modules");
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            LoggerConfig::Inst().enabledFiles_.insert(splitted.begin(), splitted.end());
+            std::unordered_set<std::string> logOnlyModules(splitted.begin(), splitted.end());
+            TxtLogger::Inst().SetLogOnlyModules(logOnlyModules);
         }
     }
     if (opt.IsOptionArgumentSet("log_skip_modules"))
@@ -1380,13 +1381,14 @@ int ScenarioPlayer::Init()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
+            std::unordered_set<std::string> logSkipModules(splitted.begin(), splitted.end());
+            TxtLogger::Inst().SetLogSkipModules(logSkipModules);
         }
     }
 
     if (opt.GetOptionSet("version"))
     {
-        LogVersion();
+        TxtLogger::Inst().LogVersion();
         return -2;
     }
 
@@ -1462,7 +1464,9 @@ int ScenarioPlayer::Init()
         log_filename = dist.AddInfoToFilepath(log_filename);
     }
 
-    CreateNewFileForLogging(log_filename);
+    // CreateNewFileForLogging(log_filename);
+    TxtLogger::Inst().SetLogFilePath(log_filename);
+
     if (dist.GetNumPermutations() > 0)
     {
         LOG_INFO("Using parameter distribution file: {}", dist.GetFilename());
@@ -1581,7 +1585,7 @@ int ScenarioPlayer::Init()
             SE_Env::Inst().AddPath(DirNameOf(arg_str));  // add scenario directory to list pf paths
             scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
             Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
-            SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
+            TxtLogger::Inst().SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
         }
         else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
         {
@@ -1594,7 +1598,7 @@ int ScenarioPlayer::Init()
             }
             scenarioEngine = new ScenarioEngine(doc, disable_controllers_);
             Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
-            SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
+            TxtLogger::Inst().SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
         }
         else
         {

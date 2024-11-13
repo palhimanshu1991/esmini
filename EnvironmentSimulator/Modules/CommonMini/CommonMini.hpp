@@ -866,6 +866,7 @@ public:
     bool                      GetOptionSet(std::string opt);
     bool                      IsOptionArgumentSet(std::string opt);
     std::string               GetOptionArg(std::string opt, int index = 0);
+    std::string               GetOptionDefaultValue(const std::string& opt);
     int                       ParseArgs(int argc, const char* const argv[]);
     std::vector<std::string>& GetOriginalArgs()
     {
