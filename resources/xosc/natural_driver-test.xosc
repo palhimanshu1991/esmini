@@ -13,11 +13,14 @@
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="60"/>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="30"/>
+      <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="40"/>
       <ParameterDeclaration name="TargetSpeed" parameterType="double" value="30"/>
       <ParameterDeclaration name="EgoS" parameterType="double" value="70"/>
       <ParameterDeclaration name="TargetS" parameterType="double" value="100"/>
+      <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="7.2"/>
       <ParameterDeclaration name="DesiredDistance" parameterType="double" value="50"/>
+      <ParameterDeclaration name="RearDist" parameterType="double" value="5.0"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -40,7 +43,9 @@
                 <Properties>
                     <Property name="desiredDistance" value="$DesiredDistance" />
                     <Property name="mode" value="override" />
-                    <Property name="setSpeed" value="${$EgoSpeed / 3.6}" />
+                    <Property name="speedTolerance" value="${$SpeedTolerance / 3.6}" />
+                    <Property name="desiredSpeed" value="${$DesiredSpeed / 3.6}" />
+                    <Property name="rearDistance" value="$RearDist" />
                 </Properties>
             </Controller>            
          </ObjectController>         
