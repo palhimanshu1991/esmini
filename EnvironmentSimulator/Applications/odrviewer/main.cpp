@@ -467,7 +467,7 @@ int main(int argc, char **argv)
         }
     }
 
-    TxtLogger::Inst().SetMetaData(opt.IsOptionArgumentSet("log_meta_data"));
+    TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
 
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {

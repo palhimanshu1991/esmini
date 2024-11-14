@@ -861,24 +861,28 @@ public:
     // void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "");
     void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string opt_arg_default_value = "");
 
-    void                      PrintUsage();
-    void                      PrintUnknownArgs(std::string message = "Unrecognized arguments:");
-    bool                      GetOptionSet(std::string opt);
-    bool                      IsOptionArgumentSet(std::string opt);
-    std::string               GetOptionArg(std::string opt, int index = 0);
-    std::string               GetOptionDefaultValue(const std::string& opt);
-    int                       ParseArgs(int argc, const char* const argv[]);
+    void        PrintUsage();
+    void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");
+    bool        GetOptionSet(std::string opt);
+    bool        IsOptionArgumentSet(std::string opt);
+    std::string GetOptionArg(std::string opt, int index = 0);
+    int         ParseArgs(int argc, const char* const argv[]);
+    // sets default values to options which are not set
+    void                      SetDefaultValueToUnsetOptions();
     std::vector<std::string>& GetOriginalArgs()
     {
         return originalArgs_;
     }
 
-    bool                          IsInOriginalArgs(std::string opt);
-    bool                          HasUnknownArgs();
-    void                          Reset();
-    int                           ChangeOptionArg(std::string opt, std::string new_value, int index = 0);
-    int                           SetOptionValue(std::string opt, std::string value, bool add = false, bool persistent = false);
-    int                           UnsetOption(const std::string& opt);
+    bool IsInOriginalArgs(std::string opt);
+    bool HasUnknownArgs();
+    void Reset();
+    int  ChangeOptionArg(std::string opt, std::string new_value, int index = 0);
+    int  SetOptionValue(std::string opt, std::string value, bool add = false, bool persistent = false);
+    // it does the whole cleanup of the option i.e. unsets, non-persists and clears value(s) of the option
+    int UnsetOption(const std::string& opt);
+    // clears only value(s) of the option and let the other flags as they are
+    int                           ClearOption(const std::string& opt);
     const std::vector<SE_Option>& GetAllOptions() const;
 
 private:

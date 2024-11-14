@@ -1844,18 +1844,6 @@ std::string SE_Options::GetOptionArg(std::string opt, int index)
     }
 }
 
-std::string SE_Options::GetOptionDefaultValue(const std::string& opt)
-{
-    SE_Option* option = GetOption(opt);
-
-    if (option == nullptr)
-    {
-        return "";
-    }
-
-    return option->default_value_;
-}
-
 static constexpr std::array<const char*, 10> OSG_ARGS = {"--clear-color",
                                                          "--screen",
                                                          "--window",
@@ -1928,6 +1916,18 @@ int SE_Options::UnsetOption(const std::string& opt)
     return 0;
 }
 
+int SE_Options::ClearOption(const std::string& opt)
+{
+    SE_Option* option = GetOption(opt);
+
+    if (option != nullptr)
+    {
+        option->arg_value_.clear();
+    }
+
+    return 0;
+}
+
 const std::vector<SE_Option>& SE_Options::GetAllOptions() const
 {
     return option_;
@@ -1990,7 +1990,20 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
         i++;
     }
 
+    SetDefaultValueToUnsetOptions();
+
     return returnVal;
+}
+
+void SE_Options::SetDefaultValueToUnsetOptions()
+{
+    for (auto& opt : option_)
+    {
+        if (!opt.set_ && !opt.default_value_.empty())
+        {
+            opt.arg_value_.push_back(opt.default_value_);
+        }
+    }
 }
 
 SE_Option* SE_Options::GetOption(std::string opt)

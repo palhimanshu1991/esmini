@@ -493,7 +493,7 @@ extern "C"
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
     {
         SE_SetOptionValuePersistent("logfile_path", logFilePath);
-        TxtLogger::Inst().SetLogFilePath(logFilePath);
+        // TxtLogger::Inst().SetLogFilePath(logFilePath);
     }
 
     SE_DLL_API void SE_SetDatFilePath(const char *datFilePath)
@@ -976,7 +976,7 @@ extern "C"
     {
         resetScenario();
         RegisterParameterDeclarationCallback(nullptr, nullptr);
-        TxtLogger::Inst().StopFileLogging();
+        TxtLogger::Inst().Stop();
     }
 
     SE_DLL_API void SE_LogToConsole(bool mode)
@@ -1825,7 +1825,6 @@ extern "C"
 
     SE_DLL_API void SE_CloseLogFile()
     {
-        // Logger::Inst().CloseLogFile();
         TxtLogger::Inst().StopFileLogging();
     }
 

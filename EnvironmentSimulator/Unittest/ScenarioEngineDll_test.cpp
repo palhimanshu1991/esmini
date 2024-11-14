@@ -129,7 +129,6 @@ TEST(LoggerTests, check_meta_data)
     }
 
     SE_Close();
-    // TxtLogger::Inst().StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
@@ -160,7 +159,6 @@ TEST(LoggerTests, check_log_skip_modules)
     }
 
     SE_Close();
-    // TxtLogger::Inst().StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);

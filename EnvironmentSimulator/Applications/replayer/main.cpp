@@ -31,6 +31,7 @@
 #include "collision.hpp"
 #include "logger.hpp"
 #include "Utils.h"
+#include <signal.h>
 
 using namespace scenarioengine;
 
@@ -47,10 +48,20 @@ static double           time_scale     = 1.0;
 static bool             no_ghost       = false;
 static bool             no_ghost_model = false;
 static std::vector<int> removeObjects;
+static bool             quit_request = false;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
 static std::vector<ScenarioEntity> scenarioEntity;
+
+static void signal_handler(int s)
+{
+    if (s == SIGINT)
+    {
+        LOG_INFO("Quit request from user");
+        quit_request = true;
+    }
+}
 
 void log_callback(const char* str)
 {
@@ -357,6 +368,9 @@ int main(int argc, char** argv)
     static char             info_str_buf[256];
     std::string             arg_str;
 
+    // Setup signal handler to catch Ctrl-C
+    signal(SIGINT, signal_handler);
+
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
     // use common options parser to manage the program arguments
@@ -411,6 +425,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
+    TxtLogger::Inst().LogTimeOnly();
     if (opt.GetOptionArg("file").empty())
     {
         printf("Missing file argument\n");
@@ -847,7 +862,8 @@ int main(int argc, char** argv)
             }
         }
 
-        while (!(viewer->osgViewer_->done() || (opt.GetOptionSet("quit_at_end") && simTime >= (player->GetStopTime() - SMALL_NUMBER))))
+        while (!(viewer->osgViewer_->done() || (opt.GetOptionSet("quit_at_end") && simTime >= (player->GetStopTime() - SMALL_NUMBER)) ||
+                 quit_request == true))
         {
             simTime              = player->GetTime();  // potentially wrapped for repeat
             double targetSimTime = simTime;
