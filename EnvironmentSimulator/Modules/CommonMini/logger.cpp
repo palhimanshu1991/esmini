@@ -44,7 +44,7 @@ namespace esmini::common
         return txtLogger_;
     }
 
-    bool TxtLogger::GetMetatData() const
+    bool TxtLogger::IsMetaDataEnabled() const
     {
         return metaDataEnabled_;
     }
@@ -59,7 +59,7 @@ namespace esmini::common
         return logSkipModules_;
     }
 
-    void TxtLogger::SetMetaData(bool enabled)
+    void TxtLogger::SetMetaDataEnabled(bool enabled)
     {
         metaDataEnabled_ = enabled;
     }

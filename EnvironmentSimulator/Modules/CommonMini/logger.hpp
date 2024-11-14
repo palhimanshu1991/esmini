@@ -30,30 +30,41 @@ struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::forma
 
 namespace esmini::common
 {
-
     class TxtLogger
     {
     public:
-        static TxtLogger&         Inst();
-        void                      LogVersion();
+        // returns the instance of the logger (singleton pattern)
+        static TxtLogger& Inst();
+        // logs esmini version
+        void LogVersion();
+        // converts string to verbosirty level if doesn't succeed then returns verbosity level INFO as default
         spdlog::level::level_enum GetVerbosityLevelFromStr(const std::string& str);
-        void                      LogTimeOnly();
-        void                      SetLoggerTime(double* ptr);
-        void                      StopFileLogging();
-        void                      StopConsoleLogging();
-        void                      SetLogFilePath(const std::string& path);
+        // puts one line in log with time only
+        void LogTimeOnly();
+        // sets logger time which will be used with logged messages, it is normally the scenario time
+        void SetLoggerTime(double* ptr);
+        // stops file logging
+        void StopFileLogging();
+        // stops console logging
+        void StopConsoleLogging();
+        // Sets logger file path
+        void SetLogFilePath(const std::string& path);
 
         // returns metadata enable or not
-        bool GetMetatData() const;
+        bool IsMetaDataEnabled() const;
+
         // returns modules that should be logged, if empty then all modules should be logged
         std::unordered_set<std::string> GetLogOnlyModules() const;
+
         // returns modules that should not be logged, if empty then no modules should be skipped
         std::unordered_set<std::string> GetLogSkipModules() const;
 
         // enables/disables metadata in log
-        void SetMetaData(bool enabled);
+        void SetMetaDataEnabled(bool enabled);
+
         // sets modules that should be logged, if empty then all modules should be logged
         void SetLogOnlyModules(const std::unordered_set<std::string>& logOnlyModules);
+
         // sets modules that should not be logged, if empty then no modules should be skipped
         void SetLogSkipModules(const std::unordered_set<std::string>& logSkipModules);
 

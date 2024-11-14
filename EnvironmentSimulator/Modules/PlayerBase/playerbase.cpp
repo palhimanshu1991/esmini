@@ -1295,40 +1295,6 @@ int ScenarioPlayer::Init()
         return -2;
     }
 
-    TxtLogger::Inst().SetLogFilePath(opt.GetOptionArg("logfile_path"));
-    TxtLogger::Inst().LogTimeOnly();
-
-    std::string strAllSetOptions;
-
-    for (const auto& option : opt.GetAllOptions())
-    {
-        if (option.set_)
-        {
-            std::string currentOptionValue;
-            if (!option.arg_value_.empty())
-            {
-                for (auto itr = option.arg_value_.begin(); itr != option.arg_value_.end(); ++itr)
-                {
-                    currentOptionValue = fmt::format("{} {}", currentOptionValue, *itr);
-                }
-            }
-
-            strAllSetOptions = fmt::format("{}--{}{} ", strAllSetOptions, option.opt_str_, currentOptionValue);
-        }
-    }
-    LOG_INFO("Player options: {}", strAllSetOptions);
-
-    if (opt.GetOptionSet("help"))
-    {
-        PrintUsage();
-        return -2;
-    }
-
-    if (opt.GetOptionSet("disable_stdout"))
-    {
-        Logger::Inst().SetCallback(0);
-    }
-
     std::string log_filename;
     if (opt.GetOptionSet("disable_log"))
     {
@@ -1364,7 +1330,44 @@ int ScenarioPlayer::Init()
         log_filename = opt.GetOptionDefaultValue("logfile_path");
     }
 
-    TxtLogger::Inst().SetMetaData(opt.IsOptionArgumentSet("log_meta_data"));
+    std::string logFileOptionValue = opt.GetOptionArg("logfile_path");
+    if (opt.IsOptionArgumentSet("param_dist"))
+    {
+        // deferring the creation of log file as name of it will be changed afterwards due to permutation distribution
+        opt.ClearOption("logfile_path");
+    }
+
+    std::string strAllSetOptions;
+
+    for (const auto& option : opt.GetAllOptions())
+    {
+        if (option.set_)
+        {
+            std::string currentOptionValue;
+            if (!option.arg_value_.empty())
+            {
+                for (auto itr = option.arg_value_.begin(); itr != option.arg_value_.end(); ++itr)
+                {
+                    currentOptionValue = fmt::format("{} {}", currentOptionValue, *itr);
+                }
+            }
+
+            strAllSetOptions = fmt::format("{}--{}{} ", strAllSetOptions, option.opt_str_, currentOptionValue);
+        }
+    }
+
+    if (opt.GetOptionSet("help"))
+    {
+        PrintUsage();
+        return -2;
+    }
+
+    if (opt.GetOptionSet("disable_stdout"))
+    {
+        Logger::Inst().SetCallback(0);
+    }
+
+    TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         arg_str             = opt.GetOptionArg("log_only_modules");
@@ -1390,11 +1393,6 @@ int ScenarioPlayer::Init()
     {
         TxtLogger::Inst().LogVersion();
         return -2;
-    }
-
-    if (opt.GetOptionSet("use_signs_in_external_model"))
-    {
-        LOG_INFO("Use sign models in external scene graph model, skip creating sign models");
     }
 
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
@@ -1430,7 +1428,7 @@ int ScenarioPlayer::Init()
         {
             if (permutation_index >= static_cast<int>(dist.GetNumPermutations()) || permutation_index < 0)
             {
-                LOG_INFO("Requested permutation {} out of range [{} .. {}]", permutation_index, 0, dist.GetNumPermutations() - 1);
+                LOG_ERROR("Requested permutation {} out of range [{} .. {}]", permutation_index, 0, dist.GetNumPermutations() - 1);
                 return -1;
             }
             else
@@ -1462,10 +1460,17 @@ int ScenarioPlayer::Init()
     if (dist.GetNumPermutations() > 0)
     {
         log_filename = dist.AddInfoToFilepath(log_filename);
+        opt.SetOptionValue("logfile_path", logFileOptionValue);
     }
 
-    // CreateNewFileForLogging(log_filename);
     TxtLogger::Inst().SetLogFilePath(log_filename);
+    TxtLogger::Inst().LogTimeOnly();
+    LOG_INFO("Player options: {}", strAllSetOptions);
+
+    if (opt.GetOptionSet("use_signs_in_external_model"))
+    {
+        LOG_INFO("Use sign models in external scene graph model, skip creating sign models");
+    }
 
     if (dist.GetNumPermutations() > 0)
     {

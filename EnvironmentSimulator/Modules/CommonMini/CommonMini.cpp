@@ -1928,6 +1928,18 @@ int SE_Options::UnsetOption(const std::string& opt)
     return 0;
 }
 
+int SE_Options::ClearOption(const std::string& opt)
+{
+    SE_Option* option = GetOption(opt);
+
+    if (option != nullptr)
+    {
+        option->arg_value_.clear();
+    }
+
+    return 0;
+}
+
 const std::vector<SE_Option>& SE_Options::GetAllOptions() const
 {
     return option_;
