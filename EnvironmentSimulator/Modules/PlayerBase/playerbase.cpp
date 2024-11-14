@@ -1295,42 +1295,8 @@ int ScenarioPlayer::Init()
         return -2;
     }
 
-    std::string log_filename;
-    if (opt.GetOptionSet("disable_log"))
-    {
-        log_filename = "";
-    }
-    else if (opt.IsOptionArgumentSet("logfile_path"))
-    {
-        arg_str = opt.GetOptionArg("logfile_path");
-
-        if (!arg_str.empty())
-        {
-            if (IsDirectoryName(arg_str))
-            {
-                log_filename = arg_str + LOG_FILENAME;
-            }
-            else
-            {
-                log_filename = arg_str;
-            }
-        }
-
-        if (arg_str.empty())
-        {
-            printf("Custom logfile path empty, disable logfile\n");
-        }
-        else
-        {
-            printf("Custom logfile path: %s\n", log_filename.c_str());
-        }
-    }
-    else
-    {
-        log_filename = opt.GetOptionDefaultValue("logfile_path");
-    }
-
-    std::string logFileOptionValue = opt.GetOptionArg("logfile_path");
+    std::string createdLogFileName     = TxtLogger::Inst().CreateLogFilePath();
+    std::string logFilePathOptionValue = opt.GetOptionArg("logfile_path");
     if (opt.IsOptionArgumentSet("param_dist"))
     {
         // deferring the creation of log file as name of it will be changed afterwards due to permutation distribution
@@ -1459,11 +1425,11 @@ int ScenarioPlayer::Init()
 
     if (dist.GetNumPermutations() > 0)
     {
-        log_filename = dist.AddInfoToFilepath(log_filename);
-        opt.SetOptionValue("logfile_path", logFileOptionValue);
+        createdLogFileName = dist.AddInfoToFilepath(createdLogFileName);
+        opt.SetOptionValue("logfile_path", logFilePathOptionValue);
     }
 
-    TxtLogger::Inst().SetLogFilePath(log_filename);
+    TxtLogger::Inst().SetLogFilePath(createdLogFileName);
     TxtLogger::Inst().LogTimeOnly();
     LOG_INFO("Player options: {}", strAllSetOptions);
 

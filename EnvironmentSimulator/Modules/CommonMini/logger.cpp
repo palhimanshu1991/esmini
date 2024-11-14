@@ -49,12 +49,12 @@ namespace esmini::common
         return metaDataEnabled_;
     }
 
-    std::unordered_set<std::string> TxtLogger::GetLogOnlyModules() const
+    const std::unordered_set<std::string>& TxtLogger::GetLogOnlyModules() const
     {
         return logOnlyModules_;
     }
 
-    std::unordered_set<std::string> TxtLogger::GetLogSkipModules() const
+    const std::unordered_set<std::string>& TxtLogger::GetLogSkipModules() const
     {
         return logSkipModules_;
     }
@@ -105,37 +105,45 @@ namespace esmini::common
         return filePath.string();
     }
 
-    bool TxtLogger::CreateFileLogger()
+    std::string TxtLogger::CreateLogFilePath()
     {
-        if (!SE_Env::Inst().GetOptions().GetOptionSet("disable_log"))
+        if (SE_Env::Inst().GetOptions().GetOptionSet("disable_log"))
         {
-            std::string filePath;
-            if (SE_Env::Inst().GetOptions().GetOptionSet("logfile_path"))
-            {
-                filePath = SE_Env::Inst().GetOptions().GetOptionArg("logfile_path");
-            }
-            else
-            {
-                filePath = SE_Env::Inst().GetOptions().GetOptionDefaultValue("logfile_path");
-            }
-            if (filePath.empty())
-            {
-                return false;
-            }
-
-            filePath            = HandleDirectoryAndWrongPath(filePath);
-            bool appendFile     = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
-            fileLogger          = spdlog::basic_logger_mt("file", filePath, !appendFile);
-            currentLogFileName_ = filePath;
-            SetLoggerVerbosity(fileLogger);
-            fileLogger->set_pattern("%v");
-            fileLogger->error(GetVersionInfoForLog());
-            return true;
+            return "";
         }
-        return false;
+        std::string filePath;
+        if (SE_Env::Inst().GetOptions().GetOptionSet("logfile_path"))
+        {
+            filePath = SE_Env::Inst().GetOptions().GetOptionArg("logfile_path");
+        }
+        else
+        {
+            filePath = SE_Env::Inst().GetOptions().GetOptionDefaultValue("logfile_path");
+        }
+        if (filePath.empty())
+        {
+            return "";
+        }
+        return HandleDirectoryAndWrongPath(filePath);
     }
 
-    // CreateNewFileForLogging
+    bool TxtLogger::CreateFileLogger()
+    {
+        std::string filePath = CreateLogFilePath();
+        if (filePath.empty())
+        {
+            return false;
+        }
+
+        bool appendFile     = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
+        fileLogger          = spdlog::basic_logger_mt("file", filePath, !appendFile);
+        currentLogFileName_ = filePath;
+        SetLoggerVerbosity(fileLogger);
+        fileLogger->set_pattern("%v");
+        fileLogger->error(GetVersionInfoForLog());
+        return true;
+    }
+
     void TxtLogger::SetLogFilePath(const std::string& path)
     {
         std::string filePath = HandleDirectoryAndWrongPath(path);
@@ -174,8 +182,7 @@ namespace esmini::common
         {
             return spdlog::level::err;
         }
-        // by default we set info
-        return spdlog::level::info;
+        return spdlog::level::info;  // by default we set INFO
     }
 
     void TxtLogger::StopFileLogging()

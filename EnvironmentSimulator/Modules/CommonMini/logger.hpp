@@ -17,7 +17,7 @@
 #include <string>
 #include <iostream>
 
-// Convert enum to its underlying integer type and format it
+// Converts enum to its underlying integer type and formats it
 template <typename T>
 struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::formatter<int>
 {
@@ -35,18 +35,25 @@ namespace esmini::common
     public:
         // returns the instance of the logger (singleton pattern)
         static TxtLogger& Inst();
+
         // logs esmini version
         void LogVersion();
+
         // converts string to verbosirty level if doesn't succeed then returns verbosity level INFO as default
         spdlog::level::level_enum GetVerbosityLevelFromStr(const std::string& str);
+
         // puts one line in log with time only
         void LogTimeOnly();
+
         // sets logger time which will be used with logged messages, it is normally the scenario time
         void SetLoggerTime(double* ptr);
+
         // stops file logging
         void StopFileLogging();
+
         // stops console logging
         void StopConsoleLogging();
+
         // Sets logger file path
         void SetLogFilePath(const std::string& path);
 
@@ -54,10 +61,10 @@ namespace esmini::common
         bool IsMetaDataEnabled() const;
 
         // returns modules that should be logged, if empty then all modules should be logged
-        std::unordered_set<std::string> GetLogOnlyModules() const;
+        const std::unordered_set<std::string>& GetLogOnlyModules() const;
 
         // returns modules that should not be logged, if empty then no modules should be skipped
-        std::unordered_set<std::string> GetLogSkipModules() const;
+        const std::unordered_set<std::string>& GetLogSkipModules() const;
 
         // enables/disables metadata in log
         void SetMetaDataEnabled(bool enabled);
@@ -79,6 +86,9 @@ namespace esmini::common
 
         // Returns true if logging for the module should be done
         bool ShouldLogModule(char const* file);
+
+        // creates and validates log file path
+        std::string CreateLogFilePath();
 
         // private interface
     private:
