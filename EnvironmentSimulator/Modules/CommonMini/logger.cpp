@@ -34,7 +34,7 @@ namespace fs = std::experimental::filesystem;
 
 namespace esmini::common
 {
-
+    const std::string               DEFAULT_LOG_FILE_NAME = "log.txt";
     std::shared_ptr<spdlog::logger> consoleLogger;
     std::shared_ptr<spdlog::logger> fileLogger;
 
@@ -100,7 +100,21 @@ namespace esmini::common
         }
         if (fs::is_directory(filePath))
         {
-            filePath = fmt::format("{}{}", path, SE_Env::Inst().GetOptions().GetOptionDefaultValue("logfile_path"));
+            if ((path.back() == '/' || path.back() == '\\'))
+            {
+                filePath = fmt::format("{}{}", path, DEFAULT_LOG_FILE_NAME);
+            }
+            else
+            {
+                if (path.find('\\') != std::string::npos)
+                {
+                    filePath = fmt::format("{}\\{}", path, DEFAULT_LOG_FILE_NAME);
+                }
+                else
+                {
+                    filePath = fmt::format("{}/{}", path, DEFAULT_LOG_FILE_NAME);
+                }
+            }
         }
         return filePath.string();
     }
@@ -111,15 +125,7 @@ namespace esmini::common
         {
             return "";
         }
-        std::string filePath;
-        if (SE_Env::Inst().GetOptions().GetOptionSet("logfile_path"))
-        {
-            filePath = SE_Env::Inst().GetOptions().GetOptionArg("logfile_path");
-        }
-        else
-        {
-            filePath = SE_Env::Inst().GetOptions().GetOptionDefaultValue("logfile_path");
-        }
+        std::string filePath = SE_Env::Inst().GetOptions().GetOptionArg("logfile_path");
         if (filePath.empty())
         {
             return "";
@@ -135,8 +141,22 @@ namespace esmini::common
             return false;
         }
 
-        bool appendFile     = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
-        fileLogger          = spdlog::basic_logger_mt("file", filePath, !appendFile);
+        bool appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
+
+        try
+        {
+            fileLogger = spdlog::basic_logger_mt("file", filePath, !appendFile);
+        }
+        catch (const spdlog::spdlog_ex& ex)
+        {
+            std::cerr << "Logger initialization failed: " << ex.what() << std::endl;
+            exit(-1);
+        }
+        catch (...)
+        {
+            std::cerr << "Logger initialization failed: Unknown exception" << std::endl;
+            exit(-1);
+        }
         currentLogFileName_ = filePath;
         SetLoggerVerbosity(fileLogger);
         fileLogger->set_pattern("%v");
@@ -185,14 +205,23 @@ namespace esmini::common
         return spdlog::level::info;  // by default we set INFO
     }
 
-    void TxtLogger::StopFileLogging()
+    void TxtLogger::Stop()
     {
-        spdlog::drop("file");
-        fileLogger.reset();
-        currentLogFileName_ = "";
-        spdlog::shutdown();
+        StopFileLogging();
+        StopConsoleLogging();
         logOnlyModules_.clear();
         logSkipModules_.clear();
+    }
+
+    void TxtLogger::StopFileLogging()
+    {
+        if (fileLogger)
+        {
+            spdlog::drop("file");
+            fileLogger.reset();
+            currentLogFileName_ = "";
+            spdlog::shutdown();
+        }
     }
 
     void TxtLogger::StopConsoleLogging()

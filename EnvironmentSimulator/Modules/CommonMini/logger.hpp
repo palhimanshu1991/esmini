@@ -51,6 +51,9 @@ namespace esmini::common
         // stops file logging
         void StopFileLogging();
 
+        // stops logging
+        void Stop();
+
         // stops console logging
         void StopConsoleLogging();
 

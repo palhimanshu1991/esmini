@@ -1295,7 +1295,6 @@ int ScenarioPlayer::Init()
         return -2;
     }
 
-    std::string createdLogFileName     = TxtLogger::Inst().CreateLogFilePath();
     std::string logFilePathOptionValue = opt.GetOptionArg("logfile_path");
     if (opt.IsOptionArgumentSet("param_dist"))
     {
@@ -1425,11 +1424,11 @@ int ScenarioPlayer::Init()
 
     if (dist.GetNumPermutations() > 0)
     {
-        createdLogFileName = dist.AddInfoToFilepath(createdLogFileName);
+        logFilePathOptionValue = dist.AddInfoToFilepath(logFilePathOptionValue);
         opt.SetOptionValue("logfile_path", logFilePathOptionValue);
     }
 
-    TxtLogger::Inst().SetLogFilePath(createdLogFileName);
+    TxtLogger::Inst().SetLogFilePath(logFilePathOptionValue);
     TxtLogger::Inst().LogTimeOnly();
     LOG_INFO("Player options: {}", strAllSetOptions);
 

@@ -861,13 +861,14 @@ public:
     // void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "");
     void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string opt_arg_default_value = "");
 
-    void                      PrintUsage();
-    void                      PrintUnknownArgs(std::string message = "Unrecognized arguments:");
-    bool                      GetOptionSet(std::string opt);
-    bool                      IsOptionArgumentSet(std::string opt);
-    std::string               GetOptionArg(std::string opt, int index = 0);
-    std::string               GetOptionDefaultValue(const std::string& opt);
-    int                       ParseArgs(int argc, const char* const argv[]);
+    void        PrintUsage();
+    void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");
+    bool        GetOptionSet(std::string opt);
+    bool        IsOptionArgumentSet(std::string opt);
+    std::string GetOptionArg(std::string opt, int index = 0);
+    int         ParseArgs(int argc, const char* const argv[]);
+    // sets default values to options which are not set
+    void                      SetDefaultValueToUnsetOptions();
     std::vector<std::string>& GetOriginalArgs()
     {
         return originalArgs_;
