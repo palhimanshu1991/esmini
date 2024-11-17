@@ -41,7 +41,17 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
       lane_change_duration_(3.0),
       rear_dist_(5.0),
       lookahead_dist_(115.0),
-      max_deceleration_(-4.0)
+      max_deceleration_(-3.0),
+      max_acceleration_(3.0),
+      lane_ids_available_({0, 0}), // Left, Right side available 
+      vehicles_of_interest_({}),
+      distance_to_adjacent_lead_(-1.0),
+      lane_change_injected(false),
+      state_(State::DRIVE),
+      cooldown_period_(5.0 + lane_change_duration_),
+      target_lane_(0),
+      k_p_(0.5),
+      k_d_(1.0)
 {
     operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
 
@@ -64,6 +74,22 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
     if (args && args->properties && args->properties->ValueExists("rearDist"))
     {
         rear_dist_ = strtod(args->properties->GetValueStr("rearDist"));
+    }
+    if (args && args->properties && args->properties->ValueExists("maxDec"))
+    {
+        max_deceleration_ = strtod(args->properties->GetValueStr("maxDec"));
+    }
+    if (args && args->properties && args->properties->ValueExists("maxAcc"))
+    {
+        max_acceleration_ = strtod(args->properties->GetValueStr("maxAcc"));
+    }
+    if (args && args->properties && args->properties->ValueExists("KP"))
+    {
+        k_p_ = strtod(args->properties->GetValueStr("KP"));
+    }
+    if (args && args->properties && args->properties->ValueExists("KD"))
+    {
+        k_d_ = strtod(args->properties->GetValueStr("KD"));
     }
     if (args && args->properties && !args->properties->ValueExists("mode"))
     {
@@ -89,116 +115,230 @@ void ControllerNaturalDriver::InitPostPlayer()
 
 void ControllerNaturalDriver::Step(double dt)
 {
-    bool has_lead = false;
-    bool has_adj_lead = false;
-    bool has_adj_follow = false;
-
-    std::vector<scenarioengine::Object*> vehicles_in_lane;
-    bool has_vehicles_in_lane = VehiclesInEgoLane(vehicles_in_lane);
-    if (has_vehicles_in_lane)
-    {
-        has_lead = FindVehicleAhead(vehicles_in_lane, VehicleOfInterestType::LEAD);
-    }
-
-    bool adj_lanes_available = AdjacentLanesAvailable();
-    if (adj_lanes_available)
-    {
-        std::vector<scenarioengine::Object*> adjacent_lane_vehicles;
-        bool has_adjacent_lane_vehicles = VehiclesInAdjacentLane(adjacent_lane_vehicles);
-        if (has_adjacent_lane_vehicles)
-        {
-            has_adj_lead = FindVehicleAhead(adjacent_lane_vehicles, VehicleOfInterestType::ADJACENT_LEAD);
-            has_adj_follow = FindVehicleBehind(adjacent_lane_vehicles, VehicleOfInterestType::ADJACENT_FOLLOW);
-        }
-    }
-
-    state_ = State::DRIVE;
-    if (has_lead)
-    {
-        state_ = State::FOLLOW;
-    }
-
-    if (current_speed_ < desired_speed_ - abs(speed_tolerance_)) // Should actually be current_speed < tolerance
-    {
-        state_ = State::DRIVE;
-        if (!has_adj_lead && !has_adj_follow)
-        {
-            state_ = State::CHANGE_LEFT;
-        }
-
-        if (has_adj_lead)
-        {
-            double lead_speed = vehicles_of_interest_[VehicleOfInterestType::LEAD].vehicle->GetSpeed();
-            double adjacent_lead_speed = vehicles_of_interest_[VehicleOfInterestType::ADJACENT_LEAD].vehicle->GetSpeed();
-            double adjacent_lead_ds = vehicles_of_interest_[VehicleOfInterestType::ADJACENT_LEAD].position_diff.ds;
-            if (adjacent_lead_ds > 10 || (adjacent_lead_ds > 5 && adjacent_lead_speed > lead_speed)) // Adjacent lead far away and faster than ego, we want to change
-            {
-                state_ = State::CHANGE_LEFT;
-            }
-        }
-        else // No adjacent lead, we want to change
-        {
-            state_ = State::CHANGE_LEFT;
-        }
-
-        if (has_adj_follow && state_ == State::CHANGE_LEFT) // Want to change, but we have an adjacent follow
-        {
-            double adjacent_follow_ds = vehicles_of_interest_[VehicleOfInterestType::ADJACENT_FOLLOW].position_diff.ds;
-            if (adjacent_follow_ds < -abs(rear_dist_)) // Enough distance, change lane.
-            {
-                state_ = State::CHANGE_LEFT;
-            }
-            else
-            {
-                state_ = State::DRIVE;
-            }
-        }
-    }
-
     switch (state_)
     {
         case State::DRIVE:
         {
+            bool has_lead = false;
+
+            std::vector<scenarioengine::Object*> vehicles_in_lane = {};
+            bool has_vehicles_in_lane = VehiclesInEgoLane(vehicles_in_lane);
+            if (has_vehicles_in_lane)
+            {
+                has_lead = FindVehicleAhead(vehicles_in_lane, VoIType::LEAD);
+            }
+            
+            if (has_lead)// && (diff_ds <= desired_distance_ || diff_ds > desired_distance_)) // Lead within ACC distance
+            {
+                state_ = State::FOLLOW;
+            }
+            else if (!has_lead && current_speed_ < desired_speed_ + speed_tolerance_)
+            {
+                current_speed_ += max_acceleration_ * dt;
+                if (current_speed_ > desired_speed_)
+                {
+                    current_speed_ = desired_speed_;
+                }
+            }
             break;
         }
         case State::FOLLOW:
         {
+            k_p_ = 2.0;
+            k_d_ = 2.0;
+
+            roadmanager::PositionDiff diff;
+            entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[VoIType::LEAD].vehicle->pos_, diff, false, lookahead_dist_);
+            double distance_error = diff.ds - desired_distance_;
+            double relative_speed = current_speed_ - vehicles_of_interest_[VoIType::LEAD].vehicle->GetSpeed();
+            double distance_error_rate = -relative_speed;
+
+            double desired_acceleration = k_p_ * distance_error + k_d_ * distance_error_rate;
+            desired_acceleration = CLAMP(desired_acceleration, -max_acceleration_, max_acceleration_);
+
+            const double distance_tolerance = 0.1; // meters
+            if (abs(distance_error) < distance_tolerance && abs(relative_speed) <= 0.1) 
+            {
+                desired_acceleration = 0; // No need to accelerate or decelerate
+            }
+
+            current_speed_ += desired_acceleration * dt;
+            if (current_speed_ > desired_speed_)
+            {
+                current_speed_ = desired_speed_;
+            }
+            if (current_speed_ < desired_speed_ - abs(speed_tolerance_)) // Should actually be current_speed < tolerance. We only want to change lane if we are following someone
+            {
+                state_ = State::TRY_CHANGE_LEFT; // We want to change lane
+            }
+            // Follow vehicle by ID, either ID of target in ego lane or ID of target in lane we change to
             break;
         }
-        case State::CHANGE_LEFT:
+        case State::TRY_CHANGE_LEFT:
         {
-            if (!lane_change_injected)
+            bool adjacent_lanes_available = AdjacentLanesAvailable(lane_ids_available_);
+            bool left_lead = false;
+            bool left_follow = false;
+
+            if (!adjacent_lanes_available)
             {
-                int target_lane;
-                (state_ == State::CHANGE_LEFT) ? target_lane = lane_ids_available_[0] : target_lane = lane_ids_available_[1];
-                auto lane_change = LaneChangeActionStruct{0, 0, target_lane, 2, 2, lane_change_duration_};
-                player_->player_server_->InjectLaneChangeAction(lane_change);
-                lane_change_injected = true;
+                state_ = State::FOLLOW;
+                break;
+            }
+
+
+            if (lane_ids_available_[0] != 0)
+            {
+                target_lane_ = lane_ids_available_[0];
+                std::vector<scenarioengine::Object*> adjacent_lane_vehicles = {};
+                bool left_side_vehicles = VehiclesInAdjacentLane(adjacent_lane_vehicles, lane_ids_available_[0]); // idx 0 is left
+                if (left_side_vehicles)
+                {
+                    left_lead = FindVehicleAhead(adjacent_lane_vehicles, VoIType::LEFT_LEAD);
+                    left_follow = FindVehicleBehind(adjacent_lane_vehicles, VoIType::LEFT_FOLLOW);
+                }
+            }
+            else
+            {
+                state_ = State::TRY_CHANGE_RIGHT;
+                break;
+            }
+
+            if (!left_lead && !left_follow)
+            {
+                state_ = State::CHANGE_LANE;
+                break;
+            }
+
+            bool left_lead_conditions_fulfilled = true;
+            if (left_lead)
+            {
+                double lead_speed = vehicles_of_interest_[VoIType::LEAD].vehicle->GetSpeed();
+                double adjacent_lead_speed = vehicles_of_interest_[VoIType::LEFT_LEAD].vehicle->GetSpeed();
+                roadmanager::PositionDiff diff;
+                entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[VoIType::LEFT_LEAD].vehicle->pos_, diff, false, lookahead_dist_);
+                if (diff.ds < 10 || (diff.ds < 5 && adjacent_lead_speed < lead_speed)) // Adjacent lead far away and faster than ego, we want to change
+                {
+                    left_lead_conditions_fulfilled = false;
+                }
+            }
+
+            bool left_follow_conditions_fulfilled = true;
+            if (left_follow) // Want to change, but we have an adjacent follow
+            {
+                roadmanager::PositionDiff diff;
+                entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[VoIType::LEFT_FOLLOW].vehicle->pos_, diff, true, lookahead_dist_);
+                if (diff.ds > -abs(rear_dist_)) // Too short distance, can't change
+                {
+                    left_follow_conditions_fulfilled = false;
+                }
+            }
+
+            if (left_lead_conditions_fulfilled && left_follow_conditions_fulfilled)
+            {
+                state_ = State::CHANGE_LANE;
+                break;
+            }
+            else
+            {
+                state_ = State::TRY_CHANGE_RIGHT;
+                break;
             }
             break;
         }
+        case State::TRY_CHANGE_RIGHT:
+        {
+            bool right_lead = false;
+            bool right_follow = false;
+            
+            bool right_lane_available = lane_ids_available_[1] != 0;
+            if (right_lane_available)
+            {
+                target_lane_ = lane_ids_available_[1];
+                std::vector<scenarioengine::Object*> adjacent_lane_vehicles = {};
+                bool right_side_vehicles = VehiclesInAdjacentLane(adjacent_lane_vehicles, lane_ids_available_[1]); // idx 0 is left
+                if (right_side_vehicles)
+                {
+                    right_lead = FindVehicleAhead(adjacent_lane_vehicles, VoIType::RIGHT_LEAD);
+                    right_follow = FindVehicleBehind(adjacent_lane_vehicles, VoIType::RIGHT_FOLLOW);
+                }
+            }
+            else
+            {
+                state_ = State::FOLLOW;
+                break;
+            }
+
+            if (!right_lead && !right_follow)
+            {
+                state_ = State::CHANGE_LANE;
+                break;
+            }
+
+            bool right_lead_conditions_fulfilled = true;
+            if (right_lead)
+            {
+                double lead_speed = vehicles_of_interest_[VoIType::LEAD].vehicle->GetSpeed();
+                double adjacent_lead_speed = vehicles_of_interest_[VoIType::RIGHT_LEAD].vehicle->GetSpeed();
+                roadmanager::PositionDiff diff;
+                entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[VoIType::RIGHT_LEAD].vehicle->pos_, diff, false, lookahead_dist_);
+
+                if (diff.ds < 10 || (diff.ds < 25 && adjacent_lead_speed < lead_speed)) // Adjacent lead far away and faster than ego, we want to change
+                {
+                    right_lead_conditions_fulfilled = false;
+                }
+            }
+
+            bool right_follow_conditions_fulfilled = true;
+            if (right_follow) // Want to change, but we have an adjacent follow
+            {
+                roadmanager::PositionDiff diff;
+                entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[VoIType::RIGHT_FOLLOW].vehicle->pos_, diff, true, lookahead_dist_);
+                if (diff.ds > -abs(rear_dist_)) // Too short distance, can't change
+                {
+                    right_follow_conditions_fulfilled = false;
+                }
+            }
+
+            if (right_lead_conditions_fulfilled && right_follow_conditions_fulfilled)
+            {
+                state_ = State::CHANGE_LANE;
+                break;
+            }
+            else
+            {
+                state_ = State::FOLLOW;
+                break;
+            }
+            break;
+        }
+        case State::CHANGE_LANE:
+        {
+            if (!lane_change_injected)
+            {
+                auto lane_change = LaneChangeActionStruct{0, 0, target_lane_, 2, 2, lane_change_duration_};
+                player_->player_server_->InjectLaneChangeAction(lane_change);
+                lane_change_injected = true;
+            }
+            state_ = State::DRIVE;
+            break;
+        }
     }
-
-    // if (has_lead && adj_lanes_available) 
-    //     std::cout << vehicles_of_interest_[VehicleOfInterestType::LEAD].position_diff.ds << "\n";
-    // if (has_adj_lead)
-    //     std::cout << vehicles_of_interest_[VehicleOfInterestType::ADJACENT_LEAD].position_diff.ds << "\n";
-    // if (has_adj_follow)
-    //     std::cout << vehicles_of_interest_[VehicleOfInterestType::ADJACENT_FOLLOW].position_diff.ds << "\n";
-
-    // if (actual_distance_ > 0 && actual_distance_ < desired_distance_)
-    // {
-    //     current_speed_ += max_deceleration_ * dt;
-    // }
-    // else if (actual_distance_ > desired_distance_ && current_speed_ + speed_tolerance_ < desired_speed_)
-    // {
-    //     current_speed_ += 4.0 * dt;
-    // }
 
     object_->MoveAlongS(current_speed_ * dt);
     gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
     gateway_->updateObjectSpeed(object_->GetId(), 0.0, current_speed_);
 
+    // Wait a while before initiating another lane change
+    if (lane_change_injected)
+    {
+        cooldown_period_ -= dt;
+        if (cooldown_period_ < 0.0)
+        {
+            cooldown_period_ = 5.0 + lane_change_duration_;
+            lane_change_injected = false;
+        }
+    }
 
     Controller::Step(dt);
 }
@@ -238,7 +378,7 @@ void ControllerNaturalDriver::ReportKeyEvent(int key, bool down)
 }
 
 
-bool ControllerNaturalDriver::FindVehicleAhead(std::vector<scenarioengine::Object*> vehicles, VehicleOfInterestType type)
+bool ControllerNaturalDriver::FindVehicleAhead(std::vector<scenarioengine::Object*> vehicles, VoIType type)
 {
     scenarioengine::Object* closest_lead = nullptr;
 
@@ -263,12 +403,12 @@ bool ControllerNaturalDriver::FindVehicleAhead(std::vector<scenarioengine::Objec
         return false;
     }
 
-    vehicles_of_interest_[type] = VehiclesOfInterest{closest_lead, diff};
+    vehicles_of_interest_[type] = {closest_lead};
     
     return true;
 }
 
-bool ControllerNaturalDriver::FindVehicleBehind(std::vector<scenarioengine::Object*> vehicles, VehicleOfInterestType type)
+bool ControllerNaturalDriver::FindVehicleBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type)
 {
     scenarioengine::Object* follow_vehicle = nullptr;
 
@@ -293,18 +433,17 @@ bool ControllerNaturalDriver::FindVehicleBehind(std::vector<scenarioengine::Obje
         return false; // No lead
     }
 
-    vehicles_of_interest_[type] = VehiclesOfInterest{follow_vehicle, diff};
+    vehicles_of_interest_[type] = VoI{follow_vehicle};
     
     return true;
 }
 
-void ControllerNaturalDriver::ClearVehicleOfInterest(VehicleOfInterestType type)
+void ControllerNaturalDriver::ClearVehicleOfInterest(VoIType type)
 {
     vehicles_of_interest_[type].vehicle = nullptr;
-    vehicles_of_interest_[type].position_diff = {};
 }
 
-bool ControllerNaturalDriver::AdjacentLanesAvailable()
+bool ControllerNaturalDriver::AdjacentLanesAvailable(std::array<int, 2> &lane_ids_available)
 {
     double current_s = entities_->object_[0]->pos_.GetS();
     int current_lane = entities_->object_[0]->pos_.GetLaneId();
@@ -362,19 +501,9 @@ bool ControllerNaturalDriver::VehiclesInEgoLane(std::vector<scenarioengine::Obje
     return true;
 }
 
-bool ControllerNaturalDriver::VehiclesInAdjacentLane(std::vector<scenarioengine::Object*> &vehicles)
+bool ControllerNaturalDriver::VehiclesInAdjacentLane(std::vector<scenarioengine::Object*> &vehicles, int lane_id)
 {
     // TODO: Populate both left and right lanes
-    double lane_id;
-    if (lane_ids_available_[0] != 0) // Prefer left lane
-    {
-        lane_id = lane_ids_available_[0];
-    }
-    else
-    {
-        lane_id = lane_ids_available_[1];
-    }
-
     for (size_t i = 1; i < entities_->object_.size(); i++)
     {
         if (entities_->object_[i]->pos_.GetLaneId() == lane_id)

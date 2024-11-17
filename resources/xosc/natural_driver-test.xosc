@@ -13,14 +13,16 @@
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="30"/>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="40"/>
       <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="40"/>
-      <ParameterDeclaration name="TargetSpeed" parameterType="double" value="30"/>
-      <ParameterDeclaration name="EgoS" parameterType="double" value="70"/>
+      <ParameterDeclaration name="TargetSpeed" parameterType="double" value="25"/>
+      <ParameterDeclaration name="EgoS" parameterType="double" value="50"/>
       <ParameterDeclaration name="TargetS" parameterType="double" value="100"/>
-      <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="7.2"/>
-      <ParameterDeclaration name="DesiredDistance" parameterType="double" value="50"/>
-      <ParameterDeclaration name="RearDist" parameterType="double" value="5.0"/>
+      <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="4"/>
+      <ParameterDeclaration name="DesiredDistance" parameterType="double" value="20"/>
+      <ParameterDeclaration name="RearDist" parameterType="double" value="8.0"/>
+      <ParameterDeclaration name="kp" parameterType="double" value="0.5"/>
+      <ParameterDeclaration name="kd" parameterType="double" value="1.0"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -45,7 +47,9 @@
                     <Property name="mode" value="override" />
                     <Property name="speedTolerance" value="${$SpeedTolerance / 3.6}" />
                     <Property name="desiredSpeed" value="${$DesiredSpeed / 3.6}" />
-                    <Property name="rearDistance" value="$RearDist" />
+                    <Property name="rearDist" value="$RearDist" />
+                    <Property name="KP" value="$kp" />
+                    <Property name="KP" value="$kd" />
                 </Properties>
             </Controller>            
          </ObjectController>         
@@ -89,7 +93,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0" s="$TargetS"/>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="85"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -101,7 +105,7 @@
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="${$TargetSpeed / 3.6}"/>
+                           <AbsoluteTargetSpeed value="8.33"/>
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
@@ -157,7 +161,7 @@
           <ConditionGroup>
                 <Condition name="stop_trigger " delay="0" conditionEdge="none">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="10" rule="greaterThan"/>
+                        <SimulationTimeCondition value="35" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
           </ConditionGroup>

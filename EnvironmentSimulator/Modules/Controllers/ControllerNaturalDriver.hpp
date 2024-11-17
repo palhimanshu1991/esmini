@@ -27,21 +27,23 @@ namespace scenarioengine
     {
         DRIVE = 0,
         FOLLOW,
-        CHANGE_LEFT,
-        CHANGE_RIGHT
+        TRY_CHANGE_LEFT,
+        TRY_CHANGE_RIGHT,
+        CHANGE_LANE,
     };
 
-    enum VehicleOfInterestType
+    enum VoIType // VehicleOfInterest
     {
         LEAD = 0,
-        ADJACENT_LEAD,
-        ADJACENT_FOLLOW,
+        LEFT_LEAD,
+        LEFT_FOLLOW,
+        RIGHT_LEAD,
+        RIGHT_FOLLOW,
     };
 
-    struct VehiclesOfInterest 
+    struct VoI // VehicleOfInterest
     {
         scenarioengine::Object* vehicle;
-        roadmanager::PositionDiff position_diff;
     };
 
     class ControllerNaturalDriver : public Controller
@@ -73,14 +75,14 @@ namespace scenarioengine
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        bool FindVehicleAhead(std::vector<scenarioengine::Object*> vehicles, VehicleOfInterestType type);
-        bool FindVehicleBehind(std::vector<scenarioengine::Object*> vehicles, VehicleOfInterestType type);
+        bool FindVehicleAhead(std::vector<scenarioengine::Object*> vehicles, VoIType type);
+        bool FindVehicleBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type);
         void LeadInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
         void FollowInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
-        bool AdjacentLanesAvailable();
+        bool AdjacentLanesAvailable(std::array<int, 2> &lane_ids_available);
         bool VehiclesInEgoLane(std::vector<scenarioengine::Object*> &vehicles);
-        bool VehiclesInAdjacentLane(std::vector<scenarioengine::Object*> &vehicles);
-        void ClearVehicleOfInterest(VehicleOfInterestType type);
+        bool VehiclesInAdjacentLane(std::vector<scenarioengine::Object*> &vehicles, int lane_id);
+        void ClearVehicleOfInterest(VoIType type);
         void ReportKeyEvent(int key, bool down);
         void SetDesiredSpeed(double desired_speed)
         {
@@ -100,12 +102,16 @@ namespace scenarioengine
         double           rear_dist_;
         double           lookahead_dist_;
         double           max_deceleration_;
-        std::array<int, 2> lane_ids_available_ = {0, 0}; // Left, Right side available 
-        std::unordered_map<VehicleOfInterestType, VehiclesOfInterest> vehicles_of_interest_ = {};
-        double           distance_to_adjacent_lead_ = -1.0;
-        bool             lane_change_injected = false;
-        State            state_ = State::DRIVE;
-        double           cooldown_period_ = 5.0 + lane_change_duration_;
+        double           max_acceleration_;
+        std::array<int, 2> lane_ids_available_;
+        std::unordered_map<VoIType, VoI> vehicles_of_interest_;
+        double           distance_to_adjacent_lead_;
+        bool             lane_change_injected;
+        State            state_;
+        double           cooldown_period_;
+        int              target_lane_;
+        double           k_p_;
+        double           k_d_;
     };
 
     Controller* InstantiateNaturalDriver(void* args);
