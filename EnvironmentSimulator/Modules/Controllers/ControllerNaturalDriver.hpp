@@ -77,6 +77,8 @@ namespace scenarioengine
                       ControlActivationMode anim_activation_mode);
         bool FindVehicleAhead(std::vector<scenarioengine::Object*> vehicles, VoIType type);
         bool FindVehicleBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type);
+        void AdjacentLaneActors(const int lane_id, bool &lead, bool& follow);
+        bool CheckLaneChangeConditions(bool has_lead, bool has_follow);
         void LeadInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
         void FollowInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
         bool AdjacentLanesAvailable(std::array<int, 2> &lane_ids_available);

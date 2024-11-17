@@ -18,9 +18,9 @@
       <ParameterDeclaration name="TargetSpeed" parameterType="double" value="10"/>
       <ParameterDeclaration name="EgoS" parameterType="double" value="50"/>
       <ParameterDeclaration name="TargetS" parameterType="double" value="100"/>
-      <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="10"/>
+      <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="5"/>
       <ParameterDeclaration name="DesiredDistance" parameterType="double" value="20"/>
-      <ParameterDeclaration name="RearDist" parameterType="double" value="3.0"/>
+      <ParameterDeclaration name="RearDist" parameterType="double" value="1.0"/>
       <ParameterDeclaration name="kp" parameterType="double" value="0.4"/>
       <ParameterDeclaration name="kd" parameterType="double" value="0.5"/>
       <ParameterDeclaration name="MaxAcc" parameterType="double" value="4.0"/>
