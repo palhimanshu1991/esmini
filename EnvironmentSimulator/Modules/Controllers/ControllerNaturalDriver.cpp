@@ -134,7 +134,7 @@ void ControllerNaturalDriver::Step(double dt)
             }
             else if (!has_lead && current_speed_ < desired_speed_ + speed_tolerance_)
             {
-                current_speed_ += max_acceleration_ * dt;
+                current_speed_ += max_acceleration_ * dt; // Something else here?
                 if (current_speed_ > desired_speed_)
                 {
                     current_speed_ = desired_speed_;
@@ -144,26 +144,17 @@ void ControllerNaturalDriver::Step(double dt)
         }
         case State::FOLLOW:
         {
-            k_p_ = 2.0;
-            k_d_ = 2.0;
-
             roadmanager::PositionDiff diff;
             entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[VoIType::LEAD].vehicle->pos_, diff, false, lookahead_dist_);
             double distance_error = diff.ds - desired_distance_;
             double relative_speed = current_speed_ - vehicles_of_interest_[VoIType::LEAD].vehicle->GetSpeed();
             double distance_error_rate = -relative_speed;
-
             double desired_acceleration = k_p_ * distance_error + k_d_ * distance_error_rate;
             desired_acceleration = CLAMP(desired_acceleration, -max_acceleration_, max_acceleration_);
 
-            const double distance_tolerance = 0.1; // meters
-            if (abs(distance_error) < distance_tolerance && abs(relative_speed) <= 0.1) 
-            {
-                desired_acceleration = 0; // No need to accelerate or decelerate
-            }
-
             current_speed_ += desired_acceleration * dt;
-            if (current_speed_ > desired_speed_)
+
+            if (current_speed_ >= desired_speed_)
             {
                 current_speed_ = desired_speed_;
             }
