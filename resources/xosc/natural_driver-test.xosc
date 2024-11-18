@@ -51,7 +51,7 @@
                     <Property name="rearDist" value="$RearDist" />
                     <Property name="maxAcc" value="$MaxAcc" />
                     <Property name="KP" value="$kp" />
-                    <Property name="KP" value="$kd" />
+                    <Property name="KD" value="$kd" />
                 </Properties>
             </Controller>            
          </ObjectController>         

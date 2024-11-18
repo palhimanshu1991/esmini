@@ -79,6 +79,7 @@ namespace scenarioengine
         bool FindVehicleBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type);
         void AdjacentLaneActors(const int lane_id, bool &lead, bool& follow);
         bool CheckLaneChangeConditions(bool has_lead, bool has_follow);
+        void GetVehicleOfInterestType(VoIType &lead, VoIType &follow);
         void LeadInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
         void FollowInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
         bool AdjacentLanesAvailable(std::array<int, 2> &lane_ids_available);
@@ -94,7 +95,7 @@ namespace scenarioengine
     private:
         vehicle::Vehicle vehicle_;
         bool             active_;
-        double           desired_distance_;  // target headway time
+        double           following_distance_;  // target headway time
         double           actual_distance_;
         double           distance_adjustment_t_;
         double           desired_speed_;
@@ -102,6 +103,7 @@ namespace scenarioengine
         double           speed_tolerance_;
         float            lane_change_duration_;
         double           rear_dist_;
+        double           adj_lead_dist_;
         double           lookahead_dist_;
         double           max_deceleration_;
         double           max_acceleration_;
