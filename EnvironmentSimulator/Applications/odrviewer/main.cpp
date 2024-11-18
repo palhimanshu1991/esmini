@@ -402,7 +402,7 @@ int main(int argc, char **argv)
     opt.AddOption("ground_plane", "Add a large flat ground surface");
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("log_append", "log all scenarios in the same txt file");
-    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", "log.txt");
+    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", "log.txt", true);
     opt.AddOption("log_meta_data", "log file name, function name and line number");
     opt.AddOption("log_level", "log level debug, info, warn, error", "mode", "info");
     opt.AddOption("log_only_modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");

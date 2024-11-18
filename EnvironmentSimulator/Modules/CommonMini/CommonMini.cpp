@@ -1771,12 +1771,12 @@ void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::strin
     option_.push_back(opt);
 }
 */
-void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value)
+void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value, bool autoDefaulted)
 {
     SE_Option* option = GetOption(opt_str);
     if (!option)
     {
-        SE_Option opt(opt_str, opt_desc, opt_arg, default_value);
+        SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoDefaulted);
         option_.push_back(opt);
     }
 }
@@ -1990,16 +1990,16 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
         i++;
     }
 
-    SetDefaultValueToUnsetOptions();
+    SetDefaultedOptions();
 
     return returnVal;
 }
 
-void SE_Options::SetDefaultValueToUnsetOptions()
+void SE_Options::SetDefaultedOptions()
 {
     for (auto& opt : option_)
     {
-        if (!opt.set_ && !opt.default_value_.empty())
+        if (opt.autoDefaulted_ && !opt.set_ && !opt.default_value_.empty())
         {
             opt.arg_value_.push_back(opt.default_value_);
         }

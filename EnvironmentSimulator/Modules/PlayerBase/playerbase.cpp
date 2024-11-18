@@ -1250,7 +1250,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
     opt.AddOption("log_append", "log all scenarios in the same txt file");
-    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", "log.txt");
+    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", "log.txt", true);
     opt.AddOption("log_meta_data", "log file name, function name and line number");
     opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
     opt.AddOption("log_only_modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
