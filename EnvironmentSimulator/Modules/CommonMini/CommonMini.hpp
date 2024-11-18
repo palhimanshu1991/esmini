@@ -824,6 +824,7 @@ private:
 
 class SE_Option
 {
+
 public:
     std::string              opt_str_;
     std::string              opt_desc_;
@@ -832,6 +833,8 @@ public:
     std::vector<std::string> arg_value_;
     std::string              default_value_;
     bool                     persistent_ = false;
+    bool                     autoDefaulted_ = false;
+
     /*
     SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "")
         : opt_str_(opt_str),
@@ -841,12 +844,13 @@ public:
     {
     }
     */
-    SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string default_value = "")
+    SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string default_value = "", bool autoDefaulted = false)
         : opt_str_(opt_str),
           opt_desc_(opt_desc),
           opt_arg_(opt_arg),
           set_(false),
-          default_value_(default_value)
+          default_value_(default_value),
+          autoDefaulted_(autoDefaulted)
     {
     }
 
@@ -859,7 +863,7 @@ class SE_Options
 
 public:
     // void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "");
-    void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string opt_arg_default_value = "");
+    void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string opt_arg_default_value = "", bool autoDefaulted = false);
 
     void        PrintUsage();
     void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");
@@ -867,8 +871,8 @@ public:
     bool        IsOptionArgumentSet(std::string opt);
     std::string GetOptionArg(std::string opt, int index = 0);
     int         ParseArgs(int argc, const char* const argv[]);
-    // sets default values to options which are not set
-    void                      SetDefaultValueToUnsetOptions();
+    // sets default values to options which are auto defaulted and are unset
+    void                      SetDefaultedOptions();
     std::vector<std::string>& GetOriginalArgs()
     {
         return originalArgs_;
