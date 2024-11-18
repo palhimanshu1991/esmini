@@ -1999,7 +1999,7 @@ void SE_Options::SetDefaultedOptions()
 {
     for (auto& opt : option_)
     {
-        if ( opt.autoDefaulted_ && !opt.set_  && !opt.default_value_.empty())
+        if (opt.autoDefaulted_ && !opt.set_ && !opt.default_value_.empty())
         {
             opt.arg_value_.push_back(opt.default_value_);
         }

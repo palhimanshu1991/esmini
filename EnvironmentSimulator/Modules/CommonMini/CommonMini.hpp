@@ -824,7 +824,6 @@ private:
 
 class SE_Option
 {
-
 public:
     std::string              opt_str_;
     std::string              opt_desc_;
@@ -832,7 +831,7 @@ public:
     bool                     set_;
     std::vector<std::string> arg_value_;
     std::string              default_value_;
-    bool                     persistent_ = false;
+    bool                     persistent_    = false;
     bool                     autoDefaulted_ = false;
 
     /*
@@ -863,7 +862,11 @@ class SE_Options
 
 public:
     // void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "");
-    void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string opt_arg_default_value = "", bool autoDefaulted = false);
+    void AddOption(std::string opt_str,
+                   std::string opt_desc,
+                   std::string opt_arg               = "",
+                   std::string opt_arg_default_value = "",
+                   bool        autoDefaulted         = false);
 
     void        PrintUsage();
     void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");
