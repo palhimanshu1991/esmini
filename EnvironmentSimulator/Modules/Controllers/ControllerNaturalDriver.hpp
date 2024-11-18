@@ -75,17 +75,22 @@ namespace scenarioengine
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        bool FindVehicleAhead(std::vector<scenarioengine::Object*> vehicles, VoIType type);
-        bool FindVehicleBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type);
-        void AdjacentLaneActors(const int lane_id, bool &lead, bool& follow);
-        bool CheckLaneChangeConditions(bool has_lead, bool has_follow);
-        void GetVehicleOfInterestType(VoIType &lead, VoIType &follow);
-        void LeadInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
-        void FollowInAdjacentLane(std::vector<scenarioengine::Object*> vehicles);
+
+        bool HaveLead();
         bool AdjacentLanesAvailable(std::array<int, 2> &lane_ids_available);
         bool VehiclesInEgoLane(std::vector<scenarioengine::Object*> &vehicles);
         bool VehiclesInAdjacentLane(std::vector<scenarioengine::Object*> &vehicles, int lane_id);
+        bool FindClosestAhead(std::vector<scenarioengine::Object*> vehicles, VoIType type);
+        bool FindClosestBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type);
+        void GetAdjacentLeadAndFollow(const int lane_id, bool &lead, bool& follow);
+
+        bool CheckLaneChangePossible(bool has_lead, bool has_follow);
+
+        void GetVehicleOfInterestType(VoIType &lead, VoIType &follow);
         void ClearVehicleOfInterest(VoIType type);
+
+        void PDController(double set_value, double measured_value, double error_rate, double &output, double dt);
+
         void ReportKeyEvent(int key, bool down);
         void SetDesiredSpeed(double desired_speed)
         {
@@ -95,15 +100,15 @@ namespace scenarioengine
     private:
         vehicle::Vehicle vehicle_;
         bool             active_;
-        double           following_distance_;  // target headway time
+        double           desired_distance_;  // target headway time
+        double           adj_rear_dist_;
+        double           adj_lead_dist_;
         double           actual_distance_;
         double           distance_adjustment_t_;
         double           desired_speed_;
         double           current_speed_;
         double           speed_tolerance_;
         float            lane_change_duration_;
-        double           rear_dist_;
-        double           adj_lead_dist_;
         double           lookahead_dist_;
         double           max_deceleration_;
         double           max_acceleration_;
@@ -116,6 +121,7 @@ namespace scenarioengine
         int              target_lane_;
         double           k_p_;
         double           k_d_;
+        double           previous_error_;
     };
 
     Controller* InstantiateNaturalDriver(void* args);

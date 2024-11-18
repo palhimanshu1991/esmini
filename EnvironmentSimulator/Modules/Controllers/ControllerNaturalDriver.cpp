@@ -32,14 +32,14 @@ Controller* scenarioengine::InstantiateNaturalDriver(void* args)
 ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
     : Controller(args),
       active_(false),
-      following_distance_(20.0),
+      desired_distance_(20.0),
       actual_distance_(-1.0),
       distance_adjustment_t_(3.0),
       desired_speed_(15.0), // TODO: Take from road speed
       current_speed_(desired_speed_),
       speed_tolerance_(8.0),
       lane_change_duration_(3.0),
-      rear_dist_(5.0),
+      adj_rear_dist_(5.0),
       adj_lead_dist_(20.0),
       lookahead_dist_(115.0),
       max_deceleration_(-3.0),
@@ -58,7 +58,15 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
 
     if (args && args->properties && args->properties->ValueExists("desiredDistance"))
     {
-        following_distance_ = strtod(args->properties->GetValueStr("desiredDistance"));
+        desired_distance_ = strtod(args->properties->GetValueStr("desiredDistance"));
+    }
+    if (args && args->properties && args->properties->ValueExists("adjRearDistance"))
+    {
+        adj_rear_dist_ = strtod(args->properties->GetValueStr("adjRearDistance"));
+    }
+    if (args && args->properties && args->properties->ValueExists("adjLeadDistance"))
+    {
+        adj_lead_dist_ = strtod(args->properties->GetValueStr("adjLeadDistance"));
     }
     if (args && args->properties && args->properties->ValueExists("desiredSpeed"))
     {
@@ -71,14 +79,6 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
     if (args && args->properties && args->properties->ValueExists("laneChangeDuration"))
     {
         lane_change_duration_    = static_cast<float>(strtod(args->properties->GetValueStr("laneChangeDuration")));
-    }
-    if (args && args->properties && args->properties->ValueExists("rearDist"))
-    {
-        rear_dist_ = strtod(args->properties->GetValueStr("rearDist"));
-    }
-    if (args && args->properties && args->properties->ValueExists("adjLeadDist"))
-    {
-        adj_lead_dist_ = strtod(args->properties->GetValueStr("adjLeadDist"));
     }
     if (args && args->properties && args->properties->ValueExists("maxDec"))
     {
@@ -120,24 +120,16 @@ void ControllerNaturalDriver::InitPostPlayer()
 
 void ControllerNaturalDriver::Step(double dt)
 {
+
     switch (state_)
     {
         case State::DRIVE:
         {
-            bool has_lead = false;
-
-            std::vector<scenarioengine::Object*> vehicles_in_lane = {};
-            bool has_vehicles_in_lane = VehiclesInEgoLane(vehicles_in_lane);
-            if (has_vehicles_in_lane)
-            {
-                has_lead = FindVehicleAhead(vehicles_in_lane, VoIType::LEAD);
-            }
-            
-            if (has_lead)// && (diff_ds <= desired_distance_ || diff_ds > desired_distance_)) // Lead within ACC distance
+            if (HaveLead())
             {
                 state_ = State::FOLLOW;
             }
-            else if (!has_lead && current_speed_ < desired_speed_ + speed_tolerance_)
+            else if (current_speed_ < desired_speed_)
             {
                 current_speed_ += max_acceleration_ * dt; // Something else here?
                 if (current_speed_ > desired_speed_)
@@ -149,16 +141,20 @@ void ControllerNaturalDriver::Step(double dt)
         }
         case State::FOLLOW:
         {
+            if (!HaveLead())
+            {
+                state_ = State::DRIVE;
+                break;
+            }
             roadmanager::PositionDiff diff;
             entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[VoIType::LEAD].vehicle->pos_, diff, false, lookahead_dist_);
-            double distance_error = diff.ds - following_distance_;
+            double distance_error = diff.ds - desired_distance_;
             double relative_speed = current_speed_ - vehicles_of_interest_[VoIType::LEAD].vehicle->GetSpeed();
-            double distance_error_rate = -relative_speed;
-            double desired_acceleration = k_p_ * distance_error + k_d_ * distance_error_rate;
-            desired_acceleration = CLAMP(desired_acceleration, -max_acceleration_, max_acceleration_);
+            
+            double acceleration;
+            PDController(desired_distance_, diff.ds, relative_speed, acceleration, dt);
 
-            current_speed_ += desired_acceleration * dt;
-
+            current_speed_ += acceleration * dt;
 
             if (current_speed_ >= desired_speed_)
             {
@@ -168,7 +164,8 @@ void ControllerNaturalDriver::Step(double dt)
             {
                 current_speed_ = vehicles_of_interest_[VoIType::LEAD].vehicle->GetSpeed();
             }
-            else if (current_speed_ < desired_speed_ - abs(speed_tolerance_)) // Should actually be current_speed < tolerance. We only want to change lane if we are following someone
+            
+            if (current_speed_ < desired_speed_ - abs(speed_tolerance_) && !lane_change_injected) // Should actually be current_speed < tolerance. We only want to change lane if we are following someone
             {
                 state_ = State::TRY_CHANGE_LEFT; // We want to change lane
             }
@@ -181,17 +178,10 @@ void ControllerNaturalDriver::Step(double dt)
             bool left_lead = false;
             bool left_follow = false;
 
-            if (!adjacent_lanes_available)
-            {
-                state_ = State::FOLLOW;
-                break;
-            }
-
-
             if (lane_ids_available_[0] != 0)
             {
                 target_lane_ = lane_ids_available_[0];
-                AdjacentLaneActors(target_lane_, left_lead, left_follow);
+                GetAdjacentLeadAndFollow(target_lane_, left_lead, left_follow);
             }
             else
             {
@@ -205,7 +195,7 @@ void ControllerNaturalDriver::Step(double dt)
                 break;
             }
 
-            bool initiate_lanechange = CheckLaneChangeConditions(left_lead, left_follow);
+            bool initiate_lanechange = CheckLaneChangePossible(left_lead, left_follow);
 
             if (initiate_lanechange)
             {
@@ -228,7 +218,7 @@ void ControllerNaturalDriver::Step(double dt)
             if (lane_ids_available_[1] != 0)
             {
                 target_lane_ = lane_ids_available_[1];
-                AdjacentLaneActors(target_lane_, right_lead, right_follow);
+                GetAdjacentLeadAndFollow(target_lane_, right_lead, right_follow);
             }
             else
             {
@@ -242,7 +232,7 @@ void ControllerNaturalDriver::Step(double dt)
                 break;
             }
 
-            bool initiate_lanechange = CheckLaneChangeConditions(right_lead, right_follow);
+            bool initiate_lanechange = CheckLaneChangePossible(right_lead, right_follow);
 
             if (initiate_lanechange)
             {
@@ -267,6 +257,7 @@ void ControllerNaturalDriver::Step(double dt)
             state_ = State::DRIVE;
             break;
         }
+        // If lead disappears for some reason, we just drive again.
     }
 
     object_->MoveAlongS(current_speed_ * dt);
@@ -281,10 +272,34 @@ void ControllerNaturalDriver::Step(double dt)
         {
             cooldown_period_ = 5.0 + lane_change_duration_;
             lane_change_injected = false;
+            std::cout << "Cooldown reached\nState " << state_ << "\n";
         }
     }
 
     Controller::Step(dt);
+}
+
+bool ControllerNaturalDriver::HaveLead()
+{
+    bool have_lead = false;
+
+    std::vector<scenarioengine::Object*> vehicles_in_lane = {};
+    bool has_vehicles_in_lane = VehiclesInEgoLane(vehicles_in_lane);
+    if (has_vehicles_in_lane)
+    {
+        have_lead = FindClosestAhead(vehicles_in_lane, VoIType::LEAD); // Lead and lead within lookahead distance
+    }
+
+    return have_lead;
+}
+
+void ControllerNaturalDriver::PDController(double set_value, double measured_value, double error_rate, double &output, double dt)
+{
+    double error = measured_value - set_value;
+
+    output = k_p_ * error + k_d_ * -error_rate;
+
+    output = CLAMP(output, -max_acceleration_, max_acceleration_);
 }
 
 int ControllerNaturalDriver::Activate(ControlActivationMode lat_activation_mode,
@@ -321,18 +336,23 @@ void ControllerNaturalDriver::ReportKeyEvent(int key, bool down)
     (void)down;
 }
 
-bool ControllerNaturalDriver::CheckLaneChangeConditions(bool has_lead, bool has_follow)
+bool ControllerNaturalDriver::CheckLaneChangePossible(bool has_lead, bool has_follow)
 {
-    VoIType lead, follow;
-    GetVehicleOfInterestType(lead, follow);
+    if (lane_change_injected)
+    {
+        return false;
+    }
+
+    VoIType adj_lead, adj_follow;
+    GetVehicleOfInterestType(adj_lead, adj_follow);
 
     bool lead_conditions_fulfilled = true;
     if (has_lead)
     {
-        double lead_speed = vehicles_of_interest_[VoIType::LEAD].vehicle->GetSpeed();
-        double adjacent_lead_speed = vehicles_of_interest_[lead].vehicle->GetSpeed();
+        // double lead_speed = vehicles_of_interest_[VoIType::LEAD].vehicle->GetSpeed();
+        // double adjacent_lead_speed = vehicles_of_interest_[adj_lead].vehicle->GetSpeed();
         roadmanager::PositionDiff diff;
-        entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[lead].vehicle->pos_, diff, false, lookahead_dist_);
+        entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[adj_lead].vehicle->pos_, diff, false, lookahead_dist_);
         // Maybe second condition is if adjacent lead is farther away than ego lane lead?
         if (diff.ds < adj_lead_dist_) // Adjacent lead far away and faster than ego, we want to change
         {
@@ -344,17 +364,25 @@ bool ControllerNaturalDriver::CheckLaneChangeConditions(bool has_lead, bool has_
     if (has_follow) // Want to change, but we have an adjacent follow
     {
         roadmanager::PositionDiff diff;
-        entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[follow].vehicle->pos_, diff, true, lookahead_dist_);
-        if (diff.ds > -abs(rear_dist_)) // Too short distance, can't change
+        entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[adj_follow].vehicle->pos_, diff, true, lookahead_dist_);
+        if (diff.ds > adj_rear_dist_) // Too short distance, can't change
         {
             follow_conditions_fulfilled = false;
         }
     }
 
+    /* TODO: Separate LC conditions for
+        1. Only lead (dist to lead < X meter)
+        2. Lead and adjacent lead (dist to lead < X meter and dist to adj lead > Y meter)
+        3. Lead adjacent follow (dist to lead < X meter and dist to adj follow > Z meter)
+        4. Lead, adjacent lead and adjacent follow 
+            (dist to lead < X meter, dist to adj lead > Y meter, dist to adj follow > Z meter)
+    */
+
     return lead_conditions_fulfilled && follow_conditions_fulfilled;
 
 }
-void ControllerNaturalDriver::AdjacentLaneActors(const int lane_id, bool &lead, bool& follow)
+void ControllerNaturalDriver::GetAdjacentLeadAndFollow(const int lane_id, bool &lead, bool& follow)
 {
     VoIType adj_lane_lead, adj_lane_follow;
     GetVehicleOfInterestType(adj_lane_lead, adj_lane_follow);
@@ -363,8 +391,8 @@ void ControllerNaturalDriver::AdjacentLaneActors(const int lane_id, bool &lead, 
     bool vehicles = VehiclesInAdjacentLane(adjacent_lane_vehicles, lane_id); // idx 0 is left
     if (vehicles)
     {
-        lead = FindVehicleAhead(adjacent_lane_vehicles, adj_lane_lead);
-        follow = FindVehicleBehind(adjacent_lane_vehicles, adj_lane_follow);
+        lead = FindClosestAhead(adjacent_lane_vehicles, adj_lane_lead);
+        follow = FindClosestBehind(adjacent_lane_vehicles, adj_lane_follow);
     }
 }
 
@@ -382,7 +410,7 @@ void ControllerNaturalDriver::GetVehicleOfInterestType(VoIType &lead, VoIType &f
     }
 }
 
-bool ControllerNaturalDriver::FindVehicleAhead(std::vector<scenarioengine::Object*> vehicles, VoIType type)
+bool ControllerNaturalDriver::FindClosestAhead(std::vector<scenarioengine::Object*> vehicles, VoIType type)
 {
     scenarioengine::Object* closest_lead = nullptr;
 
@@ -412,7 +440,7 @@ bool ControllerNaturalDriver::FindVehicleAhead(std::vector<scenarioengine::Objec
     return true;
 }
 
-bool ControllerNaturalDriver::FindVehicleBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type)
+bool ControllerNaturalDriver::FindClosestBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type)
 {
     scenarioengine::Object* follow_vehicle = nullptr;
 
