@@ -90,6 +90,8 @@ namespace scenarioengine
         void ClearVehicleOfInterest(VoIType type);
 
         void PDController(double set_value, double measured_value, double error_rate, double &output, double dt);
+        void IntelligentAcceleration(double set_value, double measured_value, double desired_gap, double relative_distance, double &acceleration);
+        void GetDesiredGap(double ego_velocity, double lead_velocity, double &desired_gap);
 
         void ReportKeyEvent(int key, bool down);
         void SetDesiredSpeed(double desired_speed)
@@ -122,6 +124,7 @@ namespace scenarioengine
         double           k_p_;
         double           k_d_;
         double           previous_error_;
+        double           desired_thw_;
     };
 
     Controller* InstantiateNaturalDriver(void* args);

@@ -52,7 +52,8 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
       cooldown_period_(5.0 + lane_change_duration_),
       target_lane_(0),
       k_p_(0.5),
-      k_d_(1.0)
+      k_d_(1.0),
+      desired_thw_(2.0)
 {
     operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
 
@@ -95,6 +96,10 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
     if (args && args->properties && args->properties->ValueExists("KD"))
     {
         k_d_ = strtod(args->properties->GetValueStr("KD"));
+    }
+    if (args && args->properties && args->properties->ValueExists("THW"))
+    {
+        desired_thw_ = strtod(args->properties->GetValueStr("THW"));
     }
     if (args && args->properties && !args->properties->ValueExists("mode"))
     {
@@ -279,6 +284,21 @@ void ControllerNaturalDriver::Step(double dt)
     }
 
     Controller::Step(dt);
+}
+
+void ControllerNaturalDriver::IntelligentAcceleration(double set_value, double measured_value, double desired_gap, double relative_distance, double &acceleration)
+{
+    
+
+}
+
+void ControllerNaturalDriver::GetDesiredGap(double ego_velocity, double lead_velocity, double &desired_gap)
+{
+    double d0 = desired_distance_;
+    double tau = desired_thw_;
+    double ab = -max_acceleration_ * max_deceleration_;
+    double dv = ego_velocity - lead_velocity;
+    desired_gap = d0 + std::max(0.0, ego_velocity * tau + ego_velocity * dv / (2 * std::sqrt(ab)));
 }
 
 bool ControllerNaturalDriver::HaveLead()
