@@ -254,7 +254,6 @@ void ControllerNaturalDriver::Step(double dt)
                 player_->player_server_->InjectLaneChangeAction(lane_change);
                 lane_change_injected = true;
             }
-            state_ = State::DRIVE;
             break;
         }
         // If lead disappears for some reason, we just drive again.
@@ -268,11 +267,14 @@ void ControllerNaturalDriver::Step(double dt)
     if (lane_change_injected)
     {
         cooldown_period_ -= dt;
+        if (state_ == State::CHANGE_LANE && cooldown_period_ <= 5.0)
+        {
+            state_ = State::DRIVE; // Switch to drive to keep long acceleration constant during lane change
+        }
         if (cooldown_period_ < 0.0)
         {
             cooldown_period_ = 5.0 + lane_change_duration_;
             lane_change_injected = false;
-            std::cout << "Cooldown reached\nState " << state_ << "\n";
         }
     }
 
