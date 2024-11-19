@@ -518,6 +518,7 @@ bool ControllerNaturalDriver::AdjacentLanesAvailable(std::array<int, 2> &lane_id
 
 bool ControllerNaturalDriver::VehiclesInEgoLane(std::vector<scenarioengine::Object*> &vehicles)
 {
+    // Should use Delta here instead
     const int ego_lane_id = entities_->object_[0]->pos_.GetLaneId();
     for (size_t i = 1; i < entities_->object_.size(); i++)
     {
