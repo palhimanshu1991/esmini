@@ -34,7 +34,6 @@ namespace fs = std::experimental::filesystem;
 
 namespace esmini::common
 {
-    const std::string               DEFAULT_LOG_FILE_NAME = "log.txt";
     std::shared_ptr<spdlog::logger> consoleLogger;
     std::shared_ptr<spdlog::logger> fileLogger;
 

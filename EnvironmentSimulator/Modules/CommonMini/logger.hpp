@@ -30,6 +30,7 @@ struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::forma
 
 namespace esmini::common
 {
+    const static std::string DEFAULT_LOG_FILE_NAME = "log.txt";
     class TxtLogger
     {
     public:

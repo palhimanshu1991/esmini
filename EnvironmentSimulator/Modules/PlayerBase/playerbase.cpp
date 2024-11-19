@@ -1250,7 +1250,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
     opt.AddOption("log_append", "log all scenarios in the same txt file");
-    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", "log.txt", true);
+    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", esmini::common::DEFAULT_LOG_FILE_NAME, true);
     opt.AddOption("log_meta_data", "log file name, function name and line number");
     opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
     opt.AddOption("log_only_modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
@@ -1272,7 +1272,7 @@ int ScenarioPlayer::Init()
 #ifdef _USE_IMPLOT
     opt.AddOption("plot", "Show window with line-plots of interesting data", "mode (asynchronous|synchronous)", "asynchronous");
 #endif
-    opt.AddOption("record", "Record position data into a file for later replay", "filename");
+    opt.AddOption("record", "Record position data into a file for later replay", "filename", "sim.dat", false);
     opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
     opt.AddOption("return_nr_permutations", "Return number of permutations without executing the scenario (-1 = error)");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
@@ -1295,15 +1295,7 @@ int ScenarioPlayer::Init()
         return -2;
     }
 
-    std::string logFilePathOptionValue = opt.GetOptionArg("logfile_path");
-    if (opt.IsOptionArgumentSet("param_dist"))
-    {
-        // deferring the creation of log file as name of it will be changed afterwards due to permutation distribution
-        opt.ClearOption("logfile_path");
-    }
-
     std::string strAllSetOptions;
-
     for (const auto& option : opt.GetAllOptions())
     {
         if (option.set_)
@@ -1319,6 +1311,13 @@ int ScenarioPlayer::Init()
 
             strAllSetOptions = fmt::format("{}--{}{} ", strAllSetOptions, option.opt_str_, currentOptionValue);
         }
+    }
+
+    std::string logFilePathOptionValue = TxtLogger::Inst().CreateLogFilePath();
+    if (opt.IsOptionArgumentSet("param_dist"))
+    {
+        // deferring the creation of log file as name of it will be changed afterwards due to permutation distribution
+        opt.ClearOption("logfile_path");
     }
 
     if (opt.GetOptionSet("help"))
