@@ -90,7 +90,7 @@ namespace scenarioengine
         void ClearVehicleOfInterest(VoIType type);
 
         void PDController(double set_value, double measured_value, double error_rate, double &output, double dt);
-        void IntelligentAcceleration(double set_value, double measured_value, double desired_gap, double relative_distance, double &acceleration);
+        void GetAcceleration(double &acceleration);
         void GetDesiredGap(double ego_velocity, double lead_velocity, double &desired_gap);
 
         void ReportKeyEvent(int key, bool down);

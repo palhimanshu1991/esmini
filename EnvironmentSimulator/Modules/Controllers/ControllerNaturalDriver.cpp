@@ -136,7 +136,10 @@ void ControllerNaturalDriver::Step(double dt)
             }
             else if (current_speed_ < desired_speed_)
             {
-                current_speed_ += max_acceleration_ * dt; // Something else here?
+                double acceleration;
+                GetAcceleration(acceleration);
+                current_speed_ += acceleration * dt;
+                
                 if (current_speed_ > desired_speed_)
                 {
                     current_speed_ = desired_speed_;
@@ -151,25 +154,16 @@ void ControllerNaturalDriver::Step(double dt)
                 state_ = State::DRIVE;
                 break;
             }
-            roadmanager::PositionDiff diff;
-            entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[VoIType::LEAD].vehicle->pos_, diff, false, lookahead_dist_);
-            double distance_error = diff.ds - desired_distance_;
-            double relative_speed = current_speed_ - vehicles_of_interest_[VoIType::LEAD].vehicle->GetSpeed();
             
             double acceleration;
-            PDController(desired_distance_, diff.ds, relative_speed, acceleration, dt);
-
+            GetAcceleration(acceleration);
             current_speed_ += acceleration * dt;
 
             if (current_speed_ >= desired_speed_)
             {
                 current_speed_ = desired_speed_;
             }
-            else if (relative_speed > -0.1 && relative_speed < 0.1 && distance_error > -0.1 && distance_error < 0.1)
-            {
-                current_speed_ = vehicles_of_interest_[VoIType::LEAD].vehicle->GetSpeed();
-            }
-            
+
             if (current_speed_ < desired_speed_ - abs(speed_tolerance_) && !lane_change_injected) // Should actually be current_speed < tolerance. We only want to change lane if we are following someone
             {
                 state_ = State::TRY_CHANGE_LEFT; // We want to change lane
@@ -286,10 +280,26 @@ void ControllerNaturalDriver::Step(double dt)
     Controller::Step(dt);
 }
 
-void ControllerNaturalDriver::IntelligentAcceleration(double set_value, double measured_value, double desired_gap, double relative_distance, double &acceleration)
-{
-    
+/* https://en.wikipedia.org/wiki/Intelligent_driver_model 
 
+    GetAcceleration and GetDesiredGap taken from above reference
+*/
+void ControllerNaturalDriver::GetAcceleration(double &acceleration)
+{
+    // Reach desired speed
+    int delta = 4;
+    acceleration = max_acceleration_ * (1 - std::pow(current_speed_ / desired_speed_, delta));
+
+    if (state_ == State::FOLLOW)
+    {
+        double desired_gap;
+        GetDesiredGap(current_speed_, vehicles_of_interest_[VoIType::LEAD].vehicle->GetSpeed(), desired_gap);
+
+        roadmanager::PositionDiff diff;
+        entities_->object_[0]->pos_.Delta(&vehicles_of_interest_[VoIType::LEAD].vehicle->pos_, diff, false, lookahead_dist_);
+
+        acceleration -= max_acceleration_ * std::pow(desired_gap / diff.ds, 2);
+    }
 }
 
 void ControllerNaturalDriver::GetDesiredGap(double ego_velocity, double lead_velocity, double &desired_gap)
