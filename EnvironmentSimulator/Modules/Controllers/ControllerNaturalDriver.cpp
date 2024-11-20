@@ -127,7 +127,7 @@ void ControllerNaturalDriver::Step(double dt)
             }
             else if (current_speed_ < desired_speed_)
             {
-                double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD].vehicle);
+                double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD]);
                 current_speed_ += acceleration * dt;
                 
                 if (current_speed_ > desired_speed_)
@@ -145,7 +145,7 @@ void ControllerNaturalDriver::Step(double dt)
                 break;
             }
             
-            double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD].vehicle);
+            double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD]);
             current_speed_ += acceleration * dt;
 
             if (current_speed_ >= desired_speed_)
@@ -385,7 +385,7 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(bool has_lead, bool has_fo
     if (has_lead)
     {
         roadmanager::PositionDiff diff;
-        this->GetLinkedObject()->pos_.Delta(&vehicles_of_interest_[adj_lead].vehicle->pos_, diff, false, lookahead_dist_);
+        this->GetLinkedObject()->pos_.Delta(&vehicles_of_interest_[adj_lead]->pos_, diff, false, lookahead_dist_);
         // Maybe second condition is if adjacent lead is farther away than ego lane lead?
         if (diff.ds < adj_lead_dist_) // Adjacent lead far away and faster than ego, we want to change
         {
@@ -397,7 +397,7 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(bool has_lead, bool has_fo
     if (has_follow) // Want to change, but we have an adjacent follow
     {
         roadmanager::PositionDiff diff;
-        this->GetLinkedObject()->pos_.Delta(&vehicles_of_interest_[adj_follow].vehicle->pos_, diff, true, lookahead_dist_);
+        this->GetLinkedObject()->pos_.Delta(&vehicles_of_interest_[adj_follow]->pos_, diff, true, lookahead_dist_);
         if (diff.ds > adj_rear_dist_) // Too short distance, can't change
         {
             follow_conditions_fulfilled = false;
@@ -498,14 +498,14 @@ bool ControllerNaturalDriver::FindClosestBehind(std::vector<scenarioengine::Obje
         return false; // No lead
     }
 
-    vehicles_of_interest_[type] = VoI{follow_vehicle};
+    vehicles_of_interest_[type] = follow_vehicle;
     
     return true;
 }
 
 void ControllerNaturalDriver::ClearVehicleOfInterest(VoIType type)
 {
-    vehicles_of_interest_[type].vehicle = nullptr;
+    vehicles_of_interest_[type] = nullptr;
 }
 
 bool ControllerNaturalDriver::AdjacentLanesAvailable()

@@ -32,18 +32,13 @@ namespace scenarioengine
         CHANGE_LANE,
     };
 
-    enum VoIType // VehicleOfInterest
+    enum VoIType // VehicleOfInterestType
     {
         LEAD = 0,
         LEFT_LEAD,
         LEFT_FOLLOW,
         RIGHT_LEAD,
         RIGHT_FOLLOW,
-    };
-
-    struct VoI // VehicleOfInterest
-    {
-        scenarioengine::Object* vehicle;
     };
 
     class ControllerNaturalDriver : public Controller
@@ -140,7 +135,7 @@ namespace scenarioengine
         double           max_deceleration_;
         double           max_acceleration_;
         std::array<int, 2> lane_ids_available_;
-        std::unordered_map<VoIType, VoI> vehicles_of_interest_;
+        std::unordered_map<VoIType, scenarioengine::Object*> vehicles_of_interest_;
         double           distance_to_adjacent_lead_;
         bool             lane_change_injected;
         State            state_;
