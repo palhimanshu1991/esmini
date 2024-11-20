@@ -77,7 +77,7 @@ namespace scenarioengine
                       ControlActivationMode anim_activation_mode);
 
         bool HaveLead();
-        bool AdjacentLanesAvailable(std::array<int, 2> &lane_ids_available);
+        bool AdjacentLanesAvailable();
         bool VehiclesInEgoLane(std::vector<scenarioengine::Object*> &vehicles);
         bool VehiclesInAdjacentLane(std::vector<scenarioengine::Object*> &vehicles, int lane_id);
         bool FindClosestAhead(std::vector<scenarioengine::Object*> vehicles, VoIType type);
@@ -91,7 +91,7 @@ namespace scenarioengine
 
         void PDController(double set_value, double measured_value, double error_rate, double &output, double dt);
         void GetAcceleration(double &acceleration);
-        void GetDesiredGap(double ego_velocity, double lead_velocity, double &desired_gap);
+        void GetDesiredGap(double &desired_gap);
 
         void ReportKeyEvent(int key, bool down);
         void SetDesiredSpeed(double desired_speed)
@@ -103,14 +103,14 @@ namespace scenarioengine
         vehicle::Vehicle vehicle_;
         bool             active_;
         double           desired_distance_;  // target headway time
-        double           adj_rear_dist_;
-        double           adj_lead_dist_;
         double           actual_distance_;
         double           distance_adjustment_t_;
         double           desired_speed_;
         double           current_speed_;
         double           speed_tolerance_;
-        float            lane_change_duration_;
+        double           lane_change_duration_;
+        double           adj_rear_dist_;
+        double           adj_lead_dist_;
         double           lookahead_dist_;
         double           max_deceleration_;
         double           max_acceleration_;
@@ -119,11 +119,9 @@ namespace scenarioengine
         double           distance_to_adjacent_lead_;
         bool             lane_change_injected;
         State            state_;
-        double           cooldown_period_;
+        double           lane_change_delay_;
+        double           lane_change_cooldown_;
         int              target_lane_;
-        double           k_p_;
-        double           k_d_;
-        double           previous_error_;
         double           desired_thw_;
     };
 

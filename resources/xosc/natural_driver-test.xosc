@@ -13,15 +13,15 @@
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="30"/>
-      <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="30"/>
-      <ParameterDeclaration name="DesiredDistance" parameterType="double" value="30"/>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="40"/>
+      <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="60"/>
+      <ParameterDeclaration name="DesiredDistance" parameterType="double" value="10"/>
       <ParameterDeclaration name="AdjRearDistance" parameterType="double" value="3.0"/>
       <ParameterDeclaration name="AdjLeadDistance" parameterType="double" value="20.0"/>
-      <ParameterDeclaration name="TargetSpeed" parameterType="double" value="10"/>
+      <ParameterDeclaration name="TargetSpeed" parameterType="double" value="20"/>
       <ParameterDeclaration name="EgoS" parameterType="double" value="50"/>
       <ParameterDeclaration name="TargetS" parameterType="double" value="100"/>
-      <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="20"/>
+      <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="35"/>
       <ParameterDeclaration name="kp" parameterType="double" value="0.2"/>
       <ParameterDeclaration name="kd" parameterType="double" value="0.8"/>
       <ParameterDeclaration name="MaxAcc" parameterType="double" value="4.0"/>
@@ -51,7 +51,7 @@
                     <Property name="mode" value="override" />
                     <Property name="speedTolerance" value="${$SpeedTolerance / 3.6}" />
                     <Property name="desiredSpeed" value="${$DesiredSpeed / 3.6}" />
-                    <Property name="maxAcc" value="$MaxAcc" />
+                    <Property name="maxAcc" value="7" />
                     <Property name="KP" value="$kp" />
                     <Property name="KD" value="$kd" />
                 </Properties>
@@ -109,7 +109,7 @@
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="8.33"/>
+                           <AbsoluteTargetSpeed value="10.33"/>
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
