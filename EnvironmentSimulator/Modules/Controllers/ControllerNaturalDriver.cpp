@@ -127,8 +127,7 @@ void ControllerNaturalDriver::Step(double dt)
             }
             else if (current_speed_ < desired_speed_)
             {
-                double acceleration;
-                GetAcceleration(acceleration);
+                double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD].vehicle);
                 current_speed_ += acceleration * dt;
                 
                 if (current_speed_ > desired_speed_)
@@ -146,8 +145,7 @@ void ControllerNaturalDriver::Step(double dt)
                 break;
             }
             
-            double acceleration;
-            GetAcceleration(acceleration);
+            double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD].vehicle);
             current_speed_ += acceleration * dt;
 
             if (current_speed_ >= desired_speed_)
@@ -281,29 +279,48 @@ void ControllerNaturalDriver::Step(double dt)
 /* 
     GetAcceleration() and GetDesiredGap() based on IDM (https://en.wikipedia.org/wiki/Intelligent_driver_model)
 */
-void ControllerNaturalDriver::GetAcceleration(double &acceleration)
+double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead)
 {
     // Reach desired speed
     int delta = 4;
-    acceleration = max_acceleration_ * (1 - std::pow(current_speed_ / desired_speed_, delta));
 
-    if (state_ == State::FOLLOW)
+    auto follow_active_controller = follow->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG);
+    if (follow_active_controller->GetType() != Type::CONTROLLER_TYPE_NATURAL_DRIVER)
     {
-        double desired_gap;
-        GetDesiredGap(desired_gap);
+        std::cout << "Im here\n";
+        return follow->GetMaxAcceleration(); // No driver, max acc is from catalog
+    }
+    ControllerNaturalDriver* follow_driver = dynamic_cast<ControllerNaturalDriver*>(follow_active_controller);
+
+    double follow_max_acceleration = follow_driver->GetMaxAcceleration();
+    double follow_desired_speed = follow_driver->GetDesiredSpeed();
+    double follow_max_deceleration = follow_driver->GetMaxDeceleration();
+    double follow_desired_distance =  follow_driver->GetDesiredDistance();
+    double follow_desired_thw = follow_driver->GetDesiredTHW();
+    double follow_current_speed = follow->GetSpeed();
+
+    double lead_current_speed = lead->GetSpeed();
+    
+    double acceleration = follow_max_acceleration * (1 - std::pow(follow_current_speed / follow_desired_speed, delta));
+
+    if (follow_driver->GetState() == State::FOLLOW)
+    {
+        double desired_gap = GetDesiredGap(follow_max_acceleration, follow_max_deceleration, follow_current_speed, lead_current_speed, follow_desired_distance, follow_desired_thw);
 
         roadmanager::PositionDiff diff;
-        this->GetLinkedObject()->pos_.Delta(&vehicles_of_interest_[VoIType::LEAD].vehicle->pos_, diff, false, lookahead_dist_);
+        this->GetLinkedObject()->pos_.Delta(&lead->pos_, diff, false, lookahead_dist_);
 
-        acceleration -= max_acceleration_ * std::pow(desired_gap / diff.ds, 2);
+        acceleration -= follow_max_acceleration * std::pow(desired_gap / diff.ds, 2);
     }
+
+    return acceleration;
 }
 
-void ControllerNaturalDriver::GetDesiredGap(double &desired_gap)
+double ControllerNaturalDriver::GetDesiredGap(double max_acceleration, double max_deceleration, double follow_speed, double lead_speed, double desired_distance, double desired_thw)
 {
-    double ab = -max_acceleration_ * max_deceleration_;
-    double relative_speed = current_speed_ - vehicles_of_interest_[VoIType::LEAD].vehicle->GetSpeed();
-    desired_gap = desired_distance_ + std::max(0.0, current_speed_ * desired_thw_ + current_speed_ * relative_speed / (2 * std::sqrt(ab)));
+    double ab = -max_acceleration * max_deceleration;
+    double relative_speed = follow_speed - lead_speed;
+    return desired_distance + std::max(0.0, follow_speed * desired_thw + follow_speed * relative_speed / (2 * std::sqrt(ab)));
 }
 
 bool ControllerNaturalDriver::HaveLead()

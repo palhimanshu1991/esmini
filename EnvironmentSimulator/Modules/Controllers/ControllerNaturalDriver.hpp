@@ -90,13 +90,38 @@ namespace scenarioengine
         void ClearVehicleOfInterest(VoIType type);
 
         void PDController(double set_value, double measured_value, double error_rate, double &output, double dt);
-        void GetAcceleration(double &acceleration);
-        void GetDesiredGap(double &desired_gap);
+        double GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead);
+        double GetDesiredGap(double max_acceleration, double max_deceleration, double follow_speed, double lead_speed, double desired_distance, double desired_thw);
 
         void ReportKeyEvent(int key, bool down);
         void SetDesiredSpeed(double desired_speed)
         {
             desired_speed_ = desired_speed;
+        }
+
+        double GetMaxAcceleration()
+        {
+            return max_acceleration_;
+        }
+        double GetDesiredSpeed()
+        {
+            return desired_speed_;
+        }
+        double GetMaxDeceleration()
+        {
+            return max_deceleration_;
+        }
+        double GetDesiredDistance()
+        {
+            return desired_distance_;
+        }
+        double GetDesiredTHW()
+        {
+            return desired_thw_;
+        }
+        State GetState()
+        {
+            return state_;
         }
 
     private:
