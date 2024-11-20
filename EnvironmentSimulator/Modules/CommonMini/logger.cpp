@@ -89,30 +89,28 @@ namespace esmini::common
         }
     }
 
-    std::string TxtLogger::HandleDirectoryAndWrongPath(const std::string& path)
+    std::string TxtLogger::HandleDirectoryAndWrongPath(const std::string& path, const std::string& extension) const
     {
         fs::path filePath = path;
+
         if (filePath.has_parent_path() && !fs::exists(filePath.parent_path()))
         {
-            std::cout << "Invalid log file path, parent directory does not exist : " << filePath.string() << '\n';
+            std::cout << "Invalid log file path : " << path << '\n';
             exit(-1);
         }
-        if (fs::is_directory(filePath))
+        if (!filePath.has_filename())
         {
-            if ((path.back() == '/' || path.back() == '\\'))
+            filePath.append(DEFAULT_LOG_FILE_NAME);
+        }
+        else if (!filePath.has_extension())
+        {
+            if (fs::exists(filePath))
             {
-                filePath = fmt::format("{}{}", path, DEFAULT_LOG_FILE_NAME);
+                filePath.append(DEFAULT_LOG_FILE_NAME);
             }
             else
             {
-                if (path.find('\\') != std::string::npos)
-                {
-                    filePath = fmt::format("{}\\{}", path, DEFAULT_LOG_FILE_NAME);
-                }
-                else
-                {
-                    filePath = fmt::format("{}/{}", path, DEFAULT_LOG_FILE_NAME);
-                }
+                filePath.replace_extension(extension);
             }
         }
         return filePath.string();

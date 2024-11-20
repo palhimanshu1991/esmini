@@ -104,7 +104,7 @@ namespace esmini::common
 
         // if the path is directory then appends default log file name.
         // also checks if the parent directory exists for the path
-        std::string HandleDirectoryAndWrongPath(const std::string& path);
+        std::string HandleDirectoryAndWrongPath(const std::string& path, const std::string& extension = ".txt") const;
 
         // Creates a file logger with the given path and returns true otherwise returns false
         bool CreateFileLogger();
