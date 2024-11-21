@@ -287,8 +287,7 @@ double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, 
     auto follow_active_controller = follow->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG);
     if (follow_active_controller->GetType() != Type::CONTROLLER_TYPE_NATURAL_DRIVER)
     {
-        std::cout << "Im here\n";
-        return follow->GetMaxAcceleration(); // No driver, max acc is from catalog
+        return follow->GetMaxDeceleration(); // No driver, max acc is from catalog
     }
     ControllerNaturalDriver* follow_driver = dynamic_cast<ControllerNaturalDriver*>(follow_active_controller);
 
