@@ -284,32 +284,19 @@ double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, 
     // Reach desired speed
     int delta = 4;
 
-    auto follow_active_controller = follow->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG);
-    if (follow_active_controller->GetType() != Type::CONTROLLER_TYPE_NATURAL_DRIVER)
-    {
-        return follow->GetMaxDeceleration(); // No driver, max acc is from catalog
-    }
-    ControllerNaturalDriver* follow_driver = dynamic_cast<ControllerNaturalDriver*>(follow_active_controller);
-
-    double follow_max_acceleration = follow_driver->GetMaxAcceleration();
-    double follow_desired_speed = follow_driver->GetDesiredSpeed();
-    double follow_max_deceleration = follow_driver->GetMaxDeceleration();
-    double follow_desired_distance =  follow_driver->GetDesiredDistance();
-    double follow_desired_thw = follow_driver->GetDesiredTHW();
     double follow_current_speed = follow->GetSpeed();
-
     double lead_current_speed = lead->GetSpeed();
     
-    double acceleration = follow_max_acceleration * (1 - std::pow(follow_current_speed / follow_desired_speed, delta));
+    double acceleration = max_acceleration_ * (1 - std::pow(follow_current_speed / desired_speed_, delta));
 
-    if (follow_driver->GetState() == State::FOLLOW)
+    if (lead != nullptr)
     {
-        double desired_gap = GetDesiredGap(follow_max_acceleration, follow_max_deceleration, follow_current_speed, lead_current_speed, follow_desired_distance, follow_desired_thw);
+        double desired_gap = GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, lead_current_speed, desired_distance_, desired_thw_);
 
         roadmanager::PositionDiff diff;
         this->GetLinkedObject()->pos_.Delta(&lead->pos_, diff, false, lookahead_dist_);
 
-        acceleration -= follow_max_acceleration * std::pow(desired_gap / diff.ds, 2);
+        acceleration -= max_acceleration_ * std::pow(desired_gap / diff.ds, 2);
     }
 
     return acceleration;
