@@ -52,7 +52,8 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
       lane_change_delay_(1.0),
       lane_change_cooldown_(lane_change_duration_ + lane_change_delay_),
       target_lane_(0),
-      desired_thw_(2.0)
+      desired_thw_(2.0),
+      max_imposed_braking_(3.0)
 {
     operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
 
@@ -92,6 +93,10 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
     {
         desired_thw_ = strtod(args->properties->GetValueStr("THW"));
     }
+    if (args && args->properties && args->properties->ValueExists("maxImposedBraking"))
+    {
+        max_imposed_braking_ = strtod(args->properties->GetValueStr("maxImposedBraking"));
+    }
     if (args && args->properties && !args->properties->ValueExists("mode"))
     {
         // Default mode for this controller is additive
@@ -125,7 +130,7 @@ void ControllerNaturalDriver::Step(double dt)
             {
                 state_ = State::FOLLOW;
             }
-            else if (current_speed_ < desired_speed_)
+            else
             {
                 double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD]);
                 current_speed_ += acceleration * dt;
@@ -153,7 +158,7 @@ void ControllerNaturalDriver::Step(double dt)
                 current_speed_ = desired_speed_;
             }
 
-            if (current_speed_ < desired_speed_ - abs(speed_tolerance_) && !lane_change_injected) // Should actually be current_speed < tolerance. We only want to change lane if we are following someone
+            if (!lane_change_injected) // Should actually be current_speed < tolerance. We only want to change lane if we are following someone
             {
                 state_ = State::TRY_CHANGE_LEFT; // We want to change lane
             }
@@ -285,16 +290,15 @@ double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, 
     int delta = 4;
 
     double follow_current_speed = follow->GetSpeed();
-    double lead_current_speed = lead->GetSpeed();
-    
     double acceleration = max_acceleration_ * (1 - std::pow(follow_current_speed / desired_speed_, delta));
 
     if (lead != nullptr)
     {
+        double lead_current_speed = lead->GetSpeed();
         double desired_gap = GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, lead_current_speed, desired_distance_, desired_thw_);
 
         roadmanager::PositionDiff diff;
-        this->GetLinkedObject()->pos_.Delta(&lead->pos_, diff, false, lookahead_dist_);
+        follow->pos_.Delta(&lead->pos_, diff, false, lookahead_dist_);
 
         acceleration -= max_acceleration_ * std::pow(desired_gap / diff.ds, 2);
     }
@@ -366,29 +370,28 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(bool has_lead, bool has_fo
 
     VoIType adj_lead, adj_follow;
     GetVehicleOfInterestType(adj_lead, adj_follow);
-
-    bool lead_conditions_fulfilled = true;
-    if (has_lead)
-    {
-        roadmanager::PositionDiff diff;
-        this->GetLinkedObject()->pos_.Delta(&vehicles_of_interest_[adj_lead]->pos_, diff, false, lookahead_dist_);
-        // Maybe second condition is if adjacent lead is farther away than ego lane lead?
-        if (diff.ds < adj_lead_dist_) // Adjacent lead far away and faster than ego, we want to change
-        {
-            lead_conditions_fulfilled = false;
-        }
-    }
-
+    
     bool follow_conditions_fulfilled = true;
     if (has_follow) // Want to change, but we have an adjacent follow
     {
-        roadmanager::PositionDiff diff;
-        this->GetLinkedObject()->pos_.Delta(&vehicles_of_interest_[adj_follow]->pos_, diff, true, lookahead_dist_);
-        if (diff.ds > adj_rear_dist_) // Too short distance, can't change
+        double predicted_follow_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow], this->GetLinkedObject());
+        if (predicted_follow_acceleration < -max_imposed_braking_)
         {
             follow_conditions_fulfilled = false;
         }
     }
+
+    bool lead_conditions_fulfilled = true;
+    if (has_lead)
+    {
+        double predicted_new_lead_acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[adj_lead]);
+        if (predicted_new_lead_acceleration < -max_imposed_braking_)
+        {
+            lead_conditions_fulfilled = false;
+        }
+        // Some code about gained acceleration for involved cars if change
+    }
+
 
     /* TODO: Separate LC conditions for
         1. Only lead (dist to lead < X meter)
@@ -547,6 +550,7 @@ bool ControllerNaturalDriver::VehiclesInEgoLane(std::vector<scenarioengine::Obje
 
     if (vehicles.empty())
     {
+        vehicles_of_interest_[VoIType::LEAD] = nullptr;
         return false;
     }
 

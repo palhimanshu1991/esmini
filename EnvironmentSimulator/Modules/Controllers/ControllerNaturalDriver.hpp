@@ -143,6 +143,7 @@ namespace scenarioengine
         double           lane_change_cooldown_;
         int              target_lane_;
         double           desired_thw_;
+        double           max_imposed_braking_;
     };
 
     Controller* InstantiateNaturalDriver(void* args);

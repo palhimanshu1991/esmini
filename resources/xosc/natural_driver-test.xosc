@@ -19,9 +19,9 @@
       <ParameterDeclaration name="AdjRearDistance" parameterType="double" value="3.0"/>
       <ParameterDeclaration name="AdjLeadDistance" parameterType="double" value="20.0"/>
       <ParameterDeclaration name="TargetSpeed" parameterType="double" value="20"/>
-      <ParameterDeclaration name="EgoS" parameterType="double" value="50"/>
+      <ParameterDeclaration name="EgoS" parameterType="double" value="20"/>
       <ParameterDeclaration name="TargetS" parameterType="double" value="100"/>
-      <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="35"/>
+      <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="10"/>
       <ParameterDeclaration name="kp" parameterType="double" value="0.2"/>
       <ParameterDeclaration name="kd" parameterType="double" value="0.8"/>
       <ParameterDeclaration name="MaxAcc" parameterType="double" value="4.0"/>
