@@ -35,6 +35,7 @@ namespace scenarioengine
     enum VoIType // VehicleOfInterestType
     {
         LEAD = 0,
+        FOLLOWING,
         LEFT_LEAD,
         LEFT_FOLLOW,
         RIGHT_LEAD,
@@ -50,7 +51,7 @@ namespace scenarioengine
         {
             return CONTROLLER_NATURAL_DRIVER_TYPE_NAME;
         }
-        virtual const char* GetTypeName()
+        const char* GetTypeName() override
         {
             return GetTypeNameStatic();
         }
@@ -58,7 +59,7 @@ namespace scenarioengine
         {
             return CONTROLLER_TYPE_NATURAL_DRIVER;
         }
-        virtual int GetType()
+        int GetType() override
         {
             return GetTypeStatic();
         }
@@ -71,20 +72,20 @@ namespace scenarioengine
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
 
-        bool HaveLead();
+        bool GetLeadVehicle();
         bool AdjacentLanesAvailable();
         bool VehiclesInEgoLane(std::vector<scenarioengine::Object*> &vehicles);
         bool VehiclesInAdjacentLane(std::vector<scenarioengine::Object*> &vehicles, int lane_id);
         bool FindClosestAhead(std::vector<scenarioengine::Object*> vehicles, VoIType type);
         bool FindClosestBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type);
         void GetAdjacentLeadAndFollow(const int lane_id, bool &lead, bool& follow);
+        bool GetFollowVehicle();
 
-        bool CheckLaneChangePossible(bool has_lead, bool has_follow);
+        bool CheckLaneChangePossible(bool has_adj_lead, bool has_adj_follow);
 
         void GetVehicleOfInterestType(VoIType &lead, VoIType &follow);
         void ClearVehicleOfInterest(VoIType type);
 
-        void PDController(double set_value, double measured_value, double error_rate, double &output, double dt);
         double GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead);
         double GetDesiredGap(double max_acceleration, double max_deceleration, double follow_speed, double lead_speed, double desired_distance, double desired_thw);
 
@@ -144,6 +145,8 @@ namespace scenarioengine
         int              target_lane_;
         double           desired_thw_;
         double           max_imposed_braking_;
+        double           politeness_;
+        double           lane_change_acc_gain_;
     };
 
     Controller* InstantiateNaturalDriver(void* args);
