@@ -1758,25 +1758,23 @@ void SE_Option::Usage()
         printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? ('<' + opt_arg_ + '>').c_str() : "");
     }
 
-    if (!default_value_.empty())
+    if( autoApply_)
     {
-        printf("  (default = %s)", default_value_.c_str());
+        printf("  (default if option or value omitted: %s)", default_value_.c_str());
+    }
+    else if (!default_value_.empty())
+    {
+        printf("  (default if value omitted: %s)", default_value_.c_str());
     }
     printf("\n      %s\n", opt_desc_.c_str());
 }
-/*
-void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg)
-{
-    SE_Option opt(opt_str, opt_desc, opt_arg);
-    option_.push_back(opt);
-}
-*/
-void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value, bool autoDefaulted)
+
+void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value, bool autoApply)
 {
     SE_Option* option = GetOption(opt_str);
     if (!option)
     {
-        SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoDefaulted);
+        SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply);
         option_.push_back(opt);
     }
 }
@@ -1999,7 +1997,7 @@ void SE_Options::SetDefaultedOptions()
 {
     for (auto& opt : option_)
     {
-        if (opt.autoDefaulted_ && !opt.set_ && !opt.default_value_.empty())
+        if (opt.autoApply_ && !opt.set_ && !opt.default_value_.empty())
         {
             opt.arg_value_.push_back(opt.default_value_);
         }

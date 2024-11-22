@@ -27,7 +27,6 @@
 #include "OSCCondition.hpp"
 #include "Storyboard.hpp"
 #include "OSCParameterDistribution.hpp"
-#include "Utils.h"
 
 using namespace scenarioengine;
 
@@ -420,30 +419,6 @@ static int InitScenario()
 {
     // Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
     std::setlocale(LC_ALL, "C.UTF-8");
-
-    SE_Options &opt = SE_Env::Inst().GetOptions();
-    if (opt.IsOptionArgumentSet("log_only_modules"))
-    {
-        auto       arg_str  = opt.GetOptionArg("log_only_modules");
-        const auto splitted = utils::SplitString(arg_str, ',');
-        if (!splitted.empty())
-        {
-            std::unordered_set<std::string> logOnlyModules{splitted.begin(), splitted.end()};
-            TxtLogger::Inst().SetLogOnlyModules(logOnlyModules);
-        }
-    }
-
-    if (opt.IsOptionArgumentSet("log_skip_modules"))
-    {
-        auto       arg_str  = opt.GetOptionArg("log_skip_modules");
-        const auto splitted = utils::SplitString(arg_str, ',');
-        if (!splitted.empty())
-        {
-            std::unordered_set<std::string> logSkipModules{splitted.begin(), splitted.end()};
-            TxtLogger::Inst().SetLogSkipModules(logSkipModules);
-        }
-    }
-
     ConvertArguments();
 
     // Create scenario engine
@@ -585,8 +560,6 @@ extern "C"
 
     SE_DLL_API int SE_InitWithArgs(int argc, const char *argv[])
     {
-        resetScenario();
-
         if (argv && !strncmp(argv[0], "--", 2))
         {
             // Application name argument missing. Add something.
@@ -656,8 +629,6 @@ extern "C"
             LOG_ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
         }
 #endif
-        resetScenario();
-
         AddArgument("esmini(lib)");  // name of application
         AddArgument("--osc_str");
         AddArgument(oscAsXMLString, false);
@@ -685,9 +656,7 @@ extern "C"
         {
             LOG_ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
         }
-#endif
-        resetScenario();
-
+#endif        
         AddArgument("esmini(lib)");  // name of application
         AddArgument("--osc");
         AddArgument(oscFilename, false);

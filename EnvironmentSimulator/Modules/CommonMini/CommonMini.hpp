@@ -832,24 +832,15 @@ public:
     std::vector<std::string> arg_value_;
     std::string              default_value_;
     bool                     persistent_    = false;
-    bool                     autoDefaulted_ = false;
-
-    /*
-    SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "")
-        : opt_str_(opt_str),
-          opt_desc_(opt_desc),
-          opt_arg_(opt_arg),
-          set_(false)
-    {
-    }
-    */
-    SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string default_value = "", bool autoDefaulted = false)
+    bool                     autoApply_ = false;
+    
+    SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string default_value = "", bool autoApply = false)
         : opt_str_(opt_str),
           opt_desc_(opt_desc),
           opt_arg_(opt_arg),
           set_(false),
           default_value_(default_value),
-          autoDefaulted_(autoDefaulted)
+          autoApply_(autoApply)
     {
     }
 
@@ -861,12 +852,12 @@ class SE_Options
 #define OPT_PREFIX "--"
 
 public:
-    // void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "");
+
     void AddOption(std::string opt_str,
                    std::string opt_desc,
                    std::string opt_arg               = "",
                    std::string opt_arg_default_value = "",
-                   bool        autoDefaulted         = false);
+                   bool        autoApply         = false);
 
     void        PrintUsage();
     void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");

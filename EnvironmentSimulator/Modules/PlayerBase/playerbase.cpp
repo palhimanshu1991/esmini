@@ -140,7 +140,8 @@ void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
             {
                 filename = DEFAULT_OSI_TRACE_FILENAME;
             }
-
+            std::string strFileName = esmini::common::ValidateAndCreateFilePath(filename, DEFAULT_OSI_TRACE_FILENAME, "osi");
+            filename                = strFileName.c_str();
             if (OSCParameterDistribution::Inst().GetNumPermutations() > 0)
             {
                 osiReporter->OpenOSIFile(OSCParameterDistribution::Inst().AddInfoToFilepath(filename).c_str());
@@ -1272,7 +1273,7 @@ int ScenarioPlayer::Init()
 #ifdef _USE_IMPLOT
     opt.AddOption("plot", "Show window with line-plots of interesting data", "mode (asynchronous|synchronous)", "asynchronous");
 #endif
-    opt.AddOption("record", "Record position data into a file for later replay", "filename", "sim.dat", false);
+    opt.AddOption("record", "Record position data into a file for later replay", "filename", DAT_FILENAME, false);
     opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
     opt.AddOption("return_nr_permutations", "Return number of permutations without executing the scenario (-1 = error)");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
@@ -1638,7 +1639,7 @@ int ScenarioPlayer::Init()
     {
         osi_filename = SE_Env::Inst().GetOSIFilePath();
     }
-
+    //osi_filename = esmini::common::ValidateAndCreateFilePath(osi_filename, DEFAULT_OSI_TRACE_FILENAME, "osi");
     if (!osi_filename.empty() || SE_Env::Inst().GetOSIFileEnabled())
     {
         SetOSIFileStatus(true, osi_filename.c_str());
@@ -1698,7 +1699,7 @@ int ScenarioPlayer::Init()
         {
             filename = SE_Env::Inst().GetDatFilePath();
         }
-
+        filename = esmini::common::ValidateAndCreateFilePath(filename, DAT_FILENAME, ".dat");
         if (dist.GetNumPermutations() > 0)
         {
             filename = dist.AddInfoToFilepath(filename);

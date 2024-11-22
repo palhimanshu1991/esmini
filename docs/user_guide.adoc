@@ -3483,7 +3483,7 @@ BTW: Any additional explicit calls to `SE_UpdateOSIGroundTruth()` will be ignore
 
 ==== Program Options
 
-On top of setting options from command line, esmini now supports setting up options from esminiLib and esminiRMLib as well. This new functionality is added to set and unset options during runtime. This is useful for example to enable or disable logging to console, or to change log level etc. In addition, it is now possible to presist option settings between multilple runs of scenarios. There are two variants of the API functions i.e. one to set option value with peristence and one without. The API functions are:
+On top of setting options from command line, esmini (from v2.41.0) supports setting options from esminiLib and esminiRMLib as well. This new functionality is added to set and unset options during runtime. This is useful, for example, to enable or disable logging to console, or to change log level etc between scenario runs via API. In addition, it is now possible to make option settings persistent over multiple runs of scenarios. There are two variants of the API functions i.e. one to set option value with persistence and one without. The API functions are:
 
 SE_DLL_API int SE_SetOption(const char *name);
 
@@ -3496,6 +3496,8 @@ SE_DLL_API int SE_SetOptionValuePersistent(const char *name, const char *value);
 SE_DLL_API int SE_UnsetOption(const char *name);
 
 SE_DLL_API const char *SE_GetOptionValue(const char *name);
+
+Any setting done in between runs, i.e. after any SE_Close() and before SE_Init(), will apply to the next run, at least. The persistent variant will apply for all future runs until unset or other setting overrides it. The effect of settings done during a scenario run will depend on the option itself. For example, anti-aliasing mode for the rendering will not change during a scenario, while logfile path can change during a scenario run (which will close current and open a new file with specified path and name). So, to be sure, set options before SE_Init() and after any SE_Close().
 
 ==== Simple ideal sensors
 

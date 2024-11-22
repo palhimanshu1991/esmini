@@ -31,6 +31,13 @@ struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::forma
 namespace esmini::common
 {
     const static std::string DEFAULT_LOG_FILE_NAME = "log.txt";
+
+    // this function can be used for any file type i.e. txt, sim, dat, etc.
+    // checks if the parent directory exists for the path
+    // if the path is directory then appends default file name.
+    // if the extension is missing then replcaes it with default extension
+    std::string ValidateAndCreateFilePath(const std::string& path, const std::string& defaultFileName, const std::string& defaultExtension);
+
     class TxtLogger
     {
     public:
@@ -101,10 +108,6 @@ namespace esmini::common
 
         // Sets logger verbosity level based on option
         void SetLoggerVerbosity(std::shared_ptr<spdlog::logger>& logger);
-
-        // if the path is directory then appends default log file name.
-        // also checks if the parent directory exists for the path
-        std::string HandleDirectoryAndWrongPath(const std::string& path, const std::string& extension = ".txt") const;
 
         // Creates a file logger with the given path and returns true otherwise returns false
         bool CreateFileLogger();

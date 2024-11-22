@@ -37,6 +37,33 @@ namespace esmini::common
     std::shared_ptr<spdlog::logger> consoleLogger;
     std::shared_ptr<spdlog::logger> fileLogger;
 
+    std::string ValidateAndCreateFilePath(const std::string& path, const std::string& defaultFileName, const std::string& defaultExtension)
+    {
+        fs::path filePath = path;
+
+        if (filePath.has_parent_path() && !fs::exists(filePath.parent_path()))
+        {
+            std::cout << "Invalid log file path : " << path << '\n';
+            exit(-1);
+        }
+        if (!filePath.has_filename())
+        {
+            filePath.append(defaultFileName);
+        }
+        else if (!filePath.has_extension())
+        {
+            if (fs::exists(filePath))
+            {
+                filePath.append(defaultFileName);
+            }
+            else
+            {
+                filePath.replace_extension(defaultExtension);
+            }
+        }
+        return filePath.string();
+    }
+
     TxtLogger& TxtLogger::Inst()
     {
         static TxtLogger txtLogger_;
@@ -89,33 +116,6 @@ namespace esmini::common
         }
     }
 
-    std::string TxtLogger::HandleDirectoryAndWrongPath(const std::string& path, const std::string& extension) const
-    {
-        fs::path filePath = path;
-
-        if (filePath.has_parent_path() && !fs::exists(filePath.parent_path()))
-        {
-            std::cout << "Invalid log file path : " << path << '\n';
-            exit(-1);
-        }
-        if (!filePath.has_filename())
-        {
-            filePath.append(DEFAULT_LOG_FILE_NAME);
-        }
-        else if (!filePath.has_extension())
-        {
-            if (fs::exists(filePath))
-            {
-                filePath.append(DEFAULT_LOG_FILE_NAME);
-            }
-            else
-            {
-                filePath.replace_extension(extension);
-            }
-        }
-        return filePath.string();
-    }
-
     std::string TxtLogger::CreateLogFilePath()
     {
         if (SE_Env::Inst().GetOptions().GetOptionSet("disable_log"))
@@ -127,7 +127,7 @@ namespace esmini::common
         {
             return "";
         }
-        return HandleDirectoryAndWrongPath(filePath);
+        return ValidateAndCreateFilePath(filePath, DEFAULT_LOG_FILE_NAME, "txt");
     }
 
     bool TxtLogger::CreateFileLogger()
@@ -163,7 +163,7 @@ namespace esmini::common
 
     void TxtLogger::SetLogFilePath(const std::string& path)
     {
-        std::string filePath = HandleDirectoryAndWrongPath(path);
+        std::string filePath = ValidateAndCreateFilePath(path, DEFAULT_LOG_FILE_NAME, "txt");
         if (path.empty() || currentLogFileName_ == filePath)
         {
             return;
