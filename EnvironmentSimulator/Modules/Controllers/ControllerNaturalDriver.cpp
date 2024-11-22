@@ -55,7 +55,8 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
       desired_thw_(2.0),
       max_imposed_braking_(3.0),
       politeness_(0.5),
-      lane_change_acc_gain_(0.2)
+      lane_change_acc_gain_(0.2),
+      route_(-1)
 {
     operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
 
@@ -99,6 +100,14 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
     {
         max_imposed_braking_ = strtod(args->properties->GetValueStr("maxImposedBraking"));
     }
+    if (args && args->properties && args->properties->ValueExists("route"))
+    {
+        route_ = strtoi(args->properties->GetValueStr("route"));
+    }
+    if (args && args->properties && args->properties->ValueExists("politeness"))
+    {
+        politeness_ = strtod(args->properties->GetValueStr("politeness"));
+    }
     if (args && args->properties && !args->properties->ValueExists("mode"))
     {
         // Default mode for this controller is additive
@@ -128,30 +137,7 @@ void ControllerNaturalDriver::Step(double dt)
     {
         case State::DRIVE:
         {
-            if (GetLeadVehicle())
-            {
-                state_ = State::FOLLOW;
-                break;
-            }
-            
-            double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD]);
-            current_speed_ += acceleration * dt;
-            
-            if (current_speed_ > desired_speed_)
-            {
-                current_speed_ = desired_speed_;
-            }
-            
-            break;
-        }
-        case State::FOLLOW:
-        {
-            if (!GetLeadVehicle())
-            {
-                state_ = State::DRIVE;
-                break;
-            }
-            
+            GetLeadVehicle();
             double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD]);
             current_speed_ += acceleration * dt;
 
@@ -162,85 +148,27 @@ void ControllerNaturalDriver::Step(double dt)
 
             if (!lane_change_injected) // Should actually be current_speed < tolerance. We only want to change lane if we are following someone
             {
-                state_ = State::TRY_CHANGE_LEFT; // We want to change lane
+                bool adjacent_lanes_available = AdjacentLanesAvailable();
+                if (!adjacent_lanes_available)
+                {
+                    break;
+                }
+                for (const auto& id : lane_ids_available_)
+                {
+                    if (id != 0)
+                    {
+                        bool lead, follow;
+                        GetAdjacentLeadAndFollow(id, lead, follow);
+                        bool initiate_lanechange = CheckLaneChangePossible(id);
+                        if (initiate_lanechange)
+                        {
+                            target_lane_ = id;
+                            state_ = State::CHANGE_LANE;
+                            break;
+                        }
+                    }
+                }
             }
-            // Follow vehicle by ID, either ID of target in ego lane or ID of target in lane we change to
-            break;
-        }
-        case State::TRY_CHANGE_LEFT:
-        {
-            bool adjacent_lanes_available = AdjacentLanesAvailable();
-
-            if (!adjacent_lanes_available)
-            {
-                state_ = State::FOLLOW;
-                break;
-            }
-
-            bool left_lead = false;
-            bool left_follow = false;
-
-            if (lane_ids_available_[0] != 0)
-            {
-                target_lane_ = lane_ids_available_[0];
-                GetAdjacentLeadAndFollow(target_lane_, left_lead, left_follow);
-            }
-            else
-            {
-                state_ = State::TRY_CHANGE_RIGHT;
-                break;
-            }
-
-            if (!left_lead && !left_follow)
-            {
-                state_ = State::CHANGE_LANE;
-                break;
-            }
-
-            bool initiate_lanechange = CheckLaneChangePossible(left_lead, left_follow);
-
-            if (initiate_lanechange)
-            {
-                state_ = State::CHANGE_LANE;
-                break;
-            }
-
-            state_ = State::TRY_CHANGE_RIGHT;
-
-            break;
-        }
-        case State::TRY_CHANGE_RIGHT:
-        {
-            bool right_lead = false;
-            bool right_follow = false;
-            
-            if (lane_ids_available_[1] != 0)
-            {
-                target_lane_ = lane_ids_available_[1];
-                GetAdjacentLeadAndFollow(target_lane_, right_lead, right_follow);
-            }
-            else
-            {
-                state_ = State::FOLLOW;
-                break;
-            }
-
-            if (!right_lead && !right_follow)
-            {
-                state_ = State::CHANGE_LANE;
-                break;
-            }
-
-            bool have_follow = GetFollowVehicle();
-            bool initiate_lanechange = CheckLaneChangePossible(right_lead, right_follow);
-
-            if (initiate_lanechange)
-            {
-                state_ = State::CHANGE_LANE;
-                break;
-            }
-
-            state_ = State::FOLLOW;
 
             break;
         }
@@ -255,7 +183,6 @@ void ControllerNaturalDriver::Step(double dt)
 
             break;
         }
-        // If lead disappears for some reason, we just drive again.
     }
 
     object_->MoveAlongS(current_speed_ * dt);
@@ -285,11 +212,11 @@ void ControllerNaturalDriver::Step(double dt)
 */
 double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead)
 {
-    if (follow == nullptr)
+    if (follow == nullptr) // No car to calculate acceleration for, return 0
     {
         return 0.0;
     }
-    // Reach desired speed
+
     int delta = 4;
 
     double follow_current_speed = follow->GetSpeed();
@@ -350,7 +277,7 @@ void ControllerNaturalDriver::ReportKeyEvent(int key, bool down)
     (void)down;
 }
 
-bool ControllerNaturalDriver::CheckLaneChangePossible(bool has_adj_lead, bool has_adj_follow)
+bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
 {
     if (lane_change_injected)
     {
@@ -358,30 +285,39 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(bool has_adj_lead, bool ha
     }
 
     VoIType adj_lead, adj_follow;
-    GetVehicleOfInterestType(adj_lead, adj_follow);
+    GetVehicleOfInterestType(lane_id, adj_lead, adj_follow);
     
-    double predicted_follow_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow], this->GetLinkedObject());
-    if (predicted_follow_acceleration < -max_imposed_braking_)
+    double new_following_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow], vehicles_of_interest_[adj_lead]);
+    double new_following_pred_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow], this->GetLinkedObject());
+    if (new_following_pred_acceleration < -max_imposed_braking_)
     {
         return false;
     }
 
-    bool on_route = false;
-    double predicted_new_lead_acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[adj_lead]);
-    if (on_route)
+    double predicted_new_acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[adj_lead]);
+    if (lane_id == route_)
     {
-        if (predicted_new_lead_acceleration < -max_imposed_braking_)
+        if (predicted_new_acceleration < -max_imposed_braking_)
         {
             return false;
         }
     }
     else 
     {
+        GetFollowVehicle();
         double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD]);
-        double new_following_pred_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow], this->GetLinkedObject());
         double old_following_acceleration = GetAcceleration(vehicles_of_interest_[VoIType::FOLLOWING], this->GetLinkedObject());
         double old_following_pred_acceleration = GetAcceleration(vehicles_of_interest_[VoIType::FOLLOWING], vehicles_of_interest_[VoIType::LEAD]);
-        double jerk = predicted_new_lead_acceleration - acceleration + politeness_ * (new_following_pred_acceleration - predicted_follow_acceleration + old_following_pred_acceleration + old_following_acceleration);
+        
+        /* Jerk
+            If I change lane, how much...
+            "predicted_new_acceleration - acceleration" ...more can ego accelerate?
+            "politeness_" ...do I care about being in the way of others?
+            "new_following_pred_acceleration - new_following_acceleration" ...more can adjacent behind vehicle accelerate?
+            "old_following_pred_acceleration - old_following_acceleration" ...more can current following vehicle accelerate?
+        */
+        
+        double jerk = predicted_new_acceleration - acceleration + politeness_ * (new_following_pred_acceleration - new_following_acceleration + old_following_pred_acceleration - old_following_acceleration);
 
         if (jerk <= lane_change_acc_gain_)
         {
@@ -390,7 +326,6 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(bool has_adj_lead, bool ha
     }
 
     return true;
-
 }
 
 bool ControllerNaturalDriver::GetLeadVehicle()
@@ -424,7 +359,7 @@ bool ControllerNaturalDriver::GetFollowVehicle()
 void ControllerNaturalDriver::GetAdjacentLeadAndFollow(const int lane_id, bool &lead, bool& follow)
 {
     VoIType adj_lane_lead, adj_lane_follow;
-    GetVehicleOfInterestType(adj_lane_lead, adj_lane_follow);
+    GetVehicleOfInterestType(lane_id, adj_lane_lead, adj_lane_follow);
 
     std::vector<scenarioengine::Object*> adjacent_lane_vehicles = {};
     bool vehicles = VehiclesInAdjacentLane(adjacent_lane_vehicles, lane_id); // idx 0 is left
@@ -435,9 +370,9 @@ void ControllerNaturalDriver::GetAdjacentLeadAndFollow(const int lane_id, bool &
     }
 }
 
-void ControllerNaturalDriver::GetVehicleOfInterestType(VoIType &lead, VoIType &follow)
+void ControllerNaturalDriver::GetVehicleOfInterestType(int lane_id, VoIType &lead, VoIType &follow)
 {
-    if (state_ == State::TRY_CHANGE_LEFT)
+    if (lane_id == lane_ids_available_[0])
     {
         lead = VoIType::LEFT_LEAD;
         follow = VoIType::LEFT_FOLLOW;

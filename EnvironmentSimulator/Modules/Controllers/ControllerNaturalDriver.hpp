@@ -26,9 +26,6 @@ namespace scenarioengine
     enum State
     {
         DRIVE = 0,
-        FOLLOW,
-        TRY_CHANGE_LEFT,
-        TRY_CHANGE_RIGHT,
         CHANGE_LANE,
     };
 
@@ -81,9 +78,9 @@ namespace scenarioengine
         void GetAdjacentLeadAndFollow(const int lane_id, bool &lead, bool& follow);
         bool GetFollowVehicle();
 
-        bool CheckLaneChangePossible(bool has_adj_lead, bool has_adj_follow);
+        bool CheckLaneChangePossible(const int lane_id);
 
-        void GetVehicleOfInterestType(VoIType &lead, VoIType &follow);
+        void GetVehicleOfInterestType(int lane_id, VoIType &lead, VoIType &follow);
         void ClearVehicleOfInterest(VoIType type);
 
         double GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead);
@@ -147,6 +144,7 @@ namespace scenarioengine
         double           max_imposed_braking_;
         double           politeness_;
         double           lane_change_acc_gain_;
+        int              route_;
     };
 
     Controller* InstantiateNaturalDriver(void* args);

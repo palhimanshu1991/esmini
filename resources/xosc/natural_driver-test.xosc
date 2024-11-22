@@ -14,7 +14,7 @@
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
       <ParameterDeclaration name="EgoSpeed" parameterType="double" value="40"/>
-      <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="60"/>
+      <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="50"/>
       <ParameterDeclaration name="DesiredDistance" parameterType="double" value="10"/>
       <ParameterDeclaration name="AdjRearDistance" parameterType="double" value="3.0"/>
       <ParameterDeclaration name="AdjLeadDistance" parameterType="double" value="20.0"/>
@@ -25,6 +25,8 @@
       <ParameterDeclaration name="kp" parameterType="double" value="0.2"/>
       <ParameterDeclaration name="kd" parameterType="double" value="0.8"/>
       <ParameterDeclaration name="MaxAcc" parameterType="double" value="4.0"/>
+      <ParameterDeclaration name="Route" parameterType="integer" value="-2"/>
+      <ParameterDeclaration name="Politeness" parameterType="double" value="0.0"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -52,8 +54,8 @@
                     <Property name="speedTolerance" value="${$SpeedTolerance / 3.6}" />
                     <Property name="desiredSpeed" value="${$DesiredSpeed / 3.6}" />
                     <Property name="maxAcc" value="7" />
-                    <Property name="KP" value="$kp" />
-                    <Property name="KD" value="$kd" />
+                    <Property name="route" value="$Route" />
+                    <Property name="politeness" value="$Politeness" />
                 </Properties>
             </Controller>            
          </ObjectController>         
@@ -190,7 +192,7 @@
           <ConditionGroup>
                 <Condition name="stop_trigger " delay="0" conditionEdge="none">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="35" rule="greaterThan"/>
+                        <SimulationTimeCondition value="55" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
           </ConditionGroup>
