@@ -92,6 +92,10 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
     {
         max_acceleration_ = strtod(args->properties->GetValueStr("maxAcc"));
     }
+    if (args && args->properties && args->properties->ValueExists("laneChangeDelay"))
+    {
+        lane_change_delay_ = strtod(args->properties->GetValueStr("laneChangeDelay"));
+    }
     if (args && args->properties && args->properties->ValueExists("THW"))
     {
         desired_thw_ = strtod(args->properties->GetValueStr("THW"));
@@ -132,12 +136,12 @@ void ControllerNaturalDriver::InitPostPlayer()
 
 void ControllerNaturalDriver::Step(double dt)
 {
-
     switch (state_)
     {
         case State::DRIVE:
         {
             GetLeadVehicle();
+
             double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD]);
             current_speed_ += acceleration * dt;
 
@@ -160,7 +164,7 @@ void ControllerNaturalDriver::Step(double dt)
                         bool lead, follow;
                         GetAdjacentLeadAndFollow(id, lead, follow);
                         bool initiate_lanechange = CheckLaneChangePossible(id);
-                        if (initiate_lanechange)
+                        if (initiate_lanechange && this->GetLinkedObject()->GetSpeed() > 0)
                         {
                             target_lane_ = id;
                             state_ = State::CHANGE_LANE;
@@ -169,15 +173,16 @@ void ControllerNaturalDriver::Step(double dt)
                     }
                 }
             }
-
             break;
         }
         case State::CHANGE_LANE:
         {
+            // Check if someone else is already changing
+            // For v : vehicles -> if v.lane_change_injected, target_lane_ = current_lane, State::Drive
             if (!lane_change_injected)
             {
-                auto lane_change = LaneChangeActionStruct{0, 0, target_lane_, 2, 2, static_cast<float>(lane_change_duration_)};
-                player_->player_server_->InjectLaneChangeAction(lane_change);
+                auto lane_change = LaneChangeActionStruct{this->GetLinkedObject()->GetId(), 0, target_lane_, 2, 2, static_cast<float>(lane_change_duration_)};
+                player_->player_server_->InjectLaneChangeAction(lane_change); // Why does it change the lane in 1 step?
                 lane_change_injected = true;
             }
 
@@ -367,6 +372,11 @@ void ControllerNaturalDriver::GetAdjacentLeadAndFollow(const int lane_id, bool &
     {
         lead = FindClosestAhead(adjacent_lane_vehicles, adj_lane_lead);
         follow = FindClosestBehind(adjacent_lane_vehicles, adj_lane_follow);
+    }
+    else
+    {
+        ClearVehicleOfInterest(adj_lane_lead);
+        ClearVehicleOfInterest(adj_lane_follow);
     }
 }
 
