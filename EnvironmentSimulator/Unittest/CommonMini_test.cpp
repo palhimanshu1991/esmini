@@ -267,7 +267,7 @@ TEST(ProgramOptions, TestAutoNotAppliedWhenSetEmpty)
 
 TEST(ProgramOptions, TestDefaultValueSetIfMentionedOnly)
 {
-    std::string paramName = "osi_file";
+    std::string paramName = "record";
     const char* args[]    = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     const char* value = SE_GetOptionValue(paramName.c_str());
@@ -279,7 +279,7 @@ TEST(ProgramOptions, TestDefaultValueSetIfMentionedOnly)
     value = SE_GetOptionValue(paramName.c_str());
     ASSERT_NE(value, nullptr);
     std::string optionValue(value);
-    EXPECT_EQ(optionValue, "ground_truth.osi");
+    EXPECT_EQ(optionValue, DAT_FILENAME);
     SE_Close();
 }
 
