@@ -179,7 +179,22 @@ void ControllerNaturalDriver::Step(double dt)
         {
             // Check if someone else is already changing
             // For v : vehicles -> if v.lane_change_injected, target_lane_ = current_lane, State::Drive
-            if (!lane_change_injected)
+            if (lane_change_injected)
+            {
+                for (const auto& object : entities_->object_)
+                {
+                    ControllerNaturalDriver* nd;
+                    if (object->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG))
+                    {
+                        auto active_controller = object_->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG);
+                        if (active_controller == Type::CONTROLLER_TYPE_NATURAL_DRIVER)
+                        {
+                           nd = dynamic_cast<ControllerNaturalDriver*>(object_->GetAssignedControllerOftype(active_controller));
+                        }
+                    }
+                }
+            }
+            else 
             {
                 auto lane_change = LaneChangeActionStruct{this->GetLinkedObject()->GetId(), 0, target_lane_, 2, 2, static_cast<float>(lane_change_duration_)};
                 player_->player_server_->InjectLaneChangeAction(lane_change); // Why does it change the lane in 1 step?
