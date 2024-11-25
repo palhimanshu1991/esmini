@@ -430,7 +430,6 @@ int main(int argc, char **argv)
 
     if (opt.GetOptionSet("version"))
     {
-        // Logger::Inst().LogVersion();
         return 0;
     }
 

@@ -1327,11 +1327,6 @@ int ScenarioPlayer::Init()
         return -2;
     }
 
-    if (opt.GetOptionSet("disable_stdout"))
-    {
-        Logger::Inst().SetCallback(0);
-    }
-
     TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
