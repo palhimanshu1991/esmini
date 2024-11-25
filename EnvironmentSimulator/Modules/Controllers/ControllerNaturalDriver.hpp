@@ -145,6 +145,7 @@ namespace scenarioengine
         double           politeness_;
         double           lane_change_acc_gain_;
         int              route_;
+        bool             initiate_lanechange_;
     };
 
     Controller* InstantiateNaturalDriver(void* args);

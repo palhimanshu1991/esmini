@@ -56,7 +56,8 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
       max_imposed_braking_(3.0),
       politeness_(0.5),
       lane_change_acc_gain_(0.2),
-      route_(-1)
+      route_(-1),
+      initiate_lanechange_(false)
 {
     operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
 
@@ -121,6 +122,7 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
         // used as setSpeed)
         mode_ = ControlOperationMode::MODE_ADDITIVE;
     }
+    lane_change_cooldown_ = lane_change_duration_ + lane_change_delay_;
 }
 
 void ControllerNaturalDriver::Init()
@@ -163,8 +165,8 @@ void ControllerNaturalDriver::Step(double dt)
                     {
                         bool lead, follow;
                         GetAdjacentLeadAndFollow(id, lead, follow);
-                        bool initiate_lanechange = CheckLaneChangePossible(id);
-                        if (initiate_lanechange && this->GetLinkedObject()->GetSpeed() > 0)
+                        initiate_lanechange_ = CheckLaneChangePossible(id);
+                        if (initiate_lanechange_ && this->GetLinkedObject()->GetSpeed() > 0)
                         {
                             target_lane_ = id;
                             state_ = State::CHANGE_LANE;
@@ -179,26 +181,39 @@ void ControllerNaturalDriver::Step(double dt)
         {
             // Check if someone else is already changing
             // For v : vehicles -> if v.lane_change_injected, target_lane_ = current_lane, State::Drive
-            if (lane_change_injected)
+            for (const auto& other_object : entities_->object_)
             {
-                for (const auto& object : entities_->object_)
+                if (object_->GetId() == other_object->GetId())
                 {
-                    ControllerNaturalDriver* nd;
-                    if (object->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG))
+                    continue; // Don't compare to ourselves
+                }
+                ControllerNaturalDriver* nd;
+                if (other_object->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG))
+                {
+                    auto active_controller = other_object->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG);
+                    if (active_controller == Type::CONTROLLER_TYPE_NATURAL_DRIVER)
                     {
-                        auto active_controller = object_->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG);
-                        if (active_controller == Type::CONTROLLER_TYPE_NATURAL_DRIVER)
+                        nd = dynamic_cast<ControllerNaturalDriver*>(other_object->GetAssignedControllerOftype(active_controller));
+                        double follow_current_speed = nd->GetLinkedObject()->GetSpeed();
+
+                        roadmanager::PositionDiff diff;
+                        object_->pos_.Delta(&nd->GetLinkedObject()->pos_, diff, false, lookahead_dist_);
+                        double desired_gap = GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, current_speed_, desired_distance_, desired_thw_);
+                        if (diff.ds >= 0 && diff.ds < desired_gap && nd->lane_change_injected && nd->target_lane_ == this->target_lane_ && !(nd->GetLinkedObject()->pos_.GetLaneId() == object_->pos_.GetLaneId()))
                         {
-                           nd = dynamic_cast<ControllerNaturalDriver*>(object_->GetAssignedControllerOftype(active_controller));
+                            this->target_lane_ = 0;
+                            initiate_lanechange_ = false;
+                            this->state_ = State::DRIVE;
                         }
                     }
                 }
             }
-            else 
+            if (initiate_lanechange_)
             {
                 auto lane_change = LaneChangeActionStruct{this->GetLinkedObject()->GetId(), 0, target_lane_, 2, 2, static_cast<float>(lane_change_duration_)};
                 player_->player_server_->InjectLaneChangeAction(lane_change); // Why does it change the lane in 1 step?
                 lane_change_injected = true;
+                initiate_lanechange_ = false;
             }
 
             break;
@@ -215,6 +230,7 @@ void ControllerNaturalDriver::Step(double dt)
         lane_change_cooldown_ -= dt;
         if (state_ == State::CHANGE_LANE && lane_change_cooldown_ <= lane_change_delay_) // Keep constant long. acceleration during lane_change_duration_
         {
+            target_lane_ = 0;
             state_ = State::DRIVE;
         }
         if (lane_change_cooldown_ < 0.0)
@@ -516,12 +532,13 @@ bool ControllerNaturalDriver::AdjacentLanesAvailable()
 bool ControllerNaturalDriver::VehiclesInEgoLane(std::vector<scenarioengine::Object*> &vehicles)
 {
     // Should use Delta here instead
-    const int ego_lane_id = this->GetLinkedObject()->pos_.GetLaneId();
-    for (size_t i = 1; i < entities_->object_.size(); i++)
+    const int ego_lane_id = object_->pos_.GetLaneId();
+    const int this_id = object_->GetId();
+    for (const auto& obj : entities_->object_)
     {
-        if (entities_->object_[i]->pos_.GetLaneId() == ego_lane_id)
+        if (obj->GetId() != this_id && obj->pos_.GetLaneId() == ego_lane_id)
         {
-            vehicles.push_back(entities_->object_[i]); // Candidates for lead vehicle
+            vehicles.push_back(obj); // Candidates for lead vehicle
         }
     }
 
@@ -537,12 +554,12 @@ bool ControllerNaturalDriver::VehiclesInEgoLane(std::vector<scenarioengine::Obje
 
 bool ControllerNaturalDriver::VehiclesInAdjacentLane(std::vector<scenarioengine::Object*> &vehicles, int lane_id)
 {
-    // TODO: Populate both left and right lanes
-    for (size_t i = 1; i < entities_->object_.size(); i++)
+    int this_id = object_->GetId();
+    for (const auto& obj : entities_->object_)
     {
-        if (entities_->object_[i]->pos_.GetLaneId() == lane_id)
+        if (obj->GetId() != this_id && obj->pos_.GetLaneId() == lane_id)
         {
-            vehicles.push_back(entities_->object_[i]); // Exist in adjacent lane
+            vehicles.push_back(obj); // Exist in adjacent lane
         }
     }
 
