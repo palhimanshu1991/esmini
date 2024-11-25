@@ -2802,6 +2802,8 @@ TEST(TestOsiReporter, AssignRoleTest)
     EXPECT_EQ(osi_gt->moving_object(1).vehicle_classification().role(), osi3::MovingObject_VehicleClassification_Role_ROLE_POLICE);
 
     EXPECT_EQ(strcmp(SE_GetObjectModelFileName(1), "car_police.osgb"), 0);
+
+    SE_Close();
 }
 #endif
 

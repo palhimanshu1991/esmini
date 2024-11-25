@@ -1758,7 +1758,7 @@ void SE_Option::Usage()
         printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? ('<' + opt_arg_ + '>').c_str() : "");
     }
 
-    if( autoApply_)
+    if (autoApply_)
     {
         printf("  (default if option or value omitted: %s)", default_value_.c_str());
     }
@@ -1772,7 +1772,16 @@ void SE_Option::Usage()
 void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value, bool autoApply)
 {
     SE_Option* option = GetOption(opt_str);
-    if (!option)
+    if (option)
+    {
+        // there can be option already added, maybe the api has done it. which don't have values for str, desc, arg, default value, auto apply
+        option->opt_str_       = opt_str;
+        option->opt_desc_      = opt_desc;
+        option->opt_arg_       = opt_arg;
+        option->default_value_ = default_value;
+        option->autoApply_     = autoApply;
+    }
+    else
     {
         SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply);
         option_.push_back(opt);
@@ -1988,18 +1997,22 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
         i++;
     }
 
-    SetDefaultedOptions();
+    ApplyDefaultValues();
 
     return returnVal;
 }
 
-void SE_Options::SetDefaultedOptions()
+void SE_Options::ApplyDefaultValues()
 {
     for (auto& opt : option_)
     {
-        if (opt.autoApply_ && !opt.set_ && !opt.default_value_.empty())
+        if (opt.arg_value_.empty() && !opt.default_value_.empty())
         {
-            opt.arg_value_.push_back(opt.default_value_);
+            if ((!opt.autoApply_ && opt.set_) || (opt.autoApply_ && !opt.set_))
+            {
+                opt.arg_value_.push_back(opt.default_value_);
+                opt.set_ = true;
+            }
         }
     }
 }

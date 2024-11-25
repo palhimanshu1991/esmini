@@ -1251,7 +1251,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
     opt.AddOption("log_append", "log all scenarios in the same txt file");
-    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", esmini::common::DEFAULT_LOG_FILE_NAME, true);
+    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", LOG_FILENAME, true);
     opt.AddOption("log_meta_data", "log file name, function name and line number");
     opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
     opt.AddOption("log_only_modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
@@ -1639,7 +1639,7 @@ int ScenarioPlayer::Init()
     {
         osi_filename = SE_Env::Inst().GetOSIFilePath();
     }
-    //osi_filename = esmini::common::ValidateAndCreateFilePath(osi_filename, DEFAULT_OSI_TRACE_FILENAME, "osi");
+
     if (!osi_filename.empty() || SE_Env::Inst().GetOSIFileEnabled())
     {
         SetOSIFileStatus(true, osi_filename.c_str());

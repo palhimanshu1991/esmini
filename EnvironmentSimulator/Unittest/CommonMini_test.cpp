@@ -201,7 +201,7 @@ TEST(MatrixOperations, TestMatrixInvert)
     EXPECT_NEAR(m3[2][2], 1.0, 1E-5);
 }
 
-TEST(ProgramOptions, NonPersisted)
+TEST(ProgramOptions, TestNonPersisted)
 {
     std::string paramName  = "density";
     std::string paramValue = "10";
@@ -220,7 +220,7 @@ TEST(ProgramOptions, NonPersisted)
     SE_Close();
 }
 
-TEST(ProgramOptions, Persisted)
+TEST(ProgramOptions, TestPersisted)
 {
     std::string paramValue = "10";
     std::string paramName  = "density";
@@ -239,6 +239,123 @@ TEST(ProgramOptions, Persisted)
     // make it non-persistent for cleanup
     SE_SetOptionValue(paramName.c_str(), paramValue.c_str());
     SE_Close();
+}
+
+TEST(ProgramOptions, TestAutoApply)
+{
+    std::string param  = "logfile_path";
+    const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    const char* value = SE_GetOptionValue(param.c_str());
+    ASSERT_NE(value, nullptr);
+    std::string optionValue(value);
+    EXPECT_EQ(optionValue, LOG_FILENAME);
+    SE_Close();
+}
+
+TEST(ProgramOptions, TestAutoNotAppliedWhenSetEmpty)
+{
+    std::string paramName = "logfile_path";
+    SE_SetOptionValue(paramName.c_str(), "");
+    const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    const char* value = SE_GetOptionValue(paramName.c_str());
+    std::string optionValue(value);
+    ASSERT_EQ(optionValue, "");
+    SE_Close();
+}
+
+TEST(ProgramOptions, TestDefaultValueSetIfMentionedOnly)
+{
+    std::string paramName = "osi_file";
+    const char* args[]    = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    const char* value = SE_GetOptionValue(paramName.c_str());
+    ASSERT_EQ(value, nullptr);
+    SE_Close();
+
+    SE_SetOption(paramName.c_str());
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    value = SE_GetOptionValue(paramName.c_str());
+    ASSERT_NE(value, nullptr);
+    std::string optionValue(value);
+    EXPECT_EQ(optionValue, "ground_truth.osi");
+    SE_Close();
+}
+
+TEST(ProgramOptions, TestMixOfPersistedAndNonPersisted)
+{
+    double elapsed_time = 0;
+    SE_SetLogFilePath("my_test.txt");
+    SE_SetOptionPersistent("log_append");
+    SE_SetOption("osi_file");
+    SE_SetOptionValue("log_level", "info");
+    SE_SetOptionValue("fixed_timestep", "0.01");
+    SE_Init("../../../resources/xosc/cut-in.xosc", 0, 0, 0, 0);
+
+    while (SE_GetQuitFlag() == 0)
+    {
+        if (elapsed_time > 3.0)
+        {
+            const char* value = SE_GetOptionValue("logfile_path");
+            std::string optionValue(value);
+            ASSERT_EQ(optionValue, "my_test.txt");
+            SE_SetOptionPersistent("log_meta_data");
+            break;
+        }
+        SE_Step();
+        elapsed_time += 0.5;
+    }
+    SE_Close();
+
+    const char* value = SE_GetOptionValue("logfile_path");
+    std::string optionValue(value);
+    ASSERT_EQ(optionValue, "my_test.txt");
+
+    // check log_meta_data if its set
+    int isSet = SE_GetOptionSet("log_meta_data");
+    EXPECT_EQ(isSet, 1);
+
+    isSet = SE_GetOptionSet("log_append");
+    EXPECT_EQ(isSet, 1);
+
+    isSet = SE_GetOptionSet("log_level");
+    EXPECT_EQ(isSet, 0);
+
+    isSet = SE_GetOptionSet("osi_file");
+    EXPECT_EQ(isSet, 0);
+
+    isSet = SE_GetOptionSet("fixed_timestep");
+    EXPECT_EQ(isSet, 0);
+
+    value = SE_GetOptionValue("log_level");
+    ASSERT_EQ(value, nullptr);
+
+    // check log file path
+
+    SE_SetLogFilePath("my_test_error.txt");
+    // SE_SetOptionValuePersistent("log_level", "error");
+    SE_SetOptionPersistent("osi_file");  // Works
+    SE_Init("../../../resources/xosc/cut-in.xosc", 0, 0, 0, 0);
+
+    value = SE_GetOptionValue("logfile_path");
+    std::string val1(value);
+    ASSERT_EQ(val1, "my_test_error.txt");
+    elapsed_time = 0;
+    while (SE_GetQuitFlag() == 0)
+    {
+        if (elapsed_time > 3.0)
+        {
+            break;
+        }
+        elapsed_time += 0.5;
+        SE_Step();
+    }
+    SE_Close();
+
+    value = SE_GetOptionValue("logfile_path");
+    std::string logFilePath(value);
+    ASSERT_EQ(logFilePath, "my_test_error.txt");
 }
 
 int main(int argc, char** argv)

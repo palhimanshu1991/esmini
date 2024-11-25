@@ -831,9 +831,9 @@ public:
     bool                     set_;
     std::vector<std::string> arg_value_;
     std::string              default_value_;
-    bool                     persistent_    = false;
-    bool                     autoApply_ = false;
-    
+    bool                     persistent_ = false;
+    bool                     autoApply_  = false;
+
     SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string default_value = "", bool autoApply = false)
         : opt_str_(opt_str),
           opt_desc_(opt_desc),
@@ -852,12 +852,11 @@ class SE_Options
 #define OPT_PREFIX "--"
 
 public:
-
     void AddOption(std::string opt_str,
                    std::string opt_desc,
                    std::string opt_arg               = "",
                    std::string opt_arg_default_value = "",
-                   bool        autoApply         = false);
+                   bool        autoApply             = false);
 
     void        PrintUsage();
     void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");
@@ -866,7 +865,7 @@ public:
     std::string GetOptionArg(std::string opt, int index = 0);
     int         ParseArgs(int argc, const char* const argv[]);
     // sets default values to options which are auto defaulted and are unset
-    void                      SetDefaultedOptions();
+    void                      ApplyDefaultValues();
     std::vector<std::string>& GetOriginalArgs()
     {
         return originalArgs_;
@@ -883,13 +882,14 @@ public:
     int                           ClearOption(const std::string& opt);
     const std::vector<SE_Option>& GetAllOptions() const;
 
+    // Get option by name if present otherwise will return null
+    SE_Option* GetOption(std::string opt);
+
 private:
     std::vector<SE_Option>   option_;
     std::string              app_name_;
     std::vector<std::string> originalArgs_;
     std::vector<std::string> unknown_args_;
-
-    SE_Option* GetOption(std::string opt);
 };
 
 class SE_SystemTime

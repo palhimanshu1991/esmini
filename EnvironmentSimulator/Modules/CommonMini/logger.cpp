@@ -127,7 +127,7 @@ namespace esmini::common
         {
             return "";
         }
-        return ValidateAndCreateFilePath(filePath, DEFAULT_LOG_FILE_NAME, "txt");
+        return ValidateAndCreateFilePath(filePath, LOG_FILENAME, "txt");
     }
 
     bool TxtLogger::CreateFileLogger()
@@ -163,7 +163,7 @@ namespace esmini::common
 
     void TxtLogger::SetLogFilePath(const std::string& path)
     {
-        std::string filePath = ValidateAndCreateFilePath(path, DEFAULT_LOG_FILE_NAME, "txt");
+        std::string filePath = ValidateAndCreateFilePath(path, LOG_FILENAME, "txt");
         if (path.empty() || currentLogFileName_ == filePath)
         {
             return;

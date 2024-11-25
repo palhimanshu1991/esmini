@@ -517,8 +517,21 @@ extern "C"
         {
             return 0;
         }
-        static std::string val = SE_Env::Inst().GetOptions().GetOptionArg(name);
+        static std::string val;
+        val = SE_Env::Inst().GetOptions().GetOptionArg(name);
         return val.c_str();
+    }
+
+    SE_DLL_API int SE_GetOptionSet(const char *name)
+    {
+        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))
+        {
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
     }
 
     SE_DLL_API int SE_SetParameterDistribution(const char *filename)
@@ -656,7 +669,7 @@ extern "C"
         {
             LOG_ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
         }
-#endif        
+#endif
         AddArgument("esmini(lib)");  // name of application
         AddArgument("--osc");
         AddArgument(oscFilename, false);

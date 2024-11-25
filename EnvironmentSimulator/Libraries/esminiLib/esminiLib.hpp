@@ -429,6 +429,13 @@ extern "C"
     SE_DLL_API const char *SE_GetOptionValue(const char *name);
 
     /**
+     Get option set status
+     @param name is the name of the option whose value is fetch
+     @return Returns 1 if the option is set otherwise 0
+     */
+    SE_DLL_API int SE_GetOptionSet(const char *name);
+
+    /**
     Set window position and size. Must be called prior to SE_Init.
     @param x Screen coordinate in pixels for left side of window
     @param y Screen coordinate in pixels for top of window

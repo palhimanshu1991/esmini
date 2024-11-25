@@ -589,6 +589,13 @@ extern "C"
     */
     RM_DLL_API const char* RM_GetOptionValue(const char* name);
 
+    /**
+     Get option set status
+     @param name is the name of the option whose value is fetch
+     @return Returns 1 if the option is set otherwise 0
+     */
+    RM_DLL_API int RM_GetOptionSet(const char* name);
+
 #ifdef __cplusplus
 }
 #endif

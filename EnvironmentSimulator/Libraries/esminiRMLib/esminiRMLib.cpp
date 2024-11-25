@@ -1015,4 +1015,16 @@ extern "C"
         static std::string val = SE_Env::Inst().GetOptions().GetOptionArg(name);
         return val.c_str();
     }
+
+    RM_DLL_API int RM_GetOptionSet(const char* name)
+    {
+        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))
+        {
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
+    }
 }
