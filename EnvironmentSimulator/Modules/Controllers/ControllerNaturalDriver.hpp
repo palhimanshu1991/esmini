@@ -69,16 +69,16 @@ namespace scenarioengine
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
 
-        bool GetLeadVehicle();
+        void GetLeadVehicle();
+        void GetFollowVehicle();
         bool AdjacentLanesAvailable();
         bool VehiclesInEgoLane(std::vector<scenarioengine::Object*> &vehicles);
         bool VehiclesInAdjacentLane(std::vector<scenarioengine::Object*> &vehicles, int lane_id);
-        bool FindClosestAhead(std::vector<scenarioengine::Object*> vehicles, VoIType type);
-        bool FindClosestBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type);
-        void GetAdjacentLeadAndFollow(const int lane_id, bool &lead, bool& follow);
-        bool GetFollowVehicle();
-        ControllerNaturalDriver* GetOtherDriver(scenarioengine::Object* object);
+        void FindClosestAhead(std::vector<scenarioengine::Object*> vehicles, VoIType type);
+        void FindClosestBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type);
+        void GetAdjacentLeadAndFollow(const int lane_id);
         bool AbortLaneChange();
+        ControllerNaturalDriver* GetOtherDriver(scenarioengine::Object* object);
 
         bool CheckLaneChangePossible(const int lane_id);
 
