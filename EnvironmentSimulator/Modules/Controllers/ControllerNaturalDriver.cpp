@@ -239,11 +239,12 @@ bool ControllerNaturalDriver::AbortLaneChange()
 
         double follow_current_speed = other_object->GetSpeed();
         double desired_gap = GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, current_speed_, desired_distance_, desired_thw_);
+        double ego_length = object_->boundingbox_.dimensions_.length_;
 
         roadmanager::PositionDiff diff;
         object_->pos_.Delta(&other_object->pos_, diff, false, lookahead_dist_);
 
-        if (diff.ds >= 0 && diff.ds < desired_gap && nd->lane_change_injected && nd->target_lane_ == this->target_lane_ && !(other_object->pos_.GetLaneId() == object_->pos_.GetLaneId()))
+        if (diff.ds >= -ego_length && diff.ds < desired_gap && nd->lane_change_injected && nd->target_lane_ == this->target_lane_ && !(other_object->pos_.GetLaneId() == object_->pos_.GetLaneId()))
         {
             return true;
         }
