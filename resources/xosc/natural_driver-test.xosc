@@ -164,7 +164,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="rate" value="1"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="${$EgoSpeed / 3.6}"/>
                         </SpeedActionTarget>
@@ -208,7 +208,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="rate" value="1"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="${$TargetSpeed / 3.6}"/>
                         </SpeedActionTarget>
@@ -230,7 +230,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="rate" value="1"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="${$TargetSpeed / 3.6}"/>
                         </SpeedActionTarget>
@@ -252,7 +252,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="rate" value="1"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="${$TargetSpeed / 3.6}"/>
                         </SpeedActionTarget>

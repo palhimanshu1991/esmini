@@ -23,6 +23,12 @@
 
 namespace scenarioengine
 {
+    struct VoI
+    {
+        scenarioengine::Object* vehicle;
+        roadmanager::PositionDiff diff;
+    };
+
     enum State
     {
         DRIVE = 0,
@@ -72,10 +78,11 @@ namespace scenarioengine
         void GetLeadVehicle();
         void GetFollowVehicle();
         bool AdjacentLanesAvailable();
+        void UpdateSurroundingVehicles();
         bool VehiclesInEgoLane(std::vector<scenarioengine::Object*> &vehicles);
-        bool VehiclesInAdjacentLane(std::vector<scenarioengine::Object*> &vehicles, int lane_id);
-        void FindClosestAhead(std::vector<scenarioengine::Object*> vehicles, VoIType type);
-        void FindClosestBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type);
+        bool VehiclesInAdjacentLane(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
+        void FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
+        void FindClosestBehind(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
         void GetAdjacentLeadAndFollow(const int lane_id);
         bool AbortLaneChange();
         ControllerNaturalDriver* GetOtherDriver(scenarioengine::Object* object);
@@ -135,7 +142,7 @@ namespace scenarioengine
         double           max_deceleration_;
         double           max_acceleration_;
         std::array<int, 2> lane_ids_available_;
-        std::unordered_map<VoIType, scenarioengine::Object*> vehicles_of_interest_;
+        std::unordered_map<VoIType, VoI> vehicles_of_interest_;
         double           distance_to_adjacent_lead_;
         bool             lane_change_injected;
         State            state_;
