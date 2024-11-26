@@ -77,6 +77,8 @@ namespace scenarioengine
         bool FindClosestBehind(std::vector<scenarioengine::Object*> vehicles, VoIType type);
         void GetAdjacentLeadAndFollow(const int lane_id, bool &lead, bool& follow);
         bool GetFollowVehicle();
+        ControllerNaturalDriver* GetOtherDriver(scenarioengine::Object* object);
+        bool AbortLaneChange();
 
         bool CheckLaneChangePossible(const int lane_id);
 

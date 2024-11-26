@@ -144,7 +144,7 @@ void ControllerNaturalDriver::Step(double dt)
         {
             GetLeadVehicle();
 
-            double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD]);
+            double acceleration = GetAcceleration(object_, vehicles_of_interest_[VoIType::LEAD]);
             current_speed_ += acceleration * dt;
 
             if (current_speed_ >= desired_speed_)
@@ -166,7 +166,7 @@ void ControllerNaturalDriver::Step(double dt)
                         bool lead, follow;
                         GetAdjacentLeadAndFollow(id, lead, follow);
                         initiate_lanechange_ = CheckLaneChangePossible(id);
-                        if (initiate_lanechange_ && this->GetLinkedObject()->GetSpeed() > 0)
+                        if (initiate_lanechange_ && object_->GetSpeed() > 0)
                         {
                             target_lane_ = id;
                             state_ = State::CHANGE_LANE;
@@ -179,39 +179,17 @@ void ControllerNaturalDriver::Step(double dt)
         }
         case State::CHANGE_LANE:
         {
-            // Check if someone else is already changing
-            // For v : vehicles -> if v.lane_change_injected, target_lane_ = current_lane, State::Drive
-            for (const auto& other_object : entities_->object_)
+            if (AbortLaneChange())
             {
-                if (object_->GetId() == other_object->GetId())
-                {
-                    continue; // Don't compare to ourselves
-                }
-                ControllerNaturalDriver* nd;
-                if (other_object->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG))
-                {
-                    auto active_controller = other_object->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG);
-                    if (active_controller == Type::CONTROLLER_TYPE_NATURAL_DRIVER)
-                    {
-                        nd = dynamic_cast<ControllerNaturalDriver*>(other_object->GetAssignedControllerOftype(active_controller));
-                        double follow_current_speed = nd->GetLinkedObject()->GetSpeed();
-
-                        roadmanager::PositionDiff diff;
-                        object_->pos_.Delta(&nd->GetLinkedObject()->pos_, diff, false, lookahead_dist_);
-                        double desired_gap = GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, current_speed_, desired_distance_, desired_thw_);
-                        if (diff.ds >= 0 && diff.ds < desired_gap && nd->lane_change_injected && nd->target_lane_ == this->target_lane_ && !(nd->GetLinkedObject()->pos_.GetLaneId() == object_->pos_.GetLaneId()))
-                        {
-                            this->target_lane_ = 0;
-                            initiate_lanechange_ = false;
-                            this->state_ = State::DRIVE;
-                        }
-                    }
-                }
+                target_lane_ = 0;
+                state_ = State::DRIVE;
+                initiate_lanechange_ = false;
             }
+
             if (initiate_lanechange_)
             {
-                auto lane_change = LaneChangeActionStruct{this->GetLinkedObject()->GetId(), 0, target_lane_, 2, 2, static_cast<float>(lane_change_duration_)};
-                player_->player_server_->InjectLaneChangeAction(lane_change); // Why does it change the lane in 1 step?
+                auto lane_change = LaneChangeActionStruct{object_->GetId(), 0, target_lane_, 2, 2, static_cast<float>(lane_change_duration_)};
+                player_->player_server_->InjectLaneChangeAction(lane_change);
                 lane_change_injected = true;
                 initiate_lanechange_ = false;
             }
@@ -241,6 +219,54 @@ void ControllerNaturalDriver::Step(double dt)
     }
 
     Controller::Step(dt);
+}
+
+bool ControllerNaturalDriver::AbortLaneChange()
+{
+    // Check if someone else is already changing to intended lane
+    for (const auto& other_object : entities_->object_)
+    {
+        if (object_->GetId() == other_object->GetId())
+        {
+            continue; // Don't compare to ourselves
+        }
+
+        ControllerNaturalDriver* nd = GetOtherDriver(other_object);
+        if (nd == nullptr)
+        {
+            continue; // Other car has no driver
+        }
+
+        double follow_current_speed = other_object->GetSpeed();
+        double desired_gap = GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, current_speed_, desired_distance_, desired_thw_);
+
+        roadmanager::PositionDiff diff;
+        object_->pos_.Delta(&other_object->pos_, diff, false, lookahead_dist_);
+
+        if (diff.ds >= 0 && diff.ds < desired_gap && nd->lane_change_injected && nd->target_lane_ == this->target_lane_ && !(other_object->pos_.GetLaneId() == object_->pos_.GetLaneId()))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+ControllerNaturalDriver* ControllerNaturalDriver::GetOtherDriver(scenarioengine::Object* object)
+{
+
+    ControllerNaturalDriver* nd;
+    if (object->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG))
+    {
+        auto active_controller = object->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG);
+        if (active_controller == Type::CONTROLLER_TYPE_NATURAL_DRIVER)
+        {
+            nd = dynamic_cast<ControllerNaturalDriver*>(object->GetAssignedControllerOftype(active_controller));
+            return nd;
+        }
+    }
+
+    return nullptr;
 }
 
 /* 
@@ -324,13 +350,13 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
     GetVehicleOfInterestType(lane_id, adj_lead, adj_follow);
     
     double new_following_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow], vehicles_of_interest_[adj_lead]);
-    double new_following_pred_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow], this->GetLinkedObject());
+    double new_following_pred_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow], object_);
     if (new_following_pred_acceleration < -max_imposed_braking_)
     {
         return false;
     }
 
-    double predicted_new_acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[adj_lead]);
+    double predicted_new_acceleration = GetAcceleration(object_, vehicles_of_interest_[adj_lead]);
     if (lane_id == route_)
     {
         if (predicted_new_acceleration < -max_imposed_braking_)
@@ -341,8 +367,8 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
     else 
     {
         GetFollowVehicle();
-        double acceleration = GetAcceleration(this->GetLinkedObject(), vehicles_of_interest_[VoIType::LEAD]);
-        double old_following_acceleration = GetAcceleration(vehicles_of_interest_[VoIType::FOLLOWING], this->GetLinkedObject());
+        double acceleration = GetAcceleration(object_, vehicles_of_interest_[VoIType::LEAD]);
+        double old_following_acceleration = GetAcceleration(vehicles_of_interest_[VoIType::FOLLOWING], object_);
         double old_following_pred_acceleration = GetAcceleration(vehicles_of_interest_[VoIType::FOLLOWING], vehicles_of_interest_[VoIType::LEAD]);
         
         /* Jerk
@@ -434,7 +460,7 @@ bool ControllerNaturalDriver::FindClosestAhead(std::vector<scenarioengine::Objec
     for (const auto& vehicle : vehicles)
     {
         roadmanager::PositionDiff temp_diff;
-        this->GetLinkedObject()->pos_.Delta(&vehicle->pos_, temp_diff, false, lookahead_dist_); // Lookahead dist false not working?
+        object_->pos_.Delta(&vehicle->pos_, temp_diff, false, lookahead_dist_); // Lookahead dist false not working?
 
         if (temp_diff.ds > 0 && temp_diff.ds < distance)
         {
@@ -464,7 +490,7 @@ bool ControllerNaturalDriver::FindClosestBehind(std::vector<scenarioengine::Obje
     for (const auto& vehicle : vehicles)
     {
         roadmanager::PositionDiff temp_diff;
-        this->GetLinkedObject()->pos_.Delta(&vehicle->pos_, temp_diff, true, lookahead_dist_);
+        object_->pos_.Delta(&vehicle->pos_, temp_diff, true, lookahead_dist_);
 
         if (temp_diff.ds < 0 && temp_diff.ds > distance)
         {
@@ -492,11 +518,11 @@ void ControllerNaturalDriver::ClearVehicleOfInterest(VoIType type)
 
 bool ControllerNaturalDriver::AdjacentLanesAvailable()
 {
-    double current_s = this->GetLinkedObject()->pos_.GetS();
-    int current_lane = this->GetLinkedObject()->pos_.GetLaneId();
+    double current_s = object_->pos_.GetS();
+    int current_lane = object_->pos_.GetLaneId();
 
-    id_t road_id = this->GetLinkedObject()->pos_.GetTrackId();
-    auto road = this->GetLinkedObject()->pos_.GetRoadById(road_id);
+    id_t road_id = object_->pos_.GetTrackId();
+    auto road = object_->pos_.GetRoadById(road_id);
 
     auto ls = road->GetLaneSectionByS(current_s);
     auto driving_lanes_available = ls->GetNumberOfDrivingLanesSide(current_lane);
