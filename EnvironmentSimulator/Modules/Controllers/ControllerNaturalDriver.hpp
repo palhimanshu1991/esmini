@@ -86,6 +86,7 @@ namespace scenarioengine
         void GetAdjacentLeadAndFollow(const int lane_id);
         bool AbortLaneChange();
         ControllerNaturalDriver* GetOtherDriver(scenarioengine::Object* object);
+        double EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds);
 
         bool CheckLaneChangePossible(const int lane_id);
 

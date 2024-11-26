@@ -177,7 +177,7 @@ void ControllerNaturalDriver::Step(double dt)
         }
         case State::CHANGE_LANE:
         {
-            if (AbortLaneChange())
+            if (initiate_lanechange_ && AbortLaneChange())
             {
                 target_lane_ = 0;
                 state_ = State::DRIVE;
@@ -237,12 +237,12 @@ bool ControllerNaturalDriver::AbortLaneChange()
 
         double follow_current_speed = other_object->GetSpeed();
         double desired_gap = GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, current_speed_, desired_distance_, desired_thw_);
-        double ego_length = object_->boundingbox_.dimensions_.length_;
 
         roadmanager::PositionDiff diff;
         object_->pos_.Delta(&other_object->pos_, diff, false, lookahead_dist_);
+        double freespace = EstimateFreespace(object_, other_object, diff.ds);
 
-        if (diff.ds >= -ego_length && diff.ds < desired_gap && nd->lane_change_injected && nd->target_lane_ == this->target_lane_ && !(other_object->pos_.GetLaneId() == object_->pos_.GetLaneId()))
+        if (freespace >= 0 && freespace < desired_gap && nd->lane_change_injected && nd->target_lane_ == this->target_lane_ && !(other_object->pos_.GetLaneId() == object_->pos_.GetLaneId()))
         {
             return true;
         }
@@ -322,8 +322,10 @@ double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, 
 
         roadmanager::PositionDiff diff;
         follow->pos_.Delta(&lead->pos_, diff, false, lookahead_dist_);
+        double freespace = EstimateFreespace(follow, lead, diff.ds);
+        (freespace == 0) ? freespace = SMALL_NUMBER : freespace = freespace;
 
-        acceleration -= max_acceleration_ * std::pow(desired_gap / diff.ds, 2);
+        acceleration -= max_acceleration_ * std::pow(desired_gap / freespace, 2);
     }
 
     return acceleration;
@@ -433,9 +435,39 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
     return true;
 }
 
+double ControllerNaturalDriver::EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds)
+{
+    // adjust longitudinal dist wrt bounding boxes
+    double adjusted_gap_length = ds; // Ignore sign so distance always reduce
+    double dHeading          = GetAbsAngleDifference(follow->pos_.GetH(), target->pos_.GetH());
+    if (dHeading < M_PI_2)  // objects are pointing roughly in the same direction
+    {
+        if (ds > 0)
+        {
+            adjusted_gap_length -=
+                (static_cast<double>(follow->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(follow->boundingbox_.center_.x_)) +
+                (static_cast<double>(target->boundingbox_.dimensions_.length_) / 2.0 -
+                    static_cast<double>(target->boundingbox_.center_.x_));
+            
+            return (adjusted_gap_length < 0) ? 0 : adjusted_gap_length;
+        }
+        else
+        {
+            adjusted_gap_length +=
+                (static_cast<double>(follow->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(follow->boundingbox_.center_.x_)) +
+                (static_cast<double>(target->boundingbox_.dimensions_.length_) / 2.0 -
+                    static_cast<double>(target->boundingbox_.center_.x_));
+
+            return (adjusted_gap_length > 0) ? 0 : adjusted_gap_length;
+        }
+    }
+
+    return ds;
+}
+
 void ControllerNaturalDriver::FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type)
 {
-    if (vehicles_of_interest_[type].vehicle == nullptr && diff.ds > 0)
+    if (vehicles_of_interest_[type].vehicle == nullptr && diff.ds> 0)
     {
         vehicles_of_interest_[type].vehicle = object;
         vehicles_of_interest_[type].diff = diff;

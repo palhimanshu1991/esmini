@@ -25,7 +25,7 @@
       <ParameterDeclaration name="kp" parameterType="double" value="0.2"/>
       <ParameterDeclaration name="kd" parameterType="double" value="0.8"/>
       <ParameterDeclaration name="MaxAcc" parameterType="double" value="4.0"/>
-      <ParameterDeclaration name="Route" parameterType="integer" value="-3"/>
+      <ParameterDeclaration name="Route" parameterType="integer" value="-2"/>
       <ParameterDeclaration name="Politeness" parameterType="double" value="0.1"/>
       <ParameterDeclaration name="LaneChangeDelay" parameterType="double" value="5.0"/>
       <ParameterDeclaration name="Thw" parameterType="double" value="1.5"/>
@@ -179,7 +179,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0" s="105"/>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="80"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -201,7 +201,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-2" offset="0" s="95"/>
+                        <LanePosition roadId="1" laneId="-2" offset="0" s="115"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
