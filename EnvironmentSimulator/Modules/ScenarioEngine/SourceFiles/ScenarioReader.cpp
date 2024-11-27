@@ -571,11 +571,11 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         }
     }
     // Ref point offset
-    double ref_point_offset = 0;
-    std::string ref_point_value = vehicle->properties_.GetValueStr("refPoint");
+    double      ref_point_offset = 0;
+    std::string ref_point_value  = vehicle->properties_.GetValueStr("refPoint");
     if (!ref_point_value.empty())
     {
-        ref_point_offset = std::stod(ref_point_value);
+        ref_point_offset          = std::stod(ref_point_value);
         vehicle->ref_point_offset = ref_point_offset;
     }
 
@@ -638,7 +638,6 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
             else if (axle_name == "RearAxle")
             {
                 axle = &vehicle->rear_axle_;
-
             }
 
             if (axle != nullptr)

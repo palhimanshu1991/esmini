@@ -35,16 +35,15 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
       desired_distance_(20.0),
       actual_distance_(-1.0),
       distance_adjustment_t_(3.0),
-      desired_speed_(15.0), // TODO: Take from road speed
+      desired_speed_(15.0),  // TODO: Take from road speed
       current_speed_(desired_speed_),
-      speed_tolerance_(8.0),
       lane_change_duration_(3.0),
       adj_rear_dist_(5.0),
       adj_lead_dist_(20.0),
       lookahead_dist_(115.0),
       max_deceleration_(-3.0),
       max_acceleration_(3.0),
-      lane_ids_available_({0, 0}), // Left, Right side available 
+      lane_ids_available_({0, 0}),  // Left, Right side available
       vehicles_of_interest_({}),
       distance_to_adjacent_lead_(-1.0),
       lane_change_injected(false),
@@ -75,15 +74,11 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
     }
     if (args && args->properties && args->properties->ValueExists("desiredSpeed"))
     {
-        desired_speed_    = strtod(args->properties->GetValueStr("desiredSpeed"));
-    }
-    if (args && args->properties && args->properties->ValueExists("speedTolerance"))
-    {
-        speed_tolerance_    = strtod(args->properties->GetValueStr("speedTolerance"));
+        desired_speed_ = strtod(args->properties->GetValueStr("desiredSpeed"));
     }
     if (args && args->properties && args->properties->ValueExists("laneChangeDuration"))
     {
-        lane_change_duration_    = static_cast<float>(strtod(args->properties->GetValueStr("laneChangeDuration")));
+        lane_change_duration_ = static_cast<float>(strtod(args->properties->GetValueStr("laneChangeDuration")));
     }
     if (args && args->properties && args->properties->ValueExists("maxDec"))
     {
@@ -152,7 +147,7 @@ void ControllerNaturalDriver::Step(double dt)
                 current_speed_ = desired_speed_;
             }
 
-            if (!lane_change_injected) 
+            if (!lane_change_injected)
             {
                 bool adjacent_lanes_available = AdjacentLanesAvailable();
                 if (!adjacent_lanes_available)
@@ -167,7 +162,7 @@ void ControllerNaturalDriver::Step(double dt)
                         if (initiate_lanechange_ && object_->GetSpeed() > 0)
                         {
                             target_lane_ = lane_id;
-                            state_ = State::CHANGE_LANE;
+                            state_       = State::CHANGE_LANE;
                             break;
                         }
                     }
@@ -177,21 +172,6 @@ void ControllerNaturalDriver::Step(double dt)
         }
         case State::CHANGE_LANE:
         {
-            if (initiate_lanechange_ && AbortLaneChange())
-            {
-                target_lane_ = 0;
-                state_ = State::DRIVE;
-                initiate_lanechange_ = false;
-            }
-
-            if (initiate_lanechange_)
-            {
-                auto lane_change = LaneChangeActionStruct{object_->GetId(), 0, target_lane_, 2, 2, static_cast<float>(lane_change_duration_)};
-                player_->player_server_->InjectLaneChangeAction(lane_change);
-                lane_change_injected = true;
-                initiate_lanechange_ = false;
-            }
-
             break;
         }
     }
@@ -200,19 +180,37 @@ void ControllerNaturalDriver::Step(double dt)
     gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
     gateway_->updateObjectSpeed(object_->GetId(), 0.0, current_speed_);
 
+    if (initiate_lanechange_)
+    {
+        if (AbortLaneChange())
+        {
+            target_lane_ = 0;
+            state_       = State::DRIVE;
+        }
+        else
+        {
+            auto lane_change = LaneChangeActionStruct{object_->GetId(), 0, target_lane_, 2, 2, static_cast<float>(lane_change_duration_)};
+            player_->player_server_->InjectLaneChangeAction(lane_change);
+            lane_change_injected = true;
+        }
+
+        initiate_lanechange_ = false;
+    }
+
     // Wait a while before initiating another lane change
     if (lane_change_injected)
     {
         lane_change_cooldown_ -= dt;
-        if (state_ == State::CHANGE_LANE && lane_change_cooldown_ <= lane_change_delay_) // Keep constant long. acceleration during lane_change_duration_
+        if (state_ == State::CHANGE_LANE &&
+            lane_change_cooldown_ <= lane_change_delay_)  // Keep constant long. acceleration during lane_change_duration_
         {
             target_lane_ = 0;
-            state_ = State::DRIVE;
+            state_       = State::DRIVE;
         }
         if (lane_change_cooldown_ < 0.0)
         {
-            lane_change_cooldown_ = lane_change_delay_ + lane_change_duration_; // Reset the cooldown
-            lane_change_injected = false;
+            lane_change_cooldown_ = lane_change_delay_ + lane_change_duration_;  // Reset the cooldown
+            lane_change_injected  = false;
         }
     }
 
@@ -226,23 +224,39 @@ bool ControllerNaturalDriver::AbortLaneChange()
     {
         if (object_->GetId() == other_object->GetId())
         {
-            continue; // Don't compare to ourselves
+            continue;  // Don't compare to ourselves
         }
 
         ControllerNaturalDriver* nd = GetOtherDriver(other_object);
         if (nd == nullptr)
         {
-            continue; // Other car has no driver
+            continue;  // Other car has no driver
         }
 
-        double follow_current_speed = other_object->GetSpeed();
-        double desired_gap = GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, current_speed_, desired_distance_, desired_thw_);
+        roadmanager::PositionDiff diff        = {};
+        bool                      delta_exist = false;
+        for (const auto& veh : vehicles_of_interest_)
+        {
+            if (other_object == veh.second.vehicle)
+            {
+                diff        = veh.second.diff;
+                delta_exist = true;
+            }
+        }
 
-        roadmanager::PositionDiff diff;
-        object_->pos_.Delta(&other_object->pos_, diff, false, lookahead_dist_);
+        if (!delta_exist)
+        {
+            object_->pos_.Delta(&other_object->pos_, diff, false, lookahead_dist_);
+        }
+
         double freespace = EstimateFreespace(object_, other_object, diff.ds);
 
-        if (freespace >= 0 && freespace < desired_gap && nd->lane_change_injected && nd->target_lane_ == this->target_lane_ && !(other_object->pos_.GetLaneId() == object_->pos_.GetLaneId()))
+        double follow_current_speed = other_object->GetSpeed();
+        double desired_gap =
+            GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, current_speed_, desired_distance_, desired_thw_);
+
+        if (freespace >= 0 && freespace < desired_gap && nd->lane_change_injected && nd->target_lane_ == this->target_lane_ &&
+            !(other_object->pos_.GetLaneId() == object_->pos_.GetLaneId()))
         {
             return true;
         }
@@ -254,31 +268,31 @@ bool ControllerNaturalDriver::AbortLaneChange()
 void ControllerNaturalDriver::UpdateSurroundingVehicles()
 {
     vehicles_of_interest_ = {};
-    const int ego_id = object_->GetId();
+    const int ego_id      = object_->GetId();
 
     for (const auto& obj : entities_->object_)
     {
         if (obj->GetId() == ego_id)
         {
-            continue; // Ignore measurement to yourself
+            continue;  // Ignore measurement to yourself
         }
-        
+
         roadmanager::PositionDiff diff = {};
         object_->pos_.Delta(&obj->pos_, diff, true, lookahead_dist_);
 
-        if (diff.dLaneId == 0) // Ego lane
+        if (diff.dLaneId == 0)  // Ego lane
         {
-            FindClosestAhead(obj, diff, VoIType::LEAD); // Lead and lead within lookahead distance
+            FindClosestAhead(obj, diff, VoIType::LEAD);
             FindClosestBehind(obj, diff, VoIType::FOLLOWING);
         }
-        else if (diff.dLaneId == 1) // Left lane
+        else if (diff.dLaneId == 1)  // Left lane
         {
-            FindClosestAhead(obj, diff, VoIType::LEFT_LEAD); // Lead and lead within lookahead distance
+            FindClosestAhead(obj, diff, VoIType::LEFT_LEAD);
             FindClosestBehind(obj, diff, VoIType::LEFT_FOLLOW);
         }
-        else if (diff.dLaneId == -1) // Right lane
+        else if (diff.dLaneId == -1)  // Right lane
         {
-            FindClosestAhead(obj, diff, VoIType::RIGHT_LEAD); // Lead and lead within lookahead distance
+            FindClosestAhead(obj, diff, VoIType::RIGHT_LEAD);
             FindClosestBehind(obj, diff, VoIType::RIGHT_FOLLOW);
         }
     }
@@ -300,12 +314,12 @@ ControllerNaturalDriver* ControllerNaturalDriver::GetOtherDriver(scenarioengine:
     return nullptr;
 }
 
-/* 
+/*
     GetAcceleration() and GetDesiredGap() based on IDM (https://en.wikipedia.org/wiki/Intelligent_driver_model)
 */
 double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead)
 {
-    if (follow == nullptr) // No car to calculate acceleration for, return 0
+    if (follow == nullptr)  // No car to calculate acceleration for, return 0
     {
         return 0.0;
     }
@@ -313,12 +327,13 @@ double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, 
     int delta = 4;
 
     double follow_current_speed = follow->GetSpeed();
-    double acceleration = max_acceleration_ * (1 - std::pow(follow_current_speed / desired_speed_, delta));
+    double acceleration         = max_acceleration_ * (1 - std::pow(follow_current_speed / desired_speed_, delta));
 
     if (lead != nullptr)
     {
         double lead_current_speed = lead->GetSpeed();
-        double desired_gap = GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, lead_current_speed, desired_distance_, desired_thw_);
+        double desired_gap =
+            GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, lead_current_speed, desired_distance_, desired_thw_);
 
         roadmanager::PositionDiff diff;
         follow->pos_.Delta(&lead->pos_, diff, false, lookahead_dist_);
@@ -331,17 +346,22 @@ double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, 
     return acceleration;
 }
 
-double ControllerNaturalDriver::GetDesiredGap(double max_acceleration, double max_deceleration, double follow_speed, double lead_speed, double desired_distance, double desired_thw)
+double ControllerNaturalDriver::GetDesiredGap(double max_acceleration,
+                                              double max_deceleration,
+                                              double follow_speed,
+                                              double lead_speed,
+                                              double desired_distance,
+                                              double desired_thw)
 {
-    double ab = -max_acceleration * max_deceleration;
+    double ab             = -max_acceleration * max_deceleration;
     double relative_speed = follow_speed - lead_speed;
     return desired_distance + std::max(0.0, follow_speed * desired_thw + follow_speed * relative_speed / (2 * std::sqrt(ab)));
 }
 
 int ControllerNaturalDriver::Activate(ControlActivationMode lat_activation_mode,
-                            ControlActivationMode long_activation_mode,
-                            ControlActivationMode light_activation_mode,
-                            ControlActivationMode anim_activation_mode)
+                                      ControlActivationMode long_activation_mode,
+                                      ControlActivationMode light_activation_mode,
+                                      ControlActivationMode anim_activation_mode)
 {
     current_speed_ = object_->GetSpeed();
     if (mode_ == ControlOperationMode::MODE_ADDITIVE)
@@ -371,16 +391,16 @@ void ControllerNaturalDriver::ReportKeyEvent(int key, bool down)
     (void)down;
 }
 
-void ControllerNaturalDriver::GetVehicleOfInterestType(int lane_id, VoIType &lead, VoIType &follow)
+void ControllerNaturalDriver::GetVehicleOfInterestType(int lane_id, VoIType& lead, VoIType& follow)
 {
     if (lane_id == lane_ids_available_[0])
     {
-        lead = VoIType::LEFT_LEAD;
+        lead   = VoIType::LEFT_LEAD;
         follow = VoIType::LEFT_FOLLOW;
     }
     else
     {
-        lead = VoIType::RIGHT_LEAD;
+        lead   = VoIType::RIGHT_LEAD;
         follow = VoIType::RIGHT_FOLLOW;
     }
 }
@@ -394,8 +414,8 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
 
     VoIType adj_lead, adj_follow;
     GetVehicleOfInterestType(lane_id, adj_lead, adj_follow);
-    
-    double new_following_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow].vehicle, vehicles_of_interest_[adj_lead].vehicle);
+
+    double new_following_acceleration      = GetAcceleration(vehicles_of_interest_[adj_follow].vehicle, vehicles_of_interest_[adj_lead].vehicle);
     double new_following_pred_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow].vehicle, object_);
     if (new_following_pred_acceleration < -max_imposed_braking_)
     {
@@ -410,12 +430,13 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
             return false;
         }
     }
-    else 
+    else
     {
-        double acceleration = GetAcceleration(object_, vehicles_of_interest_[VoIType::LEAD].vehicle);
+        double acceleration               = GetAcceleration(object_, vehicles_of_interest_[VoIType::LEAD].vehicle);
         double old_following_acceleration = GetAcceleration(vehicles_of_interest_[VoIType::FOLLOWING].vehicle, object_);
-        double old_following_pred_acceleration = GetAcceleration(vehicles_of_interest_[VoIType::FOLLOWING].vehicle, vehicles_of_interest_[VoIType::LEAD].vehicle);
-        
+        double old_following_pred_acceleration =
+            GetAcceleration(vehicles_of_interest_[VoIType::FOLLOWING].vehicle, vehicles_of_interest_[VoIType::LEAD].vehicle);
+
         /* Jerk
             If I change lane, how much...
             "predicted_new_acceleration - acceleration" ...more can ego accelerate?
@@ -423,8 +444,10 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
             "new_following_pred_acceleration - new_following_acceleration" ...more can adjacent behind vehicle accelerate?
             "old_following_pred_acceleration - old_following_acceleration" ...more can current following vehicle accelerate?
         */
-        
-        double jerk = predicted_new_acceleration - acceleration + politeness_ * (new_following_pred_acceleration - new_following_acceleration + old_following_pred_acceleration - old_following_acceleration);
+
+        double jerk = predicted_new_acceleration - acceleration +
+                      politeness_ * (new_following_pred_acceleration - new_following_acceleration + old_following_pred_acceleration -
+                                     old_following_acceleration);
 
         if (jerk <= lane_change_acc_gain_)
         {
@@ -438,44 +461,43 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
 double ControllerNaturalDriver::EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds)
 {
     // adjust longitudinal dist wrt bounding boxes
-    double adjusted_gap_length = ds; // Ignore sign so distance always reduce
-    double dHeading          = GetAbsAngleDifference(follow->pos_.GetH(), target->pos_.GetH());
+    double adjusted_gap_length = ds;
+    double dHeading            = GetAbsAngleDifference(follow->pos_.GetH(), target->pos_.GetH());
     if (dHeading < M_PI_2)  // objects are pointing roughly in the same direction
     {
+        // TODO: Needs adjustment if ref is not BB center
         if (ds > 0)
         {
             adjusted_gap_length -=
                 (static_cast<double>(follow->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(follow->boundingbox_.center_.x_)) +
-                (static_cast<double>(target->boundingbox_.dimensions_.length_) / 2.0 -
-                    static_cast<double>(target->boundingbox_.center_.x_));
-            
+                (static_cast<double>(target->boundingbox_.dimensions_.length_) / 2.0 - static_cast<double>(target->boundingbox_.center_.x_));
+
             return (adjusted_gap_length < 0) ? 0 : adjusted_gap_length;
         }
         else
         {
             adjusted_gap_length +=
                 (static_cast<double>(follow->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(follow->boundingbox_.center_.x_)) +
-                (static_cast<double>(target->boundingbox_.dimensions_.length_) / 2.0 -
-                    static_cast<double>(target->boundingbox_.center_.x_));
+                (static_cast<double>(target->boundingbox_.dimensions_.length_) / 2.0 - static_cast<double>(target->boundingbox_.center_.x_));
 
             return (adjusted_gap_length > 0) ? 0 : adjusted_gap_length;
         }
     }
 
-    return ds;
+    return ds;  // Not pointing roughly same direction, return ref point differences for now
 }
 
 void ControllerNaturalDriver::FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type)
 {
-    if (vehicles_of_interest_[type].vehicle == nullptr && diff.ds> 0)
+    if (vehicles_of_interest_[type].vehicle == nullptr && diff.ds > 0)
     {
         vehicles_of_interest_[type].vehicle = object;
-        vehicles_of_interest_[type].diff = diff;
+        vehicles_of_interest_[type].diff    = diff;
     }
     else if (diff.ds > 0 && diff.ds < vehicles_of_interest_[type].diff.ds)
     {
         vehicles_of_interest_[type].vehicle = object;
-        vehicles_of_interest_[type].diff = diff;
+        vehicles_of_interest_[type].diff    = diff;
     }
 }
 
@@ -484,46 +506,46 @@ void ControllerNaturalDriver::FindClosestBehind(scenarioengine::Object* object, 
     if (vehicles_of_interest_[type].vehicle == nullptr && diff.ds < 0)
     {
         vehicles_of_interest_[type].vehicle = object;
-        vehicles_of_interest_[type].diff = diff;
+        vehicles_of_interest_[type].diff    = diff;
     }
     else if (diff.ds < 0 && diff.ds > vehicles_of_interest_[type].diff.ds)
     {
         vehicles_of_interest_[type].vehicle = object;
-        vehicles_of_interest_[type].diff = diff;
+        vehicles_of_interest_[type].diff    = diff;
     }
 }
 
 bool ControllerNaturalDriver::AdjacentLanesAvailable()
 {
-    double current_s = object_->pos_.GetS();
-    int current_lane = object_->pos_.GetLaneId();
+    double current_s    = object_->pos_.GetS();
+    int    current_lane = object_->pos_.GetLaneId();
 
     id_t road_id = object_->pos_.GetTrackId();
-    auto road = object_->pos_.GetRoadById(road_id);
+    auto road    = object_->pos_.GetRoadById(road_id);
 
-    auto ls = road->GetLaneSectionByS(current_s);
+    auto ls                      = road->GetLaneSectionByS(current_s);
     auto driving_lanes_available = ls->GetNumberOfDrivingLanesSide(current_lane);
 
     if (driving_lanes_available == 1)
     {
         // Only 1 lane in current direction
-        lane_ids_available_[0] = 0; 
+        lane_ids_available_[0] = 0;
         lane_ids_available_[1] = 0;
 
         return false;
     }
 
-    if (abs(current_lane) == 1) // In first lane, available lane to the right
+    if (abs(current_lane) == 1)  // In first lane, available lane to the right
     {
         lane_ids_available_[0] = 0;
         lane_ids_available_[1] = current_lane + SIGN(current_lane);
     }
-    else if (driving_lanes_available > abs(current_lane)) // Not in first lane and there are lanes to the right, both lanes available
+    else if (driving_lanes_available > abs(current_lane))  // Not in first lane and there are lanes to the right, both lanes available
     {
         lane_ids_available_[0] = current_lane - SIGN(current_lane);
         lane_ids_available_[1] = current_lane + SIGN(current_lane);
     }
-    else // Left lane only available
+    else  // Left lane only available
     {
         lane_ids_available_[0] = current_lane - SIGN(current_lane);
         lane_ids_available_[1] = 0;

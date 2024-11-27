@@ -25,7 +25,7 @@ namespace scenarioengine
 {
     struct VoI
     {
-        scenarioengine::Object* vehicle;
+        scenarioengine::Object*   vehicle;
         roadmanager::PositionDiff diff;
     };
 
@@ -35,7 +35,7 @@ namespace scenarioengine
         CHANGE_LANE,
     };
 
-    enum VoIType // VehicleOfInterestType
+    enum VoIType  // VehicleOfInterestType
     {
         LEAD = 0,
         FOLLOWING,
@@ -75,26 +75,31 @@ namespace scenarioengine
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
 
-        void GetLeadVehicle();
-        void GetFollowVehicle();
-        bool AdjacentLanesAvailable();
-        void UpdateSurroundingVehicles();
-        bool VehiclesInEgoLane(std::vector<scenarioengine::Object*> &vehicles);
-        bool VehiclesInAdjacentLane(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
-        void FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
-        void FindClosestBehind(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
-        void GetAdjacentLeadAndFollow(const int lane_id);
-        bool AbortLaneChange();
+        void                     GetLeadVehicle();
+        void                     GetFollowVehicle();
+        bool                     AdjacentLanesAvailable();
+        void                     UpdateSurroundingVehicles();
+        bool                     VehiclesInEgoLane(std::vector<scenarioengine::Object*>& vehicles);
+        bool                     VehiclesInAdjacentLane(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
+        void                     FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
+        void                     FindClosestBehind(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
+        void                     GetAdjacentLeadAndFollow(const int lane_id);
+        bool                     AbortLaneChange();
         ControllerNaturalDriver* GetOtherDriver(scenarioengine::Object* object);
-        double EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds);
+        double                   EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds);
 
         bool CheckLaneChangePossible(const int lane_id);
 
-        void GetVehicleOfInterestType(int lane_id, VoIType &lead, VoIType &follow);
+        void GetVehicleOfInterestType(int lane_id, VoIType& lead, VoIType& follow);
         void ClearVehicleOfInterest(VoIType type);
 
         double GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead);
-        double GetDesiredGap(double max_acceleration, double max_deceleration, double follow_speed, double lead_speed, double desired_distance, double desired_thw);
+        double GetDesiredGap(double max_acceleration,
+                             double max_deceleration,
+                             double follow_speed,
+                             double lead_speed,
+                             double desired_distance,
+                             double desired_thw);
 
         void ReportKeyEvent(int key, bool down);
         void SetDesiredSpeed(double desired_speed)
@@ -128,34 +133,33 @@ namespace scenarioengine
         }
 
     private:
-        vehicle::Vehicle vehicle_;
-        bool             active_;
-        double           desired_distance_;  // target headway time
-        double           actual_distance_;
-        double           distance_adjustment_t_;
-        double           desired_speed_;
-        double           current_speed_;
-        double           speed_tolerance_;
-        double           lane_change_duration_;
-        double           adj_rear_dist_;
-        double           adj_lead_dist_;
-        double           lookahead_dist_;
-        double           max_deceleration_;
-        double           max_acceleration_;
-        std::array<int, 2> lane_ids_available_;
+        vehicle::Vehicle                 vehicle_;
+        bool                             active_;
+        double                           desired_distance_;  // target headway time
+        double                           actual_distance_;
+        double                           distance_adjustment_t_;
+        double                           desired_speed_;
+        double                           current_speed_;
+        double                           lane_change_duration_;
+        double                           adj_rear_dist_;
+        double                           adj_lead_dist_;
+        double                           lookahead_dist_;
+        double                           max_deceleration_;
+        double                           max_acceleration_;
+        std::array<int, 2>               lane_ids_available_;
         std::unordered_map<VoIType, VoI> vehicles_of_interest_;
-        double           distance_to_adjacent_lead_;
-        bool             lane_change_injected;
-        State            state_;
-        double           lane_change_delay_;
-        double           lane_change_cooldown_;
-        int              target_lane_;
-        double           desired_thw_;
-        double           max_imposed_braking_;
-        double           politeness_;
-        double           lane_change_acc_gain_;
-        int              route_;
-        bool             initiate_lanechange_;
+        double                           distance_to_adjacent_lead_;
+        bool                             lane_change_injected;
+        State                            state_;
+        double                           lane_change_delay_;
+        double                           lane_change_cooldown_;
+        int                              target_lane_;
+        double                           desired_thw_;
+        double                           max_imposed_braking_;
+        double                           politeness_;
+        double                           lane_change_acc_gain_;
+        int                              route_;
+        bool                             initiate_lanechange_;
     };
 
     Controller* InstantiateNaturalDriver(void* args);
