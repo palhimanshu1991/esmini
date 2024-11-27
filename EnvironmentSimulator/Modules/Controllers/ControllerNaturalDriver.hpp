@@ -75,8 +75,6 @@ namespace scenarioengine
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
 
-        void                     GetLeadVehicle();
-        void                     GetFollowVehicle();
         bool                     AdjacentLanesAvailable();
         void                     UpdateSurroundingVehicles();
         bool                     VehiclesInEgoLane(std::vector<scenarioengine::Object*>& vehicles);
@@ -89,9 +87,7 @@ namespace scenarioengine
         double                   EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds);
 
         bool CheckLaneChangePossible(const int lane_id);
-
         void GetVehicleOfInterestType(int lane_id, VoIType& lead, VoIType& follow);
-        void ClearVehicleOfInterest(VoIType type);
 
         double GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead);
         double GetDesiredGap(double max_acceleration,
@@ -102,35 +98,6 @@ namespace scenarioengine
                              double desired_thw);
 
         void ReportKeyEvent(int key, bool down);
-        void SetDesiredSpeed(double desired_speed)
-        {
-            desired_speed_ = desired_speed;
-        }
-
-        double GetMaxAcceleration()
-        {
-            return max_acceleration_;
-        }
-        double GetDesiredSpeed()
-        {
-            return desired_speed_;
-        }
-        double GetMaxDeceleration()
-        {
-            return max_deceleration_;
-        }
-        double GetDesiredDistance()
-        {
-            return desired_distance_;
-        }
-        double GetDesiredTHW()
-        {
-            return desired_thw_;
-        }
-        State GetState()
-        {
-            return state_;
-        }
 
     private:
         vehicle::Vehicle                 vehicle_;
