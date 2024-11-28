@@ -569,14 +569,14 @@ extern "C"
     RM_DLL_API int RM_SetOptionValue(const char* name, const char* value);
 
     /**
-    Set option persistent until esminiLib is not reloaded. The option's value will remain same within multiple scenario runs.
+    Set option persistent until esminiRMLib is not reloaded. The option's value will remain same within multiple scenario runs.
     @param name is the name of the option whose value is being set
     @return 0 if setting option's value is successful otherwise its non zero value
     */
     RM_DLL_API int RM_SetOptionPersistent(const char* name);
 
     /**
-    Set option value persistent until esminiLib is not reloaded. The option value's will remain same within multiple scenario runs.
+    Set option value persistent until esminiRMLib is not reloaded. The option value's will remain same within multiple scenario runs.
     @param name is the name of the option who value is being set
     @param value is the value to assigned to the option
     @return 0 if setting option's value is successful otherwise its non zero value

@@ -43,7 +43,15 @@ namespace esmini::common
 
         if (filePath.has_parent_path() && !fs::exists(filePath.parent_path()))
         {
-            std::cout << "Invalid log file path : " << path << '\n';
+            std::string esminiVersion = GetVersionInfoForLog();
+            if( TxtLogger::Inst().ShouldLogToConsole())
+            {
+                consoleLogger->error("Invalid file path : {} exiting", path);                
+            }
+            else
+            {
+                std::cout << esminiVersion << '\n' << "Invalid file path : " << path << " exiting" << '\n';
+            }
             exit(-1);
         }
         if (!filePath.has_filename())
@@ -146,11 +154,15 @@ namespace esmini::common
         }
         catch (const spdlog::spdlog_ex& ex)
         {
+            std::string esminiVersion = GetVersionInfoForLog();
+            std::cout << esminiVersion << '\n';
             std::cerr << "Logger initialization failed: " << ex.what() << std::endl;
             exit(-1);
         }
         catch (...)
         {
+            std::string esminiVersion = GetVersionInfoForLog();
+            std::cout << esminiVersion << '\n';
             std::cerr << "Logger initialization failed: Unknown exception" << std::endl;
             exit(-1);
         }
