@@ -522,16 +522,9 @@ extern "C"
         return val.c_str();
     }
 
-    SE_DLL_API int SE_GetOptionSet(const char *name)
+    SE_DLL_API bool SE_GetOptionSet(const char *name)
     {
-        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))
-        {
-            return 0;
-        }
-        else
-        {
-            return 1;
-        }
+        return SE_Env::Inst().GetOptions().IsOptionArgumentSet(name);
     }
 
     SE_DLL_API int SE_SetParameterDistribution(const char *filename)
