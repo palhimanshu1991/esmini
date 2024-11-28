@@ -44,9 +44,9 @@ namespace esmini::common
         if (filePath.has_parent_path() && !fs::exists(filePath.parent_path()))
         {
             std::string esminiVersion = GetVersionInfoForLog();
-            if( TxtLogger::Inst().ShouldLogToConsole())
+            if (TxtLogger::Inst().ShouldLogToConsole())
             {
-                consoleLogger->error("Invalid file path : {} exiting", path);                
+                consoleLogger->error("Invalid file path : {} exiting", path);
             }
             else
             {
