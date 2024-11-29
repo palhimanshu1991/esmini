@@ -23,7 +23,6 @@
 #include "helpText.hpp"
 #include "OSCParameterDistribution.hpp"
 #include "logger.hpp"
-#include "Utils.h"
 
 #ifdef _USE_OSG
 #include "viewer.hpp"
@@ -779,7 +778,7 @@ int ScenarioPlayer::InitViewer()
 
         while ((arg_str = opt.GetOptionArg("custom_camera", counter)) != "")
         {
-            const auto splitted = utils::SplitString(arg_str, ',');
+            const auto splitted = SplitString(arg_str, ',');
 
             if (splitted.size() == 3)
             {
@@ -812,7 +811,7 @@ int ScenarioPlayer::InitViewer()
 
         while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
         {
-            const auto splitted = utils::SplitString(arg_str, ',');
+            const auto splitted = SplitString(arg_str, ',');
 
             if (splitted.size() == 3)
             {
@@ -844,7 +843,7 @@ int ScenarioPlayer::InitViewer()
 
         while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
         {
-            const auto splitted = utils::SplitString(arg_str, ',');
+            const auto splitted = SplitString(arg_str, ',');
             if (splitted.size() != 4)
             {
                 LOG_ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
@@ -863,7 +862,7 @@ int ScenarioPlayer::InitViewer()
 
         while ((arg_str = opt.GetOptionArg("custom_light", counter)) != "")
         {
-            const auto splitted = utils::SplitString(arg_str, ',');
+            const auto splitted = SplitString(arg_str, ',');
             if (splitted.size() != 4)
             {
                 LOG_ERROR_AND_QUIT("Expected custom_light <x,y,z,intensity>. Got {} values instead of 4", splitted.size());
@@ -1334,7 +1333,7 @@ int ScenarioPlayer::Init()
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         arg_str             = opt.GetOptionArg("log_only_modules");
-        const auto splitted = utils::SplitString(arg_str, ',');
+        const auto splitted = SplitString(arg_str, ',');
         if (!splitted.empty())
         {
             std::unordered_set<std::string> logOnlyModules(splitted.begin(), splitted.end());
@@ -1344,7 +1343,7 @@ int ScenarioPlayer::Init()
     if (opt.IsOptionArgumentSet("log_skip_modules"))
     {
         arg_str             = opt.GetOptionArg("log_skip_modules");
-        const auto splitted = utils::SplitString(arg_str, ',');
+        const auto splitted = SplitString(arg_str, ',');
         if (!splitted.empty())
         {
             std::unordered_set<std::string> logSkipModules(splitted.begin(), splitted.end());

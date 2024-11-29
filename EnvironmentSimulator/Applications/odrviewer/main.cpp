@@ -31,7 +31,6 @@
 #include "CommonMini.hpp"
 #include "helpText.hpp"
 #include "logger.hpp"
-#include "Utils.h"
 
 #define ROAD_MIN_LENGTH 30.0
 #define SIGN(X)         ((X < 0) ? -1 : 1)
@@ -472,7 +471,7 @@ int main(int argc, char **argv)
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         arg_str             = opt.GetOptionArg("log_only_modules");
-        const auto splitted = utils::SplitString(arg_str, ',');
+        const auto splitted = SplitString(arg_str, ',');
         if (!splitted.empty())
         {
             std::unordered_set<std::string> logOnlyModules;
@@ -484,7 +483,7 @@ int main(int argc, char **argv)
     if (opt.IsOptionArgumentSet("log_skip_modules"))
     {
         arg_str             = opt.GetOptionArg("log_skip_modules");
-        const auto splitted = utils::SplitString(arg_str, ',');
+        const auto splitted = SplitString(arg_str, ',');
         if (!splitted.empty())
         {
             std::unordered_set<std::string> logSkipModules;
@@ -609,7 +608,7 @@ int main(int argc, char **argv)
 
             while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
             {
-                const auto splitted = utils::SplitString(arg_str, ',');
+                const auto splitted = SplitString(arg_str, ',');
 
                 if (splitted.size() == 3)
                 {
@@ -647,7 +646,7 @@ int main(int argc, char **argv)
 
             while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
             {
-                const auto splitted = utils::SplitString(arg_str, ',');
+                const auto splitted = SplitString(arg_str, ',');
                 if (splitted.size() != 4)
                 {
                     LOG_ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());

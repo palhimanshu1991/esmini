@@ -30,7 +30,7 @@
 #include "helpText.hpp"
 #include "collision.hpp"
 #include "logger.hpp"
-#include "Utils.h"
+
 #include <signal.h>
 
 using namespace scenarioengine;
@@ -592,7 +592,7 @@ int main(int argc, char** argv)
 
             while ((arg_str = opt.GetOptionArg("custom_camera", counter)) != "")
             {
-                const auto splitted = utils::SplitString(arg_str, ',');
+                const auto splitted = SplitString(arg_str, ',');
 
                 if (splitted.size() == 3)
                 {
@@ -631,7 +631,7 @@ int main(int argc, char** argv)
 
             while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
             {
-                const auto splitted = utils::SplitString(arg_str, ',');
+                const auto splitted = SplitString(arg_str, ',');
 
                 if (splitted.size() == 3)
                 {
@@ -669,7 +669,7 @@ int main(int argc, char** argv)
 
             while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
             {
-                const auto splitted = utils::SplitString(arg_str, ',');
+                const auto splitted = SplitString(arg_str, ',');
                 if (splitted.size() != 4)
                 {
                     LOG_ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
