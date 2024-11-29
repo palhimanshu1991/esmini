@@ -157,21 +157,38 @@
         </Controller>
         <Controller name="NaturalDriver">
             <ParameterDeclarations>
-                <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" />
-                <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5" />
-                <!-- Do not consider vehicles otside the lateral space specified by LateralDist -->
-                <ParameterDeclaration name="LateralDist" parameterType="double" value="5" />
-                <ParameterDeclaration name="Mode" parameterType="string" value="additive" />
-                <!-- Virtual operation will only do calculations, assuming external regulation -->
-                <ParameterDeclaration name="Virtual" parameterType="boolean" value="false" />
+                <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+                <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+                <ParameterDeclaration name="EgoSpeed" parameterType="double" value="50"/>
+                <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="50"/>
+                <ParameterDeclaration name="DesiredDistance" parameterType="double" value="5"/>
+                <ParameterDeclaration name="AdjRearDistance" parameterType="double" value="3.0"/>
+                <ParameterDeclaration name="AdjLeadDistance" parameterType="double" value="20.0"/>
+                <ParameterDeclaration name="TargetSpeed" parameterType="double" value="50"/>
+                <ParameterDeclaration name="EgoS" parameterType="double" value="20"/>
+                <ParameterDeclaration name="TargetS" parameterType="double" value="100"/>
+                <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="10"/>
+                <ParameterDeclaration name="kp" parameterType="double" value="0.2"/>
+                <ParameterDeclaration name="kd" parameterType="double" value="0.8"/>
+                <ParameterDeclaration name="MaxAcc" parameterType="double" value="4.0"/>
+                <ParameterDeclaration name="Route" parameterType="integer" value="-1"/>
+                <ParameterDeclaration name="Politeness" parameterType="double" value="0.1"/>
+                <ParameterDeclaration name="LaneChangeDelay" parameterType="double" value="5.0"/>
+                <ParameterDeclaration name="Thw" parameterType="double" value="1.5"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="NaturalDriver" />
-                <Property name="mode" value="$Mode" />
-                <Property name="setSpeed"  value="$SetSpeed" />
-                <Property name="lateralDist"  value="$LateralDist" />
-                <Property name="timeGap"  value="$TimeGap" />
-                <Property name="virtual"  value="$Virtual" />
+                <Property name="desiredDistance" value="$DesiredDistance" />
+                <Property name="adjRearDistance" value="$AdjRearDistance" />
+                <Property name="adjLeadDistance" value="$AdjLeadDistance" />
+                <Property name="mode" value="override" />
+                <Property name="speedTolerance" value="${$SpeedTolerance / 3.6}" />
+                <Property name="desiredSpeed" value="${$DesiredSpeed / 3.6}" />
+                <Property name="maxAcc" value="2" />
+                <Property name="maxDec" value="-4" />
+                <Property name="route" value="$Route" />
+                <Property name="politeness" value="$Politeness" />
+                <Property name="laneChangeDelay" value="$LaneChangeDelay" />
+                <Property name="THW" value="$Thw" />
             </Properties>
         </Controller>
         <Controller name="ALKSController">
