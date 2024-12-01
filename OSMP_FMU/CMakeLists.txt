@@ -101,18 +101,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../E
                     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/include)
 
 link_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../bin
-    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/sumo/${EXT_INCL_DIR}/lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib/osgPlugins-3.6.5
-    ${CMAKE_CURRENT_SOURCE_DIR}/../build/EnvironmentSimulator/Modules/ScenarioEngine/${CONFIG_FOLDER}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../build/EnvironmentSimulator/Modules/PlayerBase/${CONFIG_FOLDER}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../build/EnvironmentSimulator/Modules/RoadManager/${CONFIG_FOLDER}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../build/EnvironmentSimulator/Modules/Controllers/${CONFIG_FOLDER}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../build/EnvironmentSimulator/Modules/CommonMini/${CONFIG_FOLDER}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../build/EnvironmentSimulator/Modules/ViewerBase/${CONFIG_FOLDER})
+   ${CMAKE_CURRENT_SOURCE_DIR}
+   ${CMAKE_CURRENT_SOURCE_DIR}/../bin)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../externals/fmi2/headers)
@@ -123,36 +113,10 @@ target_compile_definitions(${TARGET} PRIVATE "FMU_SHARED_OBJECT")
 
 if(STATIC_LINKING)
     message("Link esmini statically")
-    set(EXTERNALS_OSI_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/lib)
-    set(EXTERNALS_OSG_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib)
-    set(EXTERNALS_OSG_PLUGINS_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib/osgPlugins-3.6.5)
-    set(EXTERNALS_SUMO_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/sumo/${EXT_INCL_DIR}/lib)
-
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/external/osi.cmake)
-    set_osi_libs()
-
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/external/sumo.cmake)
-    set_sumo_libs()
-
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/external/osg.cmake)
-    set_osg_libs()
-
-    target_link_libraries(
-        ${TARGET}
-        PRIVATE esminiLib_static${LIB_POSTFIX}
-                PlayerBase${LIB_POSTFIX}
-                ScenarioEngine${LIB_POSTFIX}
-                Controllers${LIB_POSTFIX}
-                ViewerBase${LIB_POSTFIX}
-                RoadManager${LIB_POSTFIX}
-                CommonMini${LIB_POSTFIX}
-                ${OSI_LIBRARIES}
-                ${SUMO_LIBRARIES}
-                ${OSG_LIBRARIES}
-                ${ADDITIONAL_LIBS})
+    target_link_libraries(${TARGET} PRIVATE esminiLib_static${LIB_POSTFIX})
 else()
     message("Link esmini dynamically")
-    target_link_libraries(${TARGET} esminiLib ${LIB_PREFIX}protobuf open_simulation_interface_pic)
+    target_link_libraries(${TARGET} esminiLib)
 endif()
 
 add_custom_command(
