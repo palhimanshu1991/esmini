@@ -26,16 +26,7 @@ target_include_directories(
 
 target_link_libraries(
     ${TARGET}
-    PRIVATE project_options
-            esminiLib_static
-            PlayerBase
-            ScenarioEngine
-            CommonMini
-            Controllers
-            RoadManager
-            ${VIEWER_BASE}
-            ${OSI_LIBRARIES}
-            ${SUMO_LIBRARIES}
+    PRIVATE esminiLib_static
             ${TIME_LIB}
             ${SOCK_LIB})
 
