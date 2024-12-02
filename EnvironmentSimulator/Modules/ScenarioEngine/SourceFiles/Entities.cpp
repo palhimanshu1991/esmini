@@ -1158,7 +1158,7 @@ int Object::Distance(Object*                           target,
         }
         else
         {
-            LOG_ERROR("Unhandled case: cs %d reDistType %d freeSpace %d\n", cs, relDistType, freeSpace);
+            LOG_ERROR("Unhandled case: cs {} reDistType {} freeSpace {}\n", cs, relDistType, freeSpace);
             return -1;
         }
     }
