@@ -1151,7 +1151,7 @@ int Object::Distance(Object*                           target,
                 }
                 else
                 {
-                    LOG_ERROR("Unexpected relativeDistanceType: %d", relDistType);
+                    LOG_ERROR("Unexpected relativeDistanceType: {}", relDistType);
                     return -1;
                 }
             }
