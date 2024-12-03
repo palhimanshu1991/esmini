@@ -216,7 +216,6 @@ void ControllerNaturalDriver::Step(double dt)
         current_speed_ = desired_speed_;
     }
 
-
     object_->MoveAlongS(current_speed_ * dt);
     gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
     gateway_->updateObjectSpeed(object_->GetId(), 0.0, current_speed_);
@@ -297,7 +296,7 @@ void ControllerNaturalDriver::UpdateSurroundingVehicles()
             FindClosestAhead(obj, diff, VoIType::LEFT_LEAD);
             FindClosestBehind(obj, diff, VoIType::LEFT_FOLLOW);
         }
-        else if (diff.dLaneId * -SIGN(object_->pos_.GetLaneId())== -1)  // Right lane
+        else if (diff.dLaneId * -SIGN(object_->pos_.GetLaneId()) == -1)  // Right lane
         {
             FindClosestAhead(obj, diff, VoIType::RIGHT_LEAD);
             FindClosestBehind(obj, diff, VoIType::RIGHT_FOLLOW);
@@ -421,7 +420,7 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
 
     VoIType adj_lead, adj_follow;
     GetVehicleOfInterestType(lane_id, adj_lead, adj_follow);
-    
+
     double new_following_acceleration      = GetAcceleration(vehicles_of_interest_[adj_follow].vehicle, vehicles_of_interest_[adj_lead].vehicle);
     double new_following_pred_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow].vehicle, object_);
     if (new_following_pred_acceleration < -max_imposed_braking_)
