@@ -134,11 +134,14 @@ void ControllerNaturalDriver::InitPostPlayer()
 void ControllerNaturalDriver::Step(double dt)
 {
     UpdateSurroundingVehicles();
-
+    double acceleration;
+    
     switch (state_)
     {
         case State::DRIVE:
         {
+            acceleration = GetAcceleration(object_, vehicles_of_interest_[VoIType::LEAD].vehicle);
+
             if (!lane_change_injected)
             {
                 bool adjacent_lanes_available = AdjacentLanesAvailable();
@@ -164,6 +167,7 @@ void ControllerNaturalDriver::Step(double dt)
         }
         case State::CHANGE_LANE:
         {
+            acceleration = 0.0;
             break;
         }
     }
@@ -200,13 +204,6 @@ void ControllerNaturalDriver::Step(double dt)
             lane_change_cooldown_ = lane_change_delay_ + lane_change_duration_;  // Reset the cooldown
             lane_change_injected  = false;
         }
-    }
-
-    double acceleration = 0.0;
-
-    if (state_ == State::DRIVE)
-    {
-        acceleration = GetAcceleration(object_, vehicles_of_interest_[VoIType::LEAD].vehicle);
     }
 
     current_speed_ += acceleration * dt;
