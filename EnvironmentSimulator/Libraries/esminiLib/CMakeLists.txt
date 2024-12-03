@@ -14,12 +14,12 @@ include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 # ############################### Setting target files ###############################################################################################
 
 set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/esminiLib.cpp
-    ${CONTROLLERS_PATH}/vehicle.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/esminiLib.cpp)
+    # ${CONTROLLERS_PATH}/vehicle.cpp)
 
 set(INCLUDES
-    ${CMAKE_CURRENT_SOURCE_DIR}/esminiLib.hpp
-    ${CONTROLLERS_PATH}/vehicle.hpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/esminiLib.hpp)
+    # ${CONTROLLERS_PATH}/vehicle.hpp)
 
 # ############################### Creating library ##################################################################################################
 
