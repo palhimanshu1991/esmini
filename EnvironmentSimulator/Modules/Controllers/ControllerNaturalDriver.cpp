@@ -139,14 +139,6 @@ void ControllerNaturalDriver::Step(double dt)
     {
         case State::DRIVE:
         {
-            double acceleration = GetAcceleration(object_, vehicles_of_interest_[VoIType::LEAD].vehicle);
-            current_speed_ += acceleration * dt;
-
-            if (current_speed_ >= desired_speed_)
-            {
-                current_speed_ = desired_speed_;
-            }
-
             if (!lane_change_injected)
             {
                 bool adjacent_lanes_available = AdjacentLanesAvailable();
@@ -175,10 +167,6 @@ void ControllerNaturalDriver::Step(double dt)
             break;
         }
     }
-
-    object_->MoveAlongS(current_speed_ * dt);
-    gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
-    gateway_->updateObjectSpeed(object_->GetId(), 0.0, current_speed_);
 
     if (initiate_lanechange_)
     {
@@ -213,6 +201,25 @@ void ControllerNaturalDriver::Step(double dt)
             lane_change_injected  = false;
         }
     }
+
+    double acceleration = 0.0;
+
+    if (state_ == State::DRIVE)
+    {
+        acceleration = GetAcceleration(object_, vehicles_of_interest_[VoIType::LEAD].vehicle);
+    }
+
+    current_speed_ += acceleration * dt;
+
+    if (current_speed_ >= desired_speed_)
+    {
+        current_speed_ = desired_speed_;
+    }
+
+
+    object_->MoveAlongS(current_speed_ * dt);
+    gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
+    gateway_->updateObjectSpeed(object_->GetId(), 0.0, current_speed_);
 
     Controller::Step(dt);
 }
