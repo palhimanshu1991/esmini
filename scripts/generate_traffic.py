@@ -117,7 +117,7 @@ class Scenario(ScenarioGenerator):
         init.add_init_action(egoname, egospeed)
         
         t_id = 0
-        car_factor = 2 # cars/100m
+        car_factor = 1 # cars/100m
         car_density = int(100/car_factor)
         for road_id in list(road_dict)[2:]:
             section_length = road_dict[road_id]["length"]

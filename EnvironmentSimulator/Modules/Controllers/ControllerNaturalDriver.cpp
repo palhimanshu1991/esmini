@@ -222,14 +222,11 @@ void ControllerNaturalDriver::Step(double dt)
 
 bool ControllerNaturalDriver::AbortLaneChange()
 {
+    std::vector<Object*> objects_in_radius;
+    FilterSurroundingVehicles(objects_in_radius);
     // Check if someone else is already changing to intended lane
-    for (const auto& other_object : entities_->object_)
+    for (const auto& other_object : objects_in_radius)
     {
-        if (object_->GetId() == other_object->GetId())
-        {
-            continue;  // Don't compare to ourselves
-        }
-
         ControllerNaturalDriver* nd = GetOtherDriver(other_object);
         if (nd == nullptr)
         {
@@ -271,32 +268,12 @@ bool ControllerNaturalDriver::AbortLaneChange()
 void ControllerNaturalDriver::UpdateSurroundingVehicles()
 {
     vehicles_of_interest_ = {};
-    const int ego_id      = object_->GetId();
 
-    std::vector<Object*> objects_in_radius = {};
-    for (const auto& obj : entities_->object_)
-    {
-        if (obj->GetId() == ego_id)
-        {
-            continue;
-        }
-
-        
-        double relative_distance;
-        object_->pos_.Distance(&obj->pos_, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, relative_distance, lookahead_dist_);
-        if (relative_distance <= lookahead_dist_)
-        {
-            objects_in_radius.push_back(obj);
-        }
-    }
+    std::vector<Object*> objects_in_radius;
+    FilterSurroundingVehicles(objects_in_radius);
 
     for (const auto& obj : objects_in_radius)
     {
-        if (obj->GetId() == ego_id)
-        {
-            continue;  // Ignore measurement to yourself
-        }
-
         roadmanager::PositionDiff diff = {};
         object_->pos_.Delta(&obj->pos_, diff, true, lookahead_dist_);
 
@@ -314,6 +291,26 @@ void ControllerNaturalDriver::UpdateSurroundingVehicles()
         {
             FindClosestAhead(obj, diff, VoIType::RIGHT_LEAD);
             FindClosestBehind(obj, diff, VoIType::RIGHT_FOLLOW);
+        }
+    }
+}
+
+// Simple distance calc to find only relevant vehicles around ego
+void ControllerNaturalDriver::FilterSurroundingVehicles(std::vector<Object*> &filtered_vehicles)
+{
+    for (const auto& obj : entities_->object_)
+    {
+        if (obj->GetId() == object_->GetId())
+        {
+            continue;
+        }
+
+        
+        double relative_distance;
+        object_->pos_.Distance(&obj->pos_, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, relative_distance, lookahead_dist_);
+        if (relative_distance <= lookahead_dist_)
+        {
+            filtered_vehicles.push_back(obj);
         }
     }
 }
