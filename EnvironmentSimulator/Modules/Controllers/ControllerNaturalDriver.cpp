@@ -273,7 +273,24 @@ void ControllerNaturalDriver::UpdateSurroundingVehicles()
     vehicles_of_interest_ = {};
     const int ego_id      = object_->GetId();
 
+    std::vector<Object*> objects_in_radius = {};
     for (const auto& obj : entities_->object_)
+    {
+        if (obj->GetId() == ego_id)
+        {
+            continue;
+        }
+
+        
+        double relative_distance;
+        object_->pos_.Distance(&obj->pos_, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, relative_distance, lookahead_dist_);
+        if (relative_distance <= lookahead_dist_)
+        {
+            objects_in_radius.push_back(obj);
+        }
+    }
+
+    for (const auto& obj : objects_in_radius)
     {
         if (obj->GetId() == ego_id)
         {
