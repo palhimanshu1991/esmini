@@ -77,6 +77,7 @@ namespace scenarioengine
 
         bool                     AdjacentLanesAvailable();
         void                     UpdateSurroundingVehicles();
+        void                     FilterSurroundingVehicles(std::vector<Object*> &filtered_vehicles);
         bool                     VehiclesInEgoLane(std::vector<scenarioengine::Object*>& vehicles);
         bool                     VehiclesInAdjacentLane(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
         void                     FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
@@ -102,14 +103,12 @@ namespace scenarioengine
     private:
         vehicle::Vehicle                 vehicle_;
         bool                             active_;
-        double                           desired_distance_;  // target headway time
+        double                           desired_distance_;
         double                           actual_distance_;
         double                           distance_adjustment_t_;
         double                           desired_speed_;
         double                           current_speed_;
         double                           lane_change_duration_;
-        double                           adj_rear_dist_;
-        double                           adj_lead_dist_;
         double                           lookahead_dist_;
         double                           max_deceleration_;
         double                           max_acceleration_;

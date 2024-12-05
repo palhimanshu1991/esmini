@@ -22,8 +22,6 @@
       <ParameterDeclaration name="EgoS" parameterType="double" value="20"/>
       <ParameterDeclaration name="TargetS" parameterType="double" value="100"/>
       <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="10"/>
-      <ParameterDeclaration name="kp" parameterType="double" value="0.2"/>
-      <ParameterDeclaration name="kd" parameterType="double" value="0.8"/>
       <ParameterDeclaration name="MaxAcc" parameterType="double" value="4.0"/>
       <ParameterDeclaration name="Route" parameterType="integer" value="-2"/>
       <ParameterDeclaration name="Politeness" parameterType="double" value="0.1"/>
@@ -39,7 +37,7 @@
 	  </ControllerCatalog>
    </CatalogLocations>
    <RoadNetwork>
-      <LogicFile filepath="../xodr/Hello_world_overtake0.xodr"/>
+      <LogicFile filepath="../xodr/e6mini.xodr"/>
       <!-- <LogicFile filepath="../xodr/straight_500m.xodr"/> -->
       <!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
    </RoadNetwork>
@@ -157,7 +155,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-2" offset="0" s="$EgoS"/>
+                        <LanePosition roadId="0" laneId="-2" offset="0" s="$EgoS"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -179,7 +177,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0" s="80"/>
+                        <LanePosition roadId="0" laneId="-2" offset="0" s="80"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -201,7 +199,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-2" offset="0" s="115"/>
+                        <LanePosition roadId="0" laneId="-2" offset="0" s="115"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -223,7 +221,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0" s="60"/>
+                        <LanePosition roadId="0" laneId="-2" offset="0" s="60"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -245,7 +243,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-3" offset="0" s="60"/>
+                        <LanePosition roadId="0" laneId="-3" offset="0" s="60"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>

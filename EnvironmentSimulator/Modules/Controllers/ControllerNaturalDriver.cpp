@@ -38,8 +38,6 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
       desired_speed_(15.0),  // TODO: Take from road speed
       current_speed_(desired_speed_),
       lane_change_duration_(3.0),
-      adj_rear_dist_(5.0),
-      adj_lead_dist_(20.0),
       lookahead_dist_(115.0),
       max_deceleration_(-3.0),
       max_acceleration_(3.0),
@@ -63,14 +61,6 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
     if (args && args->properties && args->properties->ValueExists("desiredDistance"))
     {
         desired_distance_ = strtod(args->properties->GetValueStr("desiredDistance"));
-    }
-    if (args && args->properties && args->properties->ValueExists("adjRearDistance"))
-    {
-        adj_rear_dist_ = strtod(args->properties->GetValueStr("adjRearDistance"));
-    }
-    if (args && args->properties && args->properties->ValueExists("adjLeadDistance"))
-    {
-        adj_lead_dist_ = strtod(args->properties->GetValueStr("adjLeadDistance"));
     }
     if (args && args->properties && args->properties->ValueExists("desiredSpeed"))
     {
@@ -212,6 +202,14 @@ void ControllerNaturalDriver::Step(double dt)
     {
         current_speed_ = desired_speed_;
     }
+    else if (current_speed_ > object_->GetMaxSpeed())
+    {
+        current_speed_ = object_->GetMaxSpeed();
+    }
+    else if (current_speed_ < 0.0)
+    {
+        current_speed_ = 0.0;
+    }
 
     object_->MoveAlongS(current_speed_ * dt);
     gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
@@ -222,14 +220,11 @@ void ControllerNaturalDriver::Step(double dt)
 
 bool ControllerNaturalDriver::AbortLaneChange()
 {
+    std::vector<Object*> objects_in_radius;
+    FilterSurroundingVehicles(objects_in_radius);
     // Check if someone else is already changing to intended lane
-    for (const auto& other_object : entities_->object_)
+    for (const auto& other_object : objects_in_radius)
     {
-        if (object_->GetId() == other_object->GetId())
-        {
-            continue;  // Don't compare to ourselves
-        }
-
         ControllerNaturalDriver* nd = GetOtherDriver(other_object);
         if (nd == nullptr)
         {
@@ -271,15 +266,12 @@ bool ControllerNaturalDriver::AbortLaneChange()
 void ControllerNaturalDriver::UpdateSurroundingVehicles()
 {
     vehicles_of_interest_ = {};
-    const int ego_id      = object_->GetId();
 
-    for (const auto& obj : entities_->object_)
+    std::vector<Object*> objects_in_radius;
+    FilterSurroundingVehicles(objects_in_radius);
+
+    for (const auto& obj : objects_in_radius)
     {
-        if (obj->GetId() == ego_id)
-        {
-            continue;  // Ignore measurement to yourself
-        }
-
         roadmanager::PositionDiff diff = {};
         object_->pos_.Delta(&obj->pos_, diff, true, lookahead_dist_);
 
@@ -288,15 +280,36 @@ void ControllerNaturalDriver::UpdateSurroundingVehicles()
             FindClosestAhead(obj, diff, VoIType::LEAD);
             FindClosestBehind(obj, diff, VoIType::FOLLOWING);
         }
-        else if (diff.dLaneId * -SIGN(object_->pos_.GetLaneId()) == 1)  // Left lane
+        else if (diff.dLaneId * -SIGN(object_->pos_.GetLaneId()) == 1)  // Always 1 on left lane
         {
             FindClosestAhead(obj, diff, VoIType::LEFT_LEAD);
             FindClosestBehind(obj, diff, VoIType::LEFT_FOLLOW);
         }
-        else if (diff.dLaneId * -SIGN(object_->pos_.GetLaneId()) == -1)  // Right lane
+        else if (diff.dLaneId * -SIGN(object_->pos_.GetLaneId()) == -1)  // Always -1 on right lane
         {
             FindClosestAhead(obj, diff, VoIType::RIGHT_LEAD);
             FindClosestBehind(obj, diff, VoIType::RIGHT_FOLLOW);
+        }
+    }
+}
+
+// Simple distance calc to find only relevant vehicles around ego
+void ControllerNaturalDriver::FilterSurroundingVehicles(std::vector<Object*> &filtered_vehicles)
+{
+    for (const auto& obj : entities_->object_)
+    {
+        if (obj->GetId() == object_->GetId())
+        {
+            continue;
+        }
+
+        
+        double relative_distance;
+        object_->pos_.Distance(&obj->pos_, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, relative_distance, lookahead_dist_);
+
+        if (relative_distance <= lookahead_dist_)
+        {
+            filtered_vehicles.push_back(obj);
         }
     }
 }
@@ -338,7 +351,7 @@ double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, 
         double desired_gap =
             GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, lead_current_speed, desired_distance_, desired_thw_);
 
-        roadmanager::PositionDiff diff;
+        roadmanager::PositionDiff diff = {};
         follow->pos_.Delta(&lead->pos_, diff, false, lookahead_dist_);
         double freespace = EstimateFreespace(follow, lead, diff.ds);
         (freespace == 0) ? freespace = SMALL_NUMBER : freespace = freespace;
@@ -492,12 +505,12 @@ double ControllerNaturalDriver::EstimateFreespace(const scenarioengine::Object* 
 
 void ControllerNaturalDriver::FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type)
 {
-    if (vehicles_of_interest_[type].vehicle == nullptr && diff.ds > 0)
+    if (vehicles_of_interest_[type].vehicle == nullptr && diff.ds >= 0)
     {
         vehicles_of_interest_[type].vehicle = object;
         vehicles_of_interest_[type].diff    = diff;
     }
-    else if (diff.ds > 0 && diff.ds < vehicles_of_interest_[type].diff.ds)
+    else if (diff.ds >= 0 && diff.ds < vehicles_of_interest_[type].diff.ds)
     {
         vehicles_of_interest_[type].vehicle = object;
         vehicles_of_interest_[type].diff    = diff;
@@ -538,19 +551,44 @@ bool ControllerNaturalDriver::AdjacentLanesAvailable()
         return false;
     }
 
-    if (abs(current_lane) == 1)  // In first lane, available lane to the right
+    int current_lane_idx = ls->GetLaneIdxById(current_lane);
+    int max_lane_idx = ls->GetNumberOfLanes() - 1;
+
+    int left_lane_id = current_lane - SIGN(current_lane);
+    int right_lane_id = current_lane + SIGN(current_lane);
+
+    bool left_driving, right_driving;
+    if (SIGN(current_lane) == -1)
+    {
+        int left_lanes = ls->GetNumberOfLanesLeft();
+        (current_lane_idx == max_lane_idx) ? right_driving = false : right_driving = ls->GetLaneById(right_lane_id)->IsDriving();
+        (current_lane_idx == max_lane_idx - left_lanes) ? left_driving = false : left_driving = ls->GetLaneById(left_lane_id)->IsDriving();
+    }
+    else
+    {
+        int right_lanes = ls->GetNumberOfLanesRight();
+        (current_lane_idx == 0) ? right_driving = false : right_driving = ls->GetLaneById(right_lane_id)->IsDriving();
+        (current_lane_idx == right_lanes - 1) ? left_driving = false : left_driving = ls->GetLaneById(left_lane_id)->IsDriving();
+    }
+
+    if (!left_driving && right_driving)  // Lane to the left is not driveable, but right lane is.
     {
         lane_ids_available_[0] = 0;
-        lane_ids_available_[1] = current_lane + SIGN(current_lane);
+        lane_ids_available_[1] = right_lane_id;
     }
-    else if (driving_lanes_available > abs(current_lane))  // Not in first lane and there are lanes to the right, both lanes available
+    else if (left_driving && right_driving)  // Lane to left and right are driving lanes
     {
-        lane_ids_available_[0] = current_lane - SIGN(current_lane);
-        lane_ids_available_[1] = current_lane + SIGN(current_lane);
+        lane_ids_available_[0] = left_lane_id;
+        lane_ids_available_[1] = right_lane_id;
     }
-    else  // Left lane only available
+    else if (left_driving && !right_driving)  // Lane to the right is not driveable, but left lane is.
     {
-        lane_ids_available_[0] = current_lane - SIGN(current_lane);
+        lane_ids_available_[0] = left_lane_id;
+        lane_ids_available_[1] = 0;
+    }
+    else
+    {
+        lane_ids_available_[0] = 0;
         lane_ids_available_[1] = 0;
     }
 

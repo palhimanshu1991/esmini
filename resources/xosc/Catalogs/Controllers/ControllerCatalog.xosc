@@ -170,7 +170,8 @@
                 <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="10"/>
                 <ParameterDeclaration name="kp" parameterType="double" value="0.2"/>
                 <ParameterDeclaration name="kd" parameterType="double" value="0.8"/>
-                <ParameterDeclaration name="MaxAcc" parameterType="double" value="4.0"/>
+                <ParameterDeclaration name="MaxDec" parameterType="double" value="-4.0"/>
+                <ParameterDeclaration name="MaxAcc" parameterType="double" value="2.0"/>
                 <ParameterDeclaration name="Route" parameterType="integer" value="-1"/>
                 <ParameterDeclaration name="Politeness" parameterType="double" value="0.1"/>
                 <ParameterDeclaration name="LaneChangeDelay" parameterType="double" value="5.0"/>
@@ -183,8 +184,8 @@
                 <Property name="mode" value="override" />
                 <Property name="speedTolerance" value="${$SpeedTolerance / 3.6}" />
                 <Property name="desiredSpeed" value="${$DesiredSpeed / 3.6}" />
-                <Property name="maxAcc" value="2" />
-                <Property name="maxDec" value="-4" />
+                <Property name="maxAcc" value="$MaxAcc" />
+                <Property name="maxDec" value="$MaxDec" />
                 <Property name="route" value="$Route" />
                 <Property name="politeness" value="$Politeness" />
                 <Property name="laneChangeDelay" value="$LaneChangeDelay" />
