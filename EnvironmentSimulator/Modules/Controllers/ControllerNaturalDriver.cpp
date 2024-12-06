@@ -282,12 +282,12 @@ void ControllerNaturalDriver::UpdateSurroundingVehicles()
             FindClosestAhead(obj, diff, VoIType::LEAD);
             FindClosestBehind(obj, diff, VoIType::FOLLOWING);
         }
-        else if (diff.dLaneId * -SIGN(object_->pos_.GetLaneId()) == 1)  // Left lane
+        else if (diff.dLaneId * -SIGN(object_->pos_.GetLaneId()) == 1)  // Always 1 on left lane
         {
             FindClosestAhead(obj, diff, VoIType::LEFT_LEAD);
             FindClosestBehind(obj, diff, VoIType::LEFT_FOLLOW);
         }
-        else if (diff.dLaneId * -SIGN(object_->pos_.GetLaneId()) == -1)  // Right lane
+        else if (diff.dLaneId * -SIGN(object_->pos_.GetLaneId()) == -1)  // Always -1 on right lane
         {
             FindClosestAhead(obj, diff, VoIType::RIGHT_LEAD);
             FindClosestBehind(obj, diff, VoIType::RIGHT_FOLLOW);

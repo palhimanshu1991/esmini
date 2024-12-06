@@ -103,7 +103,7 @@ namespace scenarioengine
     private:
         vehicle::Vehicle                 vehicle_;
         bool                             active_;
-        double                           desired_distance_;  // target headway time
+        double                           desired_distance_;
         double                           actual_distance_;
         double                           distance_adjustment_t_;
         double                           desired_speed_;
