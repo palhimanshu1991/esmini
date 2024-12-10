@@ -506,12 +506,12 @@ double ControllerNaturalDriver::EstimateFreespace(const scenarioengine::Object* 
 
 void ControllerNaturalDriver::FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type)
 {
-    if (vehicles_of_interest_[type].vehicle == nullptr && diff.ds > 0)
+    if (vehicles_of_interest_[type].vehicle == nullptr && diff.ds >= 0)
     {
         vehicles_of_interest_[type].vehicle = object;
         vehicles_of_interest_[type].diff    = diff;
     }
-    else if (diff.ds > 0 && diff.ds < vehicles_of_interest_[type].diff.ds)
+    else if (diff.ds >= 0 && diff.ds < vehicles_of_interest_[type].diff.ds)
     {
         vehicles_of_interest_[type].vehicle = object;
         vehicles_of_interest_[type].diff    = diff;
@@ -551,18 +551,19 @@ bool ControllerNaturalDriver::AdjacentLanesAvailable()
 
         return false;
     }
-
-    if (abs(current_lane) == 1)  // In first lane, available lane to the right
+    int current_idx = ls->GetLaneIdxById(current_lane);
+    int max_idx = ls->GetNumberOfLanes() - 1; // Take away center lane
+    if (current_idx < max_idx && !ls->GetLaneById(current_lane - SIGN(current_lane))->IsDriving() && ls->GetLaneById(current_lane + SIGN(current_lane))->IsDriving())  // Lane to the left is not driveable, but right lane is.
     {
         lane_ids_available_[0] = 0;
         lane_ids_available_[1] = current_lane + SIGN(current_lane);
     }
-    else if (driving_lanes_available > abs(current_lane))  // Not in first lane and there are lanes to the right, both lanes available
+    else if (current_idx < max_idx && ls->GetLaneById(current_lane - SIGN(current_lane))->IsDriving() && ls->GetLaneById(current_lane + SIGN(current_lane))->IsDriving())  // Lane to left and right are driving lanes
     {
         lane_ids_available_[0] = current_lane - SIGN(current_lane);
         lane_ids_available_[1] = current_lane + SIGN(current_lane);
     }
-    else  // Left lane only available
+    else if (current_idx < max_idx && ls->GetLaneById(current_lane - SIGN(current_lane))->IsDriving() && !ls->GetLaneById(current_lane + SIGN(current_lane))->IsDriving())  // Lane to the right is not driveable, but left lane is.
     {
         lane_ids_available_[0] = current_lane - SIGN(current_lane);
         lane_ids_available_[1] = 0;

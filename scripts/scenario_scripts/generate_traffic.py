@@ -1,7 +1,5 @@
 import random
 import xml.etree.ElementTree as ET
-from scenariogeneration import xosc
-from scenariogeneration import ScenarioGenerator
 
 def get_lanesection_ids(lane_element):
     """
@@ -191,7 +189,7 @@ def get_vehicle_positions(roadfile, ego_pos: tuple, density: float, catalog_path
                     continue
                 
                 positions[i] = {}
-                positions[i]["position"] = (s_noise, 0, lane_id, road_id)
+                positions[i]["position"] = (s_noise, 0, 2, road_id)
                 positions[i]["catalog_name"] = target_name
                 i += 1
     
