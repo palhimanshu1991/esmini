@@ -38,8 +38,6 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
       desired_speed_(15.0),  // TODO: Take from road speed
       current_speed_(desired_speed_),
       lane_change_duration_(3.0),
-      adj_rear_dist_(5.0),
-      adj_lead_dist_(20.0),
       lookahead_dist_(115.0),
       max_deceleration_(-3.0),
       max_acceleration_(3.0),
@@ -63,14 +61,6 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
     if (args && args->properties && args->properties->ValueExists("desiredDistance"))
     {
         desired_distance_ = strtod(args->properties->GetValueStr("desiredDistance"));
-    }
-    if (args && args->properties && args->properties->ValueExists("adjRearDistance"))
-    {
-        adj_rear_dist_ = strtod(args->properties->GetValueStr("adjRearDistance"));
-    }
-    if (args && args->properties && args->properties->ValueExists("adjLeadDistance"))
-    {
-        adj_lead_dist_ = strtod(args->properties->GetValueStr("adjLeadDistance"));
     }
     if (args && args->properties && args->properties->ValueExists("desiredSpeed"))
     {

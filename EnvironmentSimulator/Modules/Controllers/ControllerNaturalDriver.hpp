@@ -109,8 +109,6 @@ namespace scenarioengine
         double                           desired_speed_;
         double                           current_speed_;
         double                           lane_change_duration_;
-        double                           adj_rear_dist_;
-        double                           adj_lead_dist_;
         double                           lookahead_dist_;
         double                           max_deceleration_;
         double                           max_acceleration_;
