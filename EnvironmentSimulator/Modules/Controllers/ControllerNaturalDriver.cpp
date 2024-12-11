@@ -212,6 +212,14 @@ void ControllerNaturalDriver::Step(double dt)
     {
         current_speed_ = desired_speed_;
     }
+    else if (current_speed_ > object_->GetMaxSpeed())
+    {
+        current_speed_ = object_->GetMaxSpeed();
+    }
+    else if (current_speed_ < 0.0)
+    {
+        current_speed_ = 0.0;
+    }
 
     object_->MoveAlongS(current_speed_ * dt);
     gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
@@ -308,6 +316,7 @@ void ControllerNaturalDriver::FilterSurroundingVehicles(std::vector<Object*> &fi
         
         double relative_distance;
         object_->pos_.Distance(&obj->pos_, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, relative_distance, lookahead_dist_);
+
         if (relative_distance <= lookahead_dist_)
         {
             filtered_vehicles.push_back(obj);
@@ -352,7 +361,7 @@ double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, 
         double desired_gap =
             GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, lead_current_speed, desired_distance_, desired_thw_);
 
-        roadmanager::PositionDiff diff;
+        roadmanager::PositionDiff diff = {};
         follow->pos_.Delta(&lead->pos_, diff, false, lookahead_dist_);
         double freespace = EstimateFreespace(follow, lead, diff.ds);
         (freespace == 0) ? freespace = SMALL_NUMBER : freespace = freespace;
@@ -551,21 +560,33 @@ bool ControllerNaturalDriver::AdjacentLanesAvailable()
 
         return false;
     }
-    int current_idx = ls->GetLaneIdxById(current_lane);
-    int max_idx = ls->GetNumberOfLanes() - 1; // Take away center lane
-    if (current_idx < max_idx && !ls->GetLaneById(current_lane - SIGN(current_lane))->IsDriving() && ls->GetLaneById(current_lane + SIGN(current_lane))->IsDriving())  // Lane to the left is not driveable, but right lane is.
+
+    int current_lane_idx = ls->GetLaneIdxById(current_lane);
+    int max_lane_idx = ls->GetNumberOfLanes() - 1;
+
+    int left_lane = current_lane - SIGN(current_lane);
+    int right_lane = current_lane + SIGN(current_lane);
+    bool left_driving = ls->GetLaneById(left_lane)->IsDriving();
+    bool right_driving = ls->GetLaneById(right_lane)->IsDriving();
+
+    if (current_lane_idx < max_lane_idx && !left_driving && right_driving)  // Lane to the left is not driveable, but right lane is.
     {
         lane_ids_available_[0] = 0;
-        lane_ids_available_[1] = current_lane + SIGN(current_lane);
+        lane_ids_available_[1] = right_lane;
     }
-    else if (current_idx < max_idx && ls->GetLaneById(current_lane - SIGN(current_lane))->IsDriving() && ls->GetLaneById(current_lane + SIGN(current_lane))->IsDriving())  // Lane to left and right are driving lanes
+    else if (current_lane_idx < max_lane_idx && left_driving && right_driving)  // Lane to left and right are driving lanes
     {
-        lane_ids_available_[0] = current_lane - SIGN(current_lane);
-        lane_ids_available_[1] = current_lane + SIGN(current_lane);
+        lane_ids_available_[0] = left_lane;
+        lane_ids_available_[1] = right_lane;
     }
-    else if (current_idx < max_idx && ls->GetLaneById(current_lane - SIGN(current_lane))->IsDriving() && !ls->GetLaneById(current_lane + SIGN(current_lane))->IsDriving())  // Lane to the right is not driveable, but left lane is.
+    else if (current_lane_idx < max_lane_idx && left_driving && !right_driving)  // Lane to the right is not driveable, but left lane is.
     {
-        lane_ids_available_[0] = current_lane - SIGN(current_lane);
+        lane_ids_available_[0] = left_lane;
+        lane_ids_available_[1] = 0;
+    }
+    else
+    {
+        lane_ids_available_[0] = 0;
         lane_ids_available_[1] = 0;
     }
 
