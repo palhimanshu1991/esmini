@@ -25,7 +25,6 @@ class Scenario(ScenarioGenerator):
         res_rel_path = os.path.join("..", "..", "resources")
 
         # We point to the road we wish to use
-        # Uncomment 2 rows below to use road from road()
         if self.road_generated:
             roadfile_name = __file__.split(os.path.sep)[-1].split(".py")[0]
             road = xosc.RoadNetwork(roadfile=f"../xodr/{roadfile_name}0.xodr")
@@ -149,10 +148,11 @@ class Scenario(ScenarioGenerator):
 
 if __name__ == "__main__":
     road_generated = False
+
     # Uncomment lines below to generate traffic on scenario-generation road. Also change the roadfile in xosc.RoadNetwork
-    road = RoadGen()
-    road.generate("..")
-    road_generated = True
+    # road = RoadGen()
+    # road.generate("..")
+    # road_generated = True
 
     s = Scenario(road_generated)
     s.generate("../../resources/")
