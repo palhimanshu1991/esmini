@@ -35,7 +35,7 @@ class Scenario(ScenarioGenerator):
 
     def scenario(self, **kwargs):
         # We point to the road we wish to use
-        # self.road_name = "e6mini.xodr" # Comment out to use generated road
+        self.road_name = "e6mini.xodr" # Comment out to use generated road
         road = xosc.RoadNetwork(roadfile=os.path.join("..", "xodr", self.road_name))
 
         ## create the storyboard, requires init and when to stop (Trigger), and add the story to it
@@ -142,7 +142,7 @@ class Scenario(ScenarioGenerator):
 
         ## return the scenario
         return xosc.Scenario(
-            "munich_scenario",
+            "traffic_scenario",
             "esmini",
             xosc.ParameterDeclarations(),
             entities=entities,
