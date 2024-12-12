@@ -77,7 +77,7 @@ namespace scenarioengine
 
         bool                     AdjacentLanesAvailable();
         void                     UpdateSurroundingVehicles();
-        void                     FilterSurroundingVehicles(std::vector<Object*> &filtered_vehicles);
+        void                     FilterSurroundingVehicles(std::vector<Object*>& filtered_vehicles);
         bool                     VehiclesInEgoLane(std::vector<scenarioengine::Object*>& vehicles);
         bool                     VehiclesInAdjacentLane(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
         void                     FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
