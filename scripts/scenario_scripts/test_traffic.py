@@ -1,35 +1,42 @@
-from scenariogeneration import xosc, xodr
+"""
+  Populate randomized traffic on an existing or newly generated road.
+
+  Run script from esmini root, example:
+    - python scripts/scenario_scripts/test_traffic.py
+
+  Generated files ends up in resources/xosc and resources/xodr, mathing the name of the script
+
+  Dependencies:
+    pip install scenariogeneration
+    esmini (for preview)
+"""
+
+
+from scenariogeneration import xosc, xodr, esmini
 from scenariogeneration import ScenarioGenerator
 from generate_traffic import get_vehicle_positions
 import random
 import os
 
-class RoadGen(ScenarioGenerator):
+
+class Scenario(ScenarioGenerator):
     def __init__(self):
         ScenarioGenerator.__init__(self)
-
+        self.road_name = ""
+    
     def road(self, **kwargs):
         road = xodr.create_road([xodr.Line(500)], id=0, left_lanes=2, right_lanes=2, lane_width=3.5)
 
-        odr = xodr.OpenDrive("myroad")
+        odr = xodr.OpenDrive("traffic_road")
         odr.add_road(road)
         odr.adjust_roads_and_lanes()
-        return odr
-
-class Scenario(ScenarioGenerator):
-    def __init__(self, road_generated):
-        ScenarioGenerator.__init__(self)
-        self.road_generated = road_generated
+        self.road_name = os.path.basename(__file__).replace(".py", ".xodr")
+        odr.write_xml(os.path.join("resources", "xodr", self.road_name))
 
     def scenario(self, **kwargs):
-        res_rel_path = os.path.join("..", "..", "resources")
-
         # We point to the road we wish to use
-        if self.road_generated:
-            roadfile_name = __file__.split(os.path.sep)[-1].split(".py")[0]
-            road = xosc.RoadNetwork(roadfile=f"../xodr/{roadfile_name}0.xodr")
-        else:
-            road = xosc.RoadNetwork(roadfile="../xodr/e6mini.xodr")
+        # self.road_name = "e6mini.xodr" # Comment out to use generated road
+        road = xosc.RoadNetwork(roadfile=os.path.join("..", "xodr", self.road_name))
 
         ## create the storyboard, requires init and when to stop (Trigger), and add the story to it
         sb = xosc.StoryBoard(
@@ -50,10 +57,8 @@ class Scenario(ScenarioGenerator):
 
         # We shall define a catalog to find our vehicles in
         catalog = xosc.Catalog()
-        vehicle_catalog_path = "../xosc/Catalogs/Vehicles"
-        controller_catalog_path = "../xosc/Catalogs/Controllers"
-        catalog.add_catalog("VehicleCatalog", vehicle_catalog_path)
-        catalog.add_catalog("ControllerCatalog", controller_catalog_path)
+        catalog.add_catalog("VehicleCatalog", "../xosc/Catalogs/Vehicles")
+        catalog.add_catalog("ControllerCatalog", "../xosc/Catalogs/Controllers")
 
 
         ## create entities based on entries in the catalog and give them names
@@ -82,10 +87,10 @@ class Scenario(ScenarioGenerator):
         init.add_init_action(egoname, egospeed)
         init.add_init_action(egoname, xosc.ActivateControllerAction(lateral=False, longitudinal=True))
         
-        vehicles = get_vehicle_positions(roadfile=os.path.join(res_rel_path, "xodr", road.road_file),
+        vehicles = get_vehicle_positions(roadfile=os.path.join("resources", "xodr", self.road_name),
                                          ego_pos=ego_start,
                                          density=1.0,
-                                         catalog_path=os.path.join(res_rel_path, "xosc", vehicle_catalog_path, "VehicleCatalog.xosc"))
+                                         catalog_path=os.path.join("resources", "xosc", "Catalogs", "Vehicles", "VehicleCatalog.xosc"))
 
         # Iterate over all vehicle positions, and create targets with suitable parameters and positions
         for i in range(1, len(vehicles)):
@@ -147,12 +152,7 @@ class Scenario(ScenarioGenerator):
         )
 
 if __name__ == "__main__":
-    road_generated = False
-
-    # Uncomment lines below to generate traffic on scenario-generation road. Also change the roadfile in xosc.RoadNetwork
-    # road = RoadGen()
-    # road.generate("..")
-    # road_generated = True
-
-    s = Scenario(road_generated)
-    s.generate("../../resources/")
+    # Run script from esmini root
+    s = Scenario()
+    s.generate("resources/")
+    esmini(s, ".")
