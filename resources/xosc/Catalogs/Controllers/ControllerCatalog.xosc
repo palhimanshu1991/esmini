@@ -157,24 +157,19 @@
         </Controller>
         <Controller name="NaturalDriver">
             <ParameterDeclarations>
-                <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
-                <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
-                <ParameterDeclaration name="EgoSpeed" parameterType="double" value="50"/>
                 <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="50"/>
+                <ParameterDeclaration name="LaneChangeDuration" parameterType="double" value="3"/>
+                <ParameterDeclaration name="LookAheadDistance" parameterType="double" value="115"/>
                 <ParameterDeclaration name="DesiredDistance" parameterType="double" value="5"/>
                 <ParameterDeclaration name="AdjRearDistance" parameterType="double" value="3.0"/>
                 <ParameterDeclaration name="AdjLeadDistance" parameterType="double" value="20.0"/>
-                <ParameterDeclaration name="TargetSpeed" parameterType="double" value="50"/>
-                <ParameterDeclaration name="EgoS" parameterType="double" value="20"/>
-                <ParameterDeclaration name="TargetS" parameterType="double" value="100"/>
                 <ParameterDeclaration name="SpeedTolerance" parameterType="double" value="10"/>
-                <ParameterDeclaration name="kp" parameterType="double" value="0.2"/>
-                <ParameterDeclaration name="kd" parameterType="double" value="0.8"/>
                 <ParameterDeclaration name="MaxDec" parameterType="double" value="-4.0"/>
                 <ParameterDeclaration name="MaxAcc" parameterType="double" value="2.0"/>
                 <ParameterDeclaration name="Route" parameterType="integer" value="-1"/>
                 <ParameterDeclaration name="Politeness" parameterType="double" value="0.1"/>
                 <ParameterDeclaration name="LaneChangeDelay" parameterType="double" value="5.0"/>
+                <ParameterDeclaration name="LaneChangeAccGain" parameterType="double" value="0.3"/>
                 <ParameterDeclaration name="Thw" parameterType="double" value="1.5"/>
             </ParameterDeclarations>
             <Properties>
@@ -184,12 +179,15 @@
                 <Property name="mode" value="override" />
                 <Property name="speedTolerance" value="${$SpeedTolerance / 3.6}" />
                 <Property name="desiredSpeed" value="${$DesiredSpeed / 3.6}" />
+                <Property name="laneChangeDuration" value="$LaneChangeDuration" />
+                <Property name="lookAheadDistance" value="$LookAheadDistance" />
                 <Property name="maxAcc" value="$MaxAcc" />
                 <Property name="maxDec" value="$MaxDec" />
                 <Property name="route" value="$Route" />
                 <Property name="politeness" value="$Politeness" />
                 <Property name="laneChangeDelay" value="$LaneChangeDelay" />
-                <Property name="THW" value="$Thw" />
+                <Property name="laneChangeAccGain" value="$LaneChangeAccGain" />
+                <Property name="thw" value="$Thw" />
             </Properties>
         </Controller>
         <Controller name="ALKSController">
