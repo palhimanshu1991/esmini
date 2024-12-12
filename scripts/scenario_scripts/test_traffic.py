@@ -1,17 +1,36 @@
-from scenariogeneration import xosc
+from scenariogeneration import xosc, xodr
 from scenariogeneration import ScenarioGenerator
 from generate_traffic import get_vehicle_positions
 import random
+import os
 
-class Scenario(ScenarioGenerator):
+class RoadGen(ScenarioGenerator):
     def __init__(self):
         ScenarioGenerator.__init__(self)
 
+    def road(self, **kwargs):
+        road = xodr.create_road([xodr.Line(500)], id=0, left_lanes=2, right_lanes=2, lane_width=3.5)
+
+        odr = xodr.OpenDrive("myroad")
+        odr.add_road(road)
+        odr.adjust_roads_and_lanes()
+        return odr
+
+class Scenario(ScenarioGenerator):
+    def __init__(self, road_generated):
+        ScenarioGenerator.__init__(self)
+        self.road_generated = road_generated
 
     def scenario(self, **kwargs):
+        res_rel_path = os.path.join("..", "..", "resources")
+
         # We point to the road we wish to use
-        roadfile = "../../resources/xodr/e6mini.xodr"
-        road = xosc.RoadNetwork(roadfile=roadfile)
+        # Uncomment 2 rows below to use road from road()
+        if self.road_generated:
+            roadfile_name = __file__.split(os.path.sep)[-1].split(".py")[0]
+            road = xosc.RoadNetwork(roadfile=f"../xodr/{roadfile_name}0.xodr")
+        else:
+            road = xosc.RoadNetwork(roadfile="../xodr/e6mini.xodr")
 
         ## create the storyboard, requires init and when to stop (Trigger), and add the story to it
         sb = xosc.StoryBoard(
@@ -32,8 +51,10 @@ class Scenario(ScenarioGenerator):
 
         # We shall define a catalog to find our vehicles in
         catalog = xosc.Catalog()
-        catalog.add_catalog("VehicleCatalog", "../xosc/Catalogs/Vehicles")
-        catalog.add_catalog("ControllerCatalog", "../xosc/Catalogs/Controllers")
+        vehicle_catalog_path = "../xosc/Catalogs/Vehicles"
+        controller_catalog_path = "../xosc/Catalogs/Controllers"
+        catalog.add_catalog("VehicleCatalog", vehicle_catalog_path)
+        catalog.add_catalog("ControllerCatalog", controller_catalog_path)
 
 
         ## create entities based on entries in the catalog and give them names
@@ -47,35 +68,37 @@ class Scenario(ScenarioGenerator):
             xosc.DynamicsShapes.step, xosc.DynamicsDimension.rate, 1
         )
         
-        # Define the start conditions for the entities (they need speed and position)
         ego_s = 200
         ego_t = 0
         ego_lid = -2
         ego_rid = 0
 
+        # A tuple to feed the get_vehicle_position later
         ego_start = (ego_s, ego_t, ego_lid, ego_rid)
         egostart = xosc.TeleportAction(xosc.LanePosition(*ego_start))
         egospeed = xosc.AbsoluteSpeedAction(15, step_time)
 
-        # Add the start conditions to the init stage for each entity
+        # Add the start conditions to the init stage for ego only
         init.add_init_action(egoname, egostart)
         init.add_init_action(egoname, egospeed)
+        init.add_init_action(egoname, xosc.ActivateControllerAction(lateral=False, longitudinal=True))
         
-        vehicles = get_vehicle_positions(roadfile=roadfile,
+        vehicles = get_vehicle_positions(roadfile=os.path.join(res_rel_path, "xodr", road.road_file),
                                          ego_pos=ego_start,
                                          density=1.0,
-                                         catalog_path="../../resources/xosc/Catalogs/Vehicles/VehicleCatalog.xosc")
+                                         catalog_path=os.path.join(res_rel_path, "xosc", vehicle_catalog_path, "VehicleCatalog.xosc"))
 
+        # Iterate over all vehicle positions, and create targets with suitable parameters and positions
         for i in range(1, len(vehicles)):
             targetname = f"Target{i}"
+            target_set_speed = 20 # m/s
             man_group = xosc.ManeuverGroup(f"{targetname}_man_group")
             entities.add_scenario_object(
                     targetname, xosc.CatalogReference("VehicleCatalog", vehicles[i]["catalog_name"]),
                     xosc.CatalogReference("ControllerCatalog", "NaturalDriver")
                 )
-            # entities.scenario_objects[1].entityobject.parameterassignments = desired_speed
             noise_pc = random.uniform(0.8, 1.2)
-            entities.scenario_objects[i].controller[0].add_parameter_assignment("DesiredSpeed", 70 * noise_pc)
+            entities.scenario_objects[i].controller[0].add_parameter_assignment("DesiredSpeed", target_set_speed * 3.6 * noise_pc) # Takes kph
             entities.scenario_objects[i].controller[0].add_parameter_assignment("EgoSpeed", 50 * noise_pc)
             entities.scenario_objects[i].controller[0].add_parameter_assignment("DesiredDistance", 5 * noise_pc)
             entities.scenario_objects[i].controller[0].add_parameter_assignment("AdjRearDistance", 3.0 * noise_pc)
@@ -86,7 +109,7 @@ class Scenario(ScenarioGenerator):
             entities.scenario_objects[i].controller[0].add_parameter_assignment("LaneChangeDelay", 0.0 * noise_pc)
             entities.scenario_objects[i].controller[0].add_parameter_assignment("Thw", 0.5 * noise_pc)
             targetstart = xosc.TeleportAction(xosc.LanePosition(*vehicles[i]["position"]))
-            targetspeed = xosc.AbsoluteSpeedAction(15, step_time)
+            targetspeed = xosc.AbsoluteSpeedAction(target_set_speed, step_time)
             init.add_init_action(targetname, targetstart)
             init.add_init_action(targetname, targetspeed)
             init.add_init_action(targetname, xosc.ActivateControllerAction(lateral=False, longitudinal=True))
@@ -125,5 +148,11 @@ class Scenario(ScenarioGenerator):
         )
 
 if __name__ == "__main__":
-    s = Scenario()
-    s.generate(".")
+    road_generated = False
+    # Uncomment lines below to generate traffic on scenario-generation road. Also change the roadfile in xosc.RoadNetwork
+    road = RoadGen()
+    road.generate("..")
+    road_generated = True
+
+    s = Scenario(road_generated)
+    s.generate("../../resources/")

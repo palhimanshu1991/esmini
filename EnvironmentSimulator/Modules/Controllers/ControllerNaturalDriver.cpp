@@ -554,24 +554,36 @@ bool ControllerNaturalDriver::AdjacentLanesAvailable()
     int current_lane_idx = ls->GetLaneIdxById(current_lane);
     int max_lane_idx = ls->GetNumberOfLanes() - 1;
 
-    int left_lane = current_lane - SIGN(current_lane);
-    int right_lane = current_lane + SIGN(current_lane);
-    bool left_driving = ls->GetLaneById(left_lane)->IsDriving();
-    bool right_driving = ls->GetLaneById(right_lane)->IsDriving();
+    int left_lane_id = current_lane - SIGN(current_lane);
+    int right_lane_id = current_lane + SIGN(current_lane);
 
-    if (current_lane_idx < max_lane_idx && !left_driving && right_driving)  // Lane to the left is not driveable, but right lane is.
+    bool left_driving, right_driving;
+    if (SIGN(current_lane) == -1)
+    {
+        int left_lanes = ls->GetNumberOfLanesLeft();
+        (current_lane_idx == max_lane_idx) ? right_driving = false : right_driving = ls->GetLaneById(right_lane_id)->IsDriving();
+        (current_lane_idx == max_lane_idx - left_lanes) ? left_driving = false : left_driving = ls->GetLaneById(left_lane_id)->IsDriving();
+    }
+    else
+    {
+        int right_lanes = ls->GetNumberOfLanesRight();
+        (current_lane_idx == 0) ? right_driving = false : right_driving = ls->GetLaneById(right_lane_id)->IsDriving();
+        (current_lane_idx == right_lanes - 1) ? left_driving = false : left_driving = ls->GetLaneById(left_lane_id)->IsDriving();
+    }
+
+    if (!left_driving && right_driving)  // Lane to the left is not driveable, but right lane is.
     {
         lane_ids_available_[0] = 0;
-        lane_ids_available_[1] = right_lane;
+        lane_ids_available_[1] = right_lane_id;
     }
-    else if (current_lane_idx < max_lane_idx && left_driving && right_driving)  // Lane to left and right are driving lanes
+    else if (left_driving && right_driving)  // Lane to left and right are driving lanes
     {
-        lane_ids_available_[0] = left_lane;
-        lane_ids_available_[1] = right_lane;
+        lane_ids_available_[0] = left_lane_id;
+        lane_ids_available_[1] = right_lane_id;
     }
-    else if (current_lane_idx < max_lane_idx && left_driving && !right_driving)  // Lane to the right is not driveable, but left lane is.
+    else if (left_driving && !right_driving)  // Lane to the right is not driveable, but left lane is.
     {
-        lane_ids_available_[0] = left_lane;
+        lane_ids_available_[0] = left_lane_id;
         lane_ids_available_[1] = 0;
     }
     else
