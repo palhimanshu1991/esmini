@@ -575,13 +575,13 @@ bool ControllerNaturalDriver::AdjacentLanesAvailable()
     bool left_driving, right_driving;
     if (SIGN(current_lane) == -1)
     {
-        int left_lanes = ls->GetNumberOfLanesLeft();
+        int left_lanes = ls->GetNUmberOfLanesLeft();
         (current_lane_idx == max_lane_idx) ? right_driving = false : right_driving = ls->GetLaneById(right_lane_id)->IsDriving();
         (current_lane_idx == max_lane_idx - left_lanes) ? left_driving = false : left_driving = ls->GetLaneById(left_lane_id)->IsDriving();
     }
     else
     {
-        int right_lanes = ls->GetNumberOfLanesRight();
+        int right_lanes = ls->GetNUmberOfLanesRight();
         (current_lane_idx == 0) ? right_driving = false : right_driving = ls->GetLaneById(right_lane_id)->IsDriving();
         (current_lane_idx == right_lanes - 1) ? left_driving = false : left_driving = ls->GetLaneById(left_lane_id)->IsDriving();
     }
