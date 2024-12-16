@@ -23,7 +23,7 @@
 
 namespace scenarioengine
 {
-    struct VoI
+    struct VoI // VehicleOfInterest
     {
         scenarioengine::Object*   vehicle;
         roadmanager::PositionDiff diff;
@@ -76,36 +76,29 @@ namespace scenarioengine
                       ControlActivationMode anim_activation_mode);
 
         bool                     AdjacentLanesAvailable();
+        void                     FilterSurroundingVehicles();
         void                     UpdateSurroundingVehicles();
-        void                     FilterSurroundingVehicles(std::vector<Object*>& filtered_vehicles);
-        bool                     VehiclesInEgoLane(std::vector<scenarioengine::Object*>& vehicles);
-        bool                     VehiclesInAdjacentLane(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
         void                     FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
         void                     FindClosestBehind(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
-        void                     GetAdjacentLeadAndFollow(const int lane_id);
-        bool                     AbortLaneChange();
-        ControllerNaturalDriver* GetOtherDriver(scenarioengine::Object* object);
-        double                   EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds);
+        bool                     CheckLaneChangePossible(const int lane_id);
+        bool                     AbortLaneChange() const;
+        double                   EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds) const;
 
-        bool CheckLaneChangePossible(const int lane_id);
+        ControllerNaturalDriver* GetOtherDriver(scenarioengine::Object* object) const;
         void GetVehicleOfInterestType(int lane_id, VoIType& lead, VoIType& follow);
-
-        double GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead);
+        double GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead) const;
         double GetDesiredGap(double max_acceleration,
                              double max_deceleration,
                              double follow_speed,
                              double lead_speed,
                              double desired_distance,
-                             double desired_thw);
+                             double desired_thw) const;
 
         void ReportKeyEvent(int key, bool down);
 
     private:
-        vehicle::Vehicle                 vehicle_;
         bool                             active_;
         double                           desired_distance_;
-        double                           actual_distance_;
-        double                           distance_adjustment_t_;
         double                           desired_speed_;
         double                           current_speed_;
         double                           lane_change_duration_;
@@ -113,8 +106,8 @@ namespace scenarioengine
         double                           max_deceleration_;
         double                           max_acceleration_;
         std::array<int, 2>               lane_ids_available_;
+        std::vector<Object*>             vehicles_in_radius_;
         std::unordered_map<VoIType, VoI> vehicles_of_interest_;
-        double                           distance_to_adjacent_lead_;
         bool                             lane_change_injected;
         State                            state_;
         double                           lane_change_delay_;

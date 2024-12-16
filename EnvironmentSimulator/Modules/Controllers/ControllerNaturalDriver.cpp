@@ -33,8 +33,6 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
     : Controller(args),
       active_(false),
       desired_distance_(20.0),
-      actual_distance_(-1.0),
-      distance_adjustment_t_(3.0),
       desired_speed_(15.0),
       current_speed_(desired_speed_),
       lane_change_duration_(3.0),
@@ -42,6 +40,7 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
       max_deceleration_(-3.0),
       max_acceleration_(3.0),
       lane_ids_available_({0, 0}),
+      vehicles_in_radius_({}),
       vehicles_of_interest_({}),
       lane_change_injected(false),
       state_(State::DRIVE),
@@ -168,7 +167,7 @@ void ControllerNaturalDriver::Step(double dt)
         }
         case State::CHANGE_LANE:
         {
-            acceleration = 0.0;
+            acceleration = 0.0; // Don't accelerate during lane change
             break;
         }
     }
@@ -229,25 +228,23 @@ void ControllerNaturalDriver::Step(double dt)
     Controller::Step(dt);
 }
 
-bool ControllerNaturalDriver::AbortLaneChange()
+bool ControllerNaturalDriver::AbortLaneChange() const
 {
-    std::vector<Object*> objects_in_radius;
-    FilterSurroundingVehicles(objects_in_radius);
-
     // Check if someone else is already changing to intended lane
-    for (const auto& other_object : objects_in_radius)
+    for (const auto& other_vehicle : vehicles_in_radius_)
     {
-        ControllerNaturalDriver* nd = GetOtherDriver(other_object);
+        ControllerNaturalDriver* nd = GetOtherDriver(other_vehicle);
         if (nd == nullptr)
         {
             continue;  // Other car has no driver
         }
 
+        // Could optimize this if all diffs in UpdateSurroundingVehicles are saved, not only closest ones
         roadmanager::PositionDiff diff        = {};
         bool                      delta_exist = false;
         for (const auto& veh : vehicles_of_interest_)
         {
-            if (other_object == veh.second.vehicle)
+            if (other_vehicle == veh.second.vehicle)
             {
                 diff        = veh.second.diff;
                 delta_exist = true;
@@ -256,17 +253,17 @@ bool ControllerNaturalDriver::AbortLaneChange()
 
         if (!delta_exist)
         {
-            object_->pos_.Delta(&other_object->pos_, diff, true, lookahead_dist_);  // Only look ahead or not?
+            object_->pos_.Delta(&other_vehicle->pos_, diff, true, lookahead_dist_);  // Only look ahead or not?
         }
 
-        double freespace = EstimateFreespace(object_, other_object, diff.ds);
+        double freespace = EstimateFreespace(object_, other_vehicle, diff.ds);
 
-        double follow_current_speed = other_object->GetSpeed();
+        double follow_current_speed = other_vehicle->GetSpeed();
         double desired_gap =
             GetDesiredGap(max_acceleration_, max_deceleration_, follow_current_speed, current_speed_, desired_distance_, desired_thw_);
 
         if (freespace >= 0 && freespace < desired_gap && nd->lane_change_injected && nd->target_lane_ == this->target_lane_ &&
-            !(other_object->pos_.GetLaneId() == object_->pos_.GetLaneId()))
+            !(other_vehicle->pos_.GetLaneId() == object_->pos_.GetLaneId()))
         {
             return true;
         }
@@ -277,36 +274,37 @@ bool ControllerNaturalDriver::AbortLaneChange()
 
 void ControllerNaturalDriver::UpdateSurroundingVehicles()
 {
+    // Reset data from previous loop
     vehicles_of_interest_ = {};
+    vehicles_in_radius_.clear();
 
-    std::vector<Object*> objects_in_radius;
-    FilterSurroundingVehicles(objects_in_radius);
+    FilterSurroundingVehicles();
 
-    for (const auto& obj : objects_in_radius)
+    for (const auto& veh : vehicles_in_radius_)
     {
         roadmanager::PositionDiff diff = {};
-        object_->pos_.Delta(&obj->pos_, diff, true, lookahead_dist_);
+        object_->pos_.Delta(&veh->pos_, diff, true, lookahead_dist_);
 
         if (diff.dLaneId == 0)
         {
-            FindClosestAhead(obj, diff, VoIType::LEAD);
-            FindClosestBehind(obj, diff, VoIType::FOLLOWING);
+            FindClosestAhead(veh, diff, VoIType::LEAD);
+            FindClosestBehind(veh, diff, VoIType::FOLLOWING);
         }
         else if (diff.dLaneId * -SIGN(object_->pos_.GetLaneId()) == 1)  // Always 1 on left lane
         {
-            FindClosestAhead(obj, diff, VoIType::LEFT_LEAD);
-            FindClosestBehind(obj, diff, VoIType::LEFT_FOLLOW);
+            FindClosestAhead(veh, diff, VoIType::LEFT_LEAD);
+            FindClosestBehind(veh, diff, VoIType::LEFT_FOLLOW);
         }
         else if (diff.dLaneId * -SIGN(object_->pos_.GetLaneId()) == -1)  // Always -1 on right lane
         {
-            FindClosestAhead(obj, diff, VoIType::RIGHT_LEAD);
-            FindClosestBehind(obj, diff, VoIType::RIGHT_FOLLOW);
+            FindClosestAhead(veh, diff, VoIType::RIGHT_LEAD);
+            FindClosestBehind(veh, diff, VoIType::RIGHT_FOLLOW);
         }
     }
 }
 
 // Simple distance calc to find only relevant vehicles around ego
-void ControllerNaturalDriver::FilterSurroundingVehicles(std::vector<Object*>& filtered_vehicles)
+void ControllerNaturalDriver::FilterSurroundingVehicles()
 {
     for (const auto& obj : entities_->object_)
     {
@@ -324,12 +322,14 @@ void ControllerNaturalDriver::FilterSurroundingVehicles(std::vector<Object*>& fi
 
         if (relative_distance <= lookahead_dist_)
         {
-            filtered_vehicles.push_back(obj);
+            vehicles_in_radius_.push_back(obj);
         }
     }
+
+    return;
 }
 
-ControllerNaturalDriver* ControllerNaturalDriver::GetOtherDriver(scenarioengine::Object* object)
+ControllerNaturalDriver* ControllerNaturalDriver::GetOtherDriver(scenarioengine::Object* object) const
 {
     ControllerNaturalDriver* nd;
     if (object->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG))
@@ -348,7 +348,7 @@ ControllerNaturalDriver* ControllerNaturalDriver::GetOtherDriver(scenarioengine:
 /*
     GetAcceleration() and GetDesiredGap() based on IDM (https://en.wikipedia.org/wiki/Intelligent_driver_model)
 */
-double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead)
+double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead) const
 {
     if (follow == nullptr)  // No car to calculate acceleration for, return 0
     {
@@ -382,7 +382,7 @@ double ControllerNaturalDriver::GetDesiredGap(double max_acceleration,
                                               double follow_speed,
                                               double lead_speed,
                                               double desired_distance,
-                                              double desired_thw)
+                                              double desired_thw) const
 {
     double ab             = -max_acceleration * max_deceleration;
     double relative_speed = follow_speed - lead_speed;
@@ -434,6 +434,8 @@ void ControllerNaturalDriver::GetVehicleOfInterestType(int lane_id, VoIType& lea
         lead   = VoIType::RIGHT_LEAD;
         follow = VoIType::RIGHT_FOLLOW;
     }
+
+    return;
 }
 
 bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
@@ -489,7 +491,7 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
     return true;
 }
 
-double ControllerNaturalDriver::EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds)
+double ControllerNaturalDriver::EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds) const
 {
     // adjust longitudinal dist wrt bounding boxes
     double adjusted_gap_length = ds;
@@ -530,6 +532,8 @@ void ControllerNaturalDriver::FindClosestAhead(scenarioengine::Object* object, r
         vehicles_of_interest_[type].vehicle = object;
         vehicles_of_interest_[type].diff    = diff;
     }
+
+    return;
 }
 
 void ControllerNaturalDriver::FindClosestBehind(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type)
@@ -544,6 +548,8 @@ void ControllerNaturalDriver::FindClosestBehind(scenarioengine::Object* object, 
         vehicles_of_interest_[type].vehicle = object;
         vehicles_of_interest_[type].diff    = diff;
     }
+
+    return;
 }
 
 bool ControllerNaturalDriver::AdjacentLanesAvailable()
