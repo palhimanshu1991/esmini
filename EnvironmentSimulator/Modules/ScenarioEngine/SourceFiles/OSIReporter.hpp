@@ -88,7 +88,7 @@ public:
     /**
     Fills up the osi message with Stationary Object
     */
-    int UpdateOSIStationaryObject(ObjectState* objectState);
+    int UpdateOSIStationaryObject(ObjectState* objectState, uint64_t id);
     /**
     Fills up the osi message with Host Vehicle data
     */

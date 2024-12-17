@@ -382,6 +382,23 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
         }
     }
 
+    // Find the static object with the largest id
+    int    largest_id = 0;
+    size_t sobj_size  = static_cast<size_t>(obj_osi_internal.gt->mutable_stationary_object()->size());
+
+    for (size_t i = 0; i < sobj_size; i++)
+    {
+        if (obj_osi_internal.gt->stationary_object(static_cast<int>(i)).id().value() > static_cast<uint64_t>(largest_id))
+        {
+            largest_id = static_cast<int>(obj_osi_internal.gt->stationary_object(static_cast<int>(i)).id().value());
+        }
+    }
+
+    if (sobj_size == 0)
+    {
+        largest_id = -1;
+    }
+
     // Then pick objects from the OpenSCENARIO description
     for (size_t i = 0; i < objectState.size(); i++)
     {
@@ -392,7 +409,8 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
         }
         else if (objectState[i]->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
         {
-            UpdateOSIStationaryObject(objectState[i].get());
+            largest_id += 1;
+            UpdateOSIStationaryObject(objectState[i].get(), static_cast<uint64_t>(largest_id));
         }
         else
         {
@@ -622,14 +640,11 @@ int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObjec
     return 0;
 }
 
-int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
+int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState, uint64_t id)
 {
     // Create OSI Stationary Object
     obj_osi_internal.sobj = obj_osi_internal.gt->add_stationary_object();
-
-    // Set OSI Stationary Object Mutable ID
-    int sobj_size = obj_osi_internal.gt->mutable_stationary_object()->size();
-    obj_osi_internal.sobj->mutable_id()->set_value(static_cast<unsigned int>(sobj_size - 1));
+    obj_osi_internal.sobj->mutable_id()->set_value(id);
 
     // Set OSI Stationary Object Type and Classification
     if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
