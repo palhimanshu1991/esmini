@@ -383,20 +383,20 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
     }
 
     // Find the static object with the largest id
-    int    largest_id = 0;
+    uint64_t    largest_id = 0;
     size_t sobj_size  = static_cast<size_t>(obj_osi_internal.gt->mutable_stationary_object()->size());
 
     for (size_t i = 0; i < sobj_size; i++)
     {
-        if (obj_osi_internal.gt->stationary_object(static_cast<int>(i)).id().value() > static_cast<uint64_t>(largest_id))
+        if (obj_osi_internal.gt->stationary_object(static_cast<int>(i)).id().value() > largest_id)
         {
-            largest_id = static_cast<int>(obj_osi_internal.gt->stationary_object(static_cast<int>(i)).id().value());
+            largest_id = obj_osi_internal.gt->stationary_object(static_cast<int>(i)).id().value();
         }
     }
 
-    if (sobj_size == 0)
+    if (sobj_size > 0)
     {
-        largest_id = -1;
+        largest_id += 1;
     }
 
     // Then pick objects from the OpenSCENARIO description
@@ -409,8 +409,8 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
         }
         else if (objectState[i]->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
         {
+            UpdateOSIStationaryObject(objectState[i].get(), largest_id);
             largest_id += 1;
-            UpdateOSIStationaryObject(objectState[i].get(), static_cast<uint64_t>(largest_id));
         }
         else
         {
