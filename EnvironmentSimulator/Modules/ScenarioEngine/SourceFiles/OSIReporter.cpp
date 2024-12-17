@@ -383,8 +383,8 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
     }
 
     // Find the static object with the largest id
-    uint64_t    largest_id = 0;
-    size_t sobj_size  = static_cast<size_t>(obj_osi_internal.gt->mutable_stationary_object()->size());
+    uint64_t largest_id = 0;
+    size_t   sobj_size  = static_cast<size_t>(obj_osi_internal.gt->mutable_stationary_object()->size());
 
     for (size_t i = 0; i < sobj_size; i++)
     {
